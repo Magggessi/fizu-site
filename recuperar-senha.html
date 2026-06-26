@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Recuperar senha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4f7fc;--text:#0d1628;--aqua:#0055a8;--aqua-glow:rgba(0,85,168,0.25);--aqua-dim:rgba(0,85,168,0.06);--muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;--shadow:0 12px 44px rgba(13,22,40,0.11)}
+html.dark{--bg:#080c14;--text:#eef4ff;--aqua:#3b9eff;--aqua-glow:rgba(59,158,255,0.3);--aqua-dim:rgba(59,158,255,0.08);--muted:#6b8aad;--border:rgba(59,158,255,0.15);--card:rgba(13,22,40,0.95);--shadow:0 12px 44px rgba(0,0,0,0.5)}
+
+/* NOVO LOGO PRO */
+.logo-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff,#7C3AED,#FF2E88);flex-shrink:0}
+.logo-icon svg{width:28px;height:28px}
+.logo-icon path{fill:none;stroke:white;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.logo-icon circle{fill:white}
+.brand-text{font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem;letter-spacing:-.01em;color:var(--text,var(--white,#eef4ff))}
+.brand-text em{color:#3b9eff;font-style:normal}
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+.box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:40px;width:100%;max-width:400px;box-shadow:var(--shadow);text-align:center}
+.fish{width:60px;height:34px;margin:0 auto 20px}
+.fish path{fill:none;stroke:var(--aqua);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fish circle{fill:var(--aqua)}
+h1{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;margin-bottom:8px}
+h1 em{color:var(--aqua);font-style:italic}
+.sub{color:var(--muted);font-size:.88rem;line-height:1.65;margin-bottom:28px}
+.field{text-align:left;margin-bottom:16px}
+.field label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.field input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;color:var(--text);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:.93rem;outline:none;transition:border-color .25s}
+.field input:focus{border-color:var(--aqua)}
+.field input::placeholder{color:var(--muted)}
+.btn{width:100%;background:var(--aqua);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'DM Sans',sans-serif;font-size:.97rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 6px 20px var(--aqua-glow);margin-bottom:16px}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.back{color:var(--muted);font-size:.85rem;text-decoration:none;transition:color .2s}
+.back:hover{color:var(--aqua)}
+.success{display:none;background:var(--aqua-dim);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:.88rem;color:var(--aqua);line-height:1.6;margin-bottom:16px}
+.success.show{display:block}
+.err{display:none;background:rgba(204,51,51,0.08);border:1px solid rgba(204,51,51,0.3);border-radius:12px;padding:12px;font-size:.83rem;color:#cc3333;margin-bottom:14px}
+.err.show{display:block}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+<div class="box">
+  <svg class="fish" viewBox="0 0 60 36" fill="none">
+    <path d="M8 18C8 18 2 10 2 4C8 6 14 10 18 14C22 8 30 4 40 4C52 4 58 11 58 18C58 25 52 32 40 32C30 32 22 28 18 22C14 26 8 30 2 32C2 26 8 18 8 18Z"/>
+    <circle cx="46" cy="13" r="2.2"/>
+  </svg>
+  <h1>Recuperar <em>senha</em></h1>
+  <p class="sub">Digite seu e-mail cadastrado e enviaremos um link para criar uma nova senha.</p>
+
+  <div class="err" id="errMsg"></div>
+  <div class="success" id="successMsg">📬 Link enviado! Verifique sua caixa de entrada e clique no link para criar sua nova senha.</div>
+
+  <div class="field" id="emailField">
+    <label>E-mail</label>
+    <input type="email" id="emailInput" placeholder="seu@email.com">
+  </div>
+
+  <button class="btn" id="submitBtn" onclick="recuperar()">Enviar link de recuperação</button>
+  <a href="login.html" class="back">← Voltar ao login</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://tnwildfshzrvktrlfjhz.supabase.co',
+  'sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN'
+);
+
+async function recuperar() {
+  const email = document.getElementById('emailInput').value.trim();
+  const err = document.getElementById('errMsg');
+  const success = document.getElementById('successMsg');
+  const btn = document.getElementById('submitBtn');
+
+  if(!email || !email.includes('@')) {
+    err.textContent = 'Por favor, insira um e-mail válido.';
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://fizu.com.br/nova-senha.html'
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Enviar link de recuperação';
+
+  if(error) {
+    err.textContent = 'Erro ao enviar. Verifique o e-mail e tente novamente.';
+    err.classList.add('show');
+    return;
+  }
+
+  document.getElementById('emailField').style.display = 'none';
+  btn.style.display = 'none';
+  success.classList.add('show');
+}
+
+document.getElementById('emailInput').addEventListener('keypress', e => {
+  if(e.key === 'Enter') recuperar();
+});
+
+(function(){
+  const s = localStorage.getItem('fizu-theme');
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(s ? s === 'dark' : sys) document.documentElement.classList.add('dark');
+})();
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "name": "Fizu — O que você diz, permanece.",
+  "short_name": "Fizu",
+  "description": "A rede social da verdade permanente.",
+  "start_url": "/feed.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1e",
+  "theme_color": "#0088a8",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Meu feed",
+      "url": "/feed.html",
+      "icons": [{"src": "icon-96.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Mensagens",
+      "url": "/mensagens.html",
+      "icons": [{"src": "icon-96.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Entrar",
+      "url": "/login.html",
+      "icons": [{"src": "icon-96.png", "sizes": "96x96"}]
+    }
+  ],
+  "categories": ["social", "lifestyle", "communication"],
+  "prefer_related_applications": false
+}

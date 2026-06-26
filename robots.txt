@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /termos.html
+Allow: /privacidade.html
+Allow: /contato.html
+
+Disallow: /feed.html
+Disallow: /onboarding.html
+Disallow: /moderacao.html
+Disallow: /recuperar-senha.html
+Disallow: /nova-senha.html
+
+Sitemap: https://fizu.com.br/sitemap.xml

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="theme-color" content="#0055a8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="description" content="Fizu — A rede social onde nada se apaga. Postagens, mensagens e vídeos permanentes. Transparência real em relacionamentos, amizades e negócios.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fizu">
+  <meta property="og:title" content="Fizu — O que você diz, permanece.">
+  <meta property="og:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece. E isso muda tudo.">
+  <meta property="og:image" content="https://fizu.com.br/og-image.png">
+  <meta property="og:url" content="https://fizu.com.br">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fizu — O que você diz, permanece.">
+  <meta name="twitter:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece.">
+  <meta name="twitter:image" content="https://fizu.com.br/og-image.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Fizu">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Contato</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f7fc;--bg2:#eaf0fb;--bg3:#dde6f5;
+  --text:#0d1628;--text2:#2a4a72;
+  --aqua:#0055a8;--aqua-dim:rgba(0,85,168,0.06);--aqua-glow:rgba(0,85,168,0.25);
+  --gold:#b87800;--coral:#cc3333;
+  --muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;
+  --nav-bg:rgba(244,247,252,0.97);--shadow:0 4px 20px rgba(13,22,40,0.07);
+  --shadow-lg:0 12px 44px rgba(13,22,40,0.11);
+}
+html.dark{
+  --bg:#080c14;--bg2:#0d1628;--bg3:#162140;
+  --text:#eef4ff;--text2:#c8d8f0;
+  --aqua:#3b9eff;--aqua-dim:rgba(59,158,255,0.08);--aqua-glow:rgba(59,158,255,0.3);
+  --gold:#f5c842;--coral:#ff6b6b;
+  --muted:#6b8aad;--border:rgba(59,158,255,0.15);--card:rgba(13,22,40,0.9);
+  --nav-bg:rgba(8,12,20,0.97);--shadow:0 4px 20px rgba(0,0,0,0.3);
+  --shadow-lg:0 12px 44px rgba(0,0,0,0.5);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;transition:background .3s,color .3s;min-height:100vh}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo svg{width:32px;height:19px}
+.logo path{fill:none;stroke:var(--aqua);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo circle{fill:var(--aqua)}
+.brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;color:var(--text)}
+.brand em{color:var(--aqua);font-style:normal}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-home{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s}
+.btn-home:hover{color:var(--aqua)}
+.btn-entrar{background:var(--aqua);color:#fff;padding:8px 20px;border-radius:24px;font-size:.85rem;font-weight:700;text-decoration:none}
+.btn-entrar:hover{opacity:.85}
+.dark-toggle{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:6px 12px;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .22s}
+.dark-toggle:hover{border-color:var(--aqua);color:var(--aqua)}
+.icon-moon{display:inline}.icon-sun{display:none}
+html.dark .icon-moon{display:none}html.dark .icon-sun{display:inline}
+
+/* PAGE */
+.page-wrap{max-width:1060px;margin:0 auto;padding:100px 24px 80px}
+
+/* HERO */
+.hero{text-align:center;padding:48px 0 52px}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;margin-bottom:12px}
+.hero h1 em{color:var(--aqua);font-style:italic}
+.hero p{color:var(--muted);font-size:1rem;max-width:480px;margin:0 auto;line-height:1.75}
+
+/* GRID */
+.contact-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:32px;align-items:start}
+
+/* LEFT — INFO */
+.contact-info{display:flex;flex-direction:column;gap:16px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow);transition:all .3s}
+.info-card:hover{border-color:rgba(0,85,168,.3);transform:translateY(-2px)}
+html.dark .info-card:hover{border-color:rgba(59,158,255,.2)}
+.info-icon{font-size:1.8rem;margin-bottom:10px}
+.info-title{font-family:'Fraunces',serif;font-weight:700;font-size:1rem;margin-bottom:6px;color:var(--text)}
+.info-desc{font-size:.84rem;color:var(--muted);line-height:1.6}
+
+.response-time{background:var(--aqua-dim);border:1px solid var(--border);border-radius:12px;padding:16px 20px;font-size:.85rem;color:var(--text2);line-height:1.6}
+.response-time strong{color:var(--aqua);display:block;margin-bottom:4px;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+
+/* FORM CARD */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;box-shadow:var(--shadow-lg);transition:background .3s,border-color .3s}
+
+.form-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;margin-bottom:8px;color:var(--text)}
+.form-sub{color:var(--muted);font-size:.87rem;margin-bottom:28px;line-height:1.6}
+
+/* SUBJECT SELECTOR */
+.subject-label{font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:block}
+.subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+.subject-opt{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .22s;display:flex;align-items:center;gap:10px;text-align:left}
+.subject-opt:hover{border-color:var(--aqua);background:var(--aqua-dim)}
+.subject-opt.selected{border-color:var(--aqua);background:var(--aqua-dim);box-shadow:0 0 0 3px var(--aqua-glow)}
+.subject-opt .s-icon{font-size:1.2rem;flex-shrink:0}
+.subject-opt .s-text{font-size:.82rem;font-weight:600;color:var(--text);line-height:1.3}
+.subject-opt .s-desc{font-size:.72rem;color:var(--muted);margin-top:2px;line-height:1.3}
+
+/* FORM FIELDS */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:12px;color:var(--text);padding:12px 16px;
+  font-family:'DM Sans',sans-serif;font-size:.92rem;outline:none;
+  transition:border-color .25s,background .3s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--aqua);background:var(--card)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field textarea{resize:vertical;min-height:130px;line-height:1.6}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+.char-count{text-align:right;font-size:.72rem;color:var(--muted);margin-top:5px}
+
+/* TERMS CHECK */
+.terms-check{display:flex;align-items:flex-start;gap:10px;margin-bottom:24px}
+.terms-check input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--aqua);cursor:pointer}
+.terms-check label{font-size:.82rem;color:var(--muted);line-height:1.55;cursor:pointer}
+.terms-check a{color:var(--aqua);text-decoration:none;font-weight:600}
+
+/* SUBMIT */
+.btn-submit{width:100%;background:var(--aqua);color:#fff;border:none;border-radius:14px;padding:15px;font-family:'DM Sans',sans-serif;font-size:.97rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 6px 20px var(--aqua-glow)}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 28px var(--aqua-glow);opacity:.92}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:48px 24px}
+.success-screen.show{display:block}
+.success-fish{width:70px;height:40px;margin:0 auto 20px}
+.success-fish path{fill:none;stroke:var(--aqua);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.success-fish circle{fill:var(--aqua)}
+.success-screen h3{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;margin-bottom:12px}
+.success-screen p{color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:28px}
+.success-screen a{display:inline-block;background:var(--aqua);color:#fff;padding:12px 32px;border-radius:32px;font-weight:700;text-decoration:none}
+
+/* ERROR MSG */
+.error-msg{background:rgba(204,51,51,0.1);border:1px solid rgba(204,51,51,0.3);color:var(--coral);padding:10px 14px;border-radius:10px;font-size:.83rem;margin-bottom:16px;display:none}
+.error-msg.show{display:block}
+
+footer{border-top:1px solid var(--border);padding:28px 40px;text-align:center;color:var(--muted);font-size:.78rem;background:var(--bg);transition:background .3s}
+footer a{color:var(--aqua);text-decoration:none;margin:0 8px}
+
+@media(max-width:768px){
+  nav{padding:14px 16px}
+  .page-wrap{padding:90px 16px 60px}
+  .contact-grid{grid-template-columns:1fr}
+  .subject-grid{grid-template-columns:1fr}
+  .field-row{grid-template-columns:1fr}
+}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="fizu-logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-12 50 50)">
+          <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="68" cy="45" r="5" fill="white"/>
+        </g>
+      </svg>
+    </div>
+    <span class="fizu-brand">FIZU</span>
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="btn-home">← Voltar ao site</a>
+    <button class="dark-toggle" onclick="toggleDark()"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <a href="login.html" class="btn-entrar">Entrar</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="hero">
+    <h1>Como podemos <em>ajudar?</em></h1>
+    <p>Escolha o assunto da sua mensagem e nos conte o que está acontecendo. Nossa equipe responde com atenção.</p>
+  </div>
+
+  <div class="contact-grid">
+
+    <!-- LEFT -->
+    <div class="contact-info">
+      <div class="info-card">
+        <div class="info-icon">🐟</div>
+        <div class="info-title">SAC Geral</div>
+        <div class="info-desc">Dúvidas sobre a plataforma, problemas técnicos, sugestões e elogios. Estamos aqui para ajudar.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🔒</div>
+        <div class="info-title">Privacidade & LGPD</div>
+        <div class="info-desc">Solicitações de acesso, correção, exclusão ou portabilidade dos seus dados pessoais.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🚨</div>
+        <div class="info-title">Denúncias urgentes</div>
+        <div class="info-desc">Conteúdo impróprio, abuso, violência ou ameaças. Tratamos com prioridade máxima.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⚖️</div>
+        <div class="info-title">Solicitação de remoção</div>
+        <div class="info-desc">Pedidos de remoção de conteúdo conforme as exceções previstas nos Termos de Uso.</div>
+      </div>
+      <div class="response-time">
+        <strong>⏱️ Tempo de resposta</strong>
+        Respondemos em até 5 dias úteis para assuntos gerais. Denúncias urgentes têm prioridade e são tratadas em até 24 horas.
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-card">
+
+      <div id="formContent">
+        <div class="form-title">Envie sua mensagem</div>
+        <div class="form-sub">Selecione o assunto e preencha os campos abaixo. Quanto mais detalhes, mais rápido conseguimos ajudar.</div>
+
+        <div class="error-msg" id="errorMsg">Por favor, preencha todos os campos obrigatórios.</div>
+
+        <!-- SUBJECT -->
+        <span class="subject-label">Selecione o assunto *</span>
+        <div class="subject-grid" id="subjectGrid">
+          <div class="subject-opt" onclick="selectSubject(this,'sac')">
+            <span class="s-icon">💬</span>
+            <div>
+              <div class="s-text">SAC Geral</div>
+              <div class="s-desc">Dúvidas e suporte</div>
+            </div>
+          </div>
+          <div class="subject-opt" onclick="selectSubject(this,'privacidade')">
+            <span class="s-icon">🔒</span>
+            <div>
+              <div class="s-text">Privacidade & LGPD</div>
+              <div class="s-desc">Dados pessoais e direitos</div>
+            </div>
+          </div>
+          <div class="subject-opt" onclick="selectSubject(this,'denuncia')">
+            <span class="s-icon">🚨</span>
+            <div>
+              <div class="s-text">Denúncia urgente</div>
+              <div class="s-desc">Conteúdo impróprio ou abuso</div>
+            </div>
+          </div>
+          <div class="subject-opt" onclick="selectSubject(this,'remocao')">
+            <span class="s-icon">🗑️</span>
+            <div>
+              <div class="s-text">Solicitação de remoção</div>
+              <div class="s-desc">Remover conteúdo da plataforma</div>
+            </div>
+          </div>
+          <div class="subject-opt" onclick="selectSubject(this,'direitos-autorais')">
+            <span class="s-icon">©️</span>
+            <div>
+              <div class="s-text">Direitos Autorais</div>
+              <div class="s-desc">Violação de propriedade intelectual</div>
+            </div>
+          </div>
+          <div class="subject-opt" onclick="selectSubject(this,'imprensa')">
+            <span class="s-icon">📰</span>
+            <div>
+              <div class="s-text">Imprensa & Parcerias</div>
+              <div class="s-desc">Mídia, negócios e colaborações</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FIELDS -->
+        <div class="field-row">
+          <div class="field">
+            <label>Nome completo *</label>
+            <input type="text" id="nome" placeholder="Seu nome">
+          </div>
+          <div class="field">
+            <label>E-mail *</label>
+            <input type="email" id="email" placeholder="seu@email.com">
+          </div>
+        </div>
+
+        <div class="field" id="urlField" style="display:none">
+          <label>URL do conteúdo <span style="font-weight:400;text-transform:none">(se aplicável)</span></label>
+          <input type="url" id="urlConteudo" placeholder="https://fizu.com.br/post/...">
+        </div>
+
+        <div class="field">
+          <label>Mensagem *</label>
+          <textarea id="mensagem" placeholder="Descreva em detalhes o que está acontecendo ou o que precisa..." maxlength="2000" oninput="document.getElementById('charCount').textContent=this.value.length+'/2000'"></textarea>
+          <div class="char-count" id="charCount">0/2000</div>
+        </div>
+
+        <div class="terms-check">
+          <input type="checkbox" id="lgpdCheck">
+          <label for="lgpdCheck">Concordo que o Fizu armazene meus dados para responder a esta mensagem, conforme a <a href="privacidade.html">Política de Privacidade</a>.</label>
+        </div>
+
+        <button class="btn-submit" id="submitBtn" onclick="submitForm()">Enviar mensagem 🐟</button>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-screen" id="successScreen">
+        <svg class="success-fish" viewBox="0 0 70 42" fill="none">
+          <path d="M9 21C9 21 2 12 2 5C9 7 16 12 21 17C26 9 35 5 47 5C60 5 68 13 68 21C68 29 60 37 47 37C35 37 26 33 21 25C16 31 9 37 2 37C2 29 9 21 9 21Z"/>
+          <circle cx="55" cy="15" r="2.8"/>
+        </svg>
+        <h3>Mensagem enviada! 🎉</h3>
+        <p id="successMsg">Recebemos sua mensagem e responderemos em breve.</p>
+        <a href="index.html">Voltar ao Fizu</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Fizu · Fundado por <strong>Rodolfo Maggessi</strong> · Co-desenvolvido com <strong>Claude · Anthropic</strong></p>
+  <p style="margin-top:6px">
+    <a href="index.html">Início</a>
+    <a href="termos.html">Termos de Uso</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="contato.html">Contato</a>
+  </p>
+</footer>
+
+<script>
+let selectedSubject = '';
+
+function selectSubject(el, value) {
+  document.querySelectorAll('.subject-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSubject = value;
+  // Mostra campo de URL para denúncia e remoção
+  const showUrl = ['denuncia','remocao','direitos-autorais'].includes(value);
+  document.getElementById('urlField').style.display = showUrl ? 'block' : 'none';
+}
+
+async function submitForm() {
+  const nome = document.getElementById('nome').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const msg = document.getElementById('mensagem').value.trim();
+  const lgpd = document.getElementById('lgpdCheck').checked;
+  const errEl = document.getElementById('errorMsg');
+
+  if (!selectedSubject) {
+    errEl.textContent = 'Por favor, selecione um assunto.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!nome || !email || !msg) {
+    errEl.textContent = 'Por favor, preencha todos os campos obrigatórios.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!email.includes('@')) {
+    errEl.textContent = 'Por favor, insira um e-mail válido.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!lgpd) {
+    errEl.textContent = 'É necessário aceitar a Política de Privacidade para enviar.';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const sb = supabase.createClient(
+      'https://tnwildfshzrvktrlfjhz.supabase.co',
+      'sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN'
+    );
+
+    const { error } = await sb.from('contatos').insert([{
+      nome: nome,
+      email: email,
+      assunto: document.querySelector('.subject-opt.selected .s-text').textContent,
+      mensagem: msg,
+      url_conteudo: document.getElementById('urlConteudo')?.value?.trim() || null
+    }]);
+
+    btn.disabled = false;
+    btn.textContent = 'Enviar mensagem 🐟';
+
+    if(error) {
+      errEl.textContent = 'Erro ao enviar. Tente novamente em instantes.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    document.getElementById('formContent').style.display = 'none';
+    const success = document.getElementById('successScreen');
+    const msgs = {
+      'sac': 'Responderemos em até 5 dias úteis.',
+      'privacidade': 'Responderemos em até 15 dias úteis conforme a LGPD.',
+      'denuncia': 'Denúncias urgentes são tratadas em até 24 horas.',
+      'remocao': 'Analisaremos sua solicitação em até 30 dias úteis.',
+      'direitos-autorais': 'Responderemos em até 10 dias úteis.',
+      'imprensa': 'Nossa equipe entrará em contato em breve.',
+    };
+    document.getElementById('successMsg').textContent =
+      'Recebemos sua mensagem sobre "' + document.querySelector('.subject-opt.selected .s-text').textContent + '". ' + (msgs[selectedSubject] || 'Responderemos em breve.');
+    success.classList.add('show');
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Enviar mensagem 🐟';
+    errEl.textContent = 'Erro inesperado. Tente novamente.';
+    errEl.classList.add('show');
+  }
+}
+
+function toggleDark() {
+  const d = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fizu-theme', d ? 'dark' : 'light');
+}
+(function() {
+  const s = localStorage.getItem('fizu-theme');
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (s ? s === 'dark' : sys) document.documentElement.classList.add('dark');
+})();
+
+// Pré-seleciona assunto se vier por URL ?assunto=privacidade
+const params = new URLSearchParams(window.location.search);
+const preAssunto = params.get('assunto');
+if (preAssunto) {
+  const map = { privacidade: 1, denuncia: 2, remocao: 3, autorais: 4, imprensa: 5 };
+  const opts = document.querySelectorAll('.subject-opt');
+  const idx = map[preAssunto];
+  if (idx !== undefined && opts[idx]) selectSubject(opts[idx], preAssunto);
+}
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>

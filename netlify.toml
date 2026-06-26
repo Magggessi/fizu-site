@@ -1,0 +1,54 @@
+[[redirects]]
+  from = "/entrar"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/cadastro"
+  to = "/onboarding.html"
+  status = 200
+
+[[redirects]]
+  from = "/feed"
+  to = "/feed.html"
+  status = 200
+
+# Post individual — browsers normais (bots são interceptados pela edge function)
+[[redirects]]
+  from = "/post/:id"
+  to = "/post.html?id=:id"
+  status = 200
+
+# Perfil público por UUID
+[[redirects]]
+  from = "/u/:id"
+  to = "/u.html?id=:id"
+  status = 200
+
+# Perfil público por nome/slug (ex: /u/Rodolfo)
+[[redirects]]
+  from = "/perfil/:nome"
+  to = "/u.html?nome=:nome"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/favicon.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[redirects]]
+  from = "/analytics"
+  to = "/analytics.html"
+  status = 200

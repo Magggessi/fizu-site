@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="theme-color" content="#0055a8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="description" content="Fizu — A rede social onde nada se apaga. Postagens, mensagens e vídeos permanentes. Transparência real em relacionamentos, amizades e negócios.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fizu">
+  <meta property="og:title" content="Fizu — O que você diz, permanece.">
+  <meta property="og:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece. E isso muda tudo.">
+  <meta property="og:image" content="https://fizu.com.br/og-image.png">
+  <meta property="og:url" content="https://fizu.com.br">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fizu — O que você diz, permanece.">
+  <meta name="twitter:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece.">
+  <meta name="twitter:image" content="https://fizu.com.br/og-image.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Fizu">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Termos de Uso e Política de Privacidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f7fc;--bg2:#eaf0fb;--text:#0d1628;--text2:#2a4a72;
+  --aqua:#0055a8;--aqua-dim:rgba(0,85,168,0.06);--gold:#b87800;
+  --muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;
+  --nav-bg:rgba(244,247,252,0.97);--shadow:0 4px 20px rgba(13,22,40,0.07);
+}
+html.dark{
+  --bg:#080c14;--bg2:#0d1628;--text:#eef4ff;--text2:#c8d8f0;
+  --aqua:#3b9eff;--aqua-dim:rgba(59,158,255,0.08);--gold:#f5c842;
+  --muted:#6b8aad;--border:rgba(59,158,255,0.15);--card:rgba(13,22,40,0.9);
+  --nav-bg:rgba(8,12,20,0.97);--shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;transition:background .3s,color .3s;line-height:1.7}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo svg{width:32px;height:19px}
+.logo path{fill:none;stroke:var(--aqua);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo circle{fill:var(--aqua)}
+.brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;color:var(--text)}
+.brand em{color:var(--aqua);font-style:normal}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-home{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s}
+.btn-home:hover{color:var(--aqua)}
+.btn-entrar{background:var(--aqua);color:#fff;padding:8px 20px;border-radius:24px;font-size:.85rem;font-weight:700;text-decoration:none;transition:opacity .2s}
+.btn-entrar:hover{opacity:.85}
+.dark-toggle{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:6px 12px;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .22s}
+.dark-toggle:hover{border-color:var(--aqua);color:var(--aqua)}
+.icon-moon{display:inline}.icon-sun{display:none}
+html.dark .icon-moon{display:none}html.dark .icon-sun{display:inline}
+
+/* LAYOUT */
+.page-wrap{max-width:860px;margin:0 auto;padding:100px 24px 80px}
+
+/* HERO */
+.terms-hero{text-align:center;padding:48px 0 40px;border-bottom:2px solid var(--aqua);margin-bottom:48px}
+.terms-hero h1{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:var(--text);margin-bottom:8px}
+.terms-hero h1 em{color:var(--aqua);font-style:italic}
+.terms-hero .sub{color:var(--muted);font-size:.9rem;margin-top:12px}
+.terms-hero .founder{margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:var(--aqua-dim);border:1px solid var(--border);padding:8px 18px;border-radius:24px;font-size:.83rem;color:var(--aqua);font-weight:600}
+
+/* TOC */
+.toc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:48px;box-shadow:var(--shadow)}
+.toc-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.toc-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.toc-list a{color:var(--muted);text-decoration:none;font-size:.84rem;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:6px}
+.toc-list a:hover{color:var(--aqua)}
+.toc-list a::before{content:'→';color:var(--aqua);font-size:.75rem}
+
+/* SECTIONS */
+.terms-section{margin-bottom:52px;scroll-margin-top:80px}
+.terms-section h2{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:var(--aqua);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.terms-section h2 .sec-num{background:var(--aqua);color:#fff;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0}
+.terms-section h3{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin:24px 0 10px}
+
+/* TEXT */
+.terms-section p{color:var(--text2);font-size:.95rem;line-height:1.82;margin-bottom:14px;text-align:justify}
+.terms-section ul{list-style:none;margin:10px 0 16px;padding:0}
+.terms-section ul li{color:var(--text2);font-size:.93rem;line-height:1.72;padding:6px 0 6px 24px;position:relative;border-bottom:1px solid var(--border)}
+.terms-section ul li:last-child{border:none}
+.terms-section ul li::before{content:'🐟';position:absolute;left:0;top:7px;font-size:.75rem}
+
+/* HIGHLIGHT BOXES */
+.highlight-box{background:var(--aqua-dim);border-left:3px solid var(--aqua);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0;font-size:.9rem;color:var(--text2);line-height:1.7}
+.highlight-box strong{color:var(--aqua);display:block;margin-bottom:4px;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase}
+.warning-box{background:rgba(184,120,0,0.08);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0;font-size:.9rem;color:var(--text2);line-height:1.7}
+html.dark .warning-box{background:rgba(245,200,66,0.06)}
+.warning-box strong{color:var(--gold);display:block;margin-bottom:4px;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase}
+
+/* CONTACTS TABLE */
+.contacts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.contact-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:border-color .2s}
+.contact-item:hover{border-color:var(--aqua)}
+.contact-label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+.contact-email{color:var(--aqua);font-size:.88rem;font-weight:600;word-break:break-all}
+
+/* ACCEPTANCE */
+.acceptance{background:linear-gradient(135deg,var(--aqua-dim),rgba(184,120,0,0.05));border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;margin-top:48px}
+.acceptance h3{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;margin-bottom:12px;color:var(--text)}
+.acceptance p{color:var(--muted);font-size:.9rem;max-width:480px;margin:0 auto 24px;text-align:center}
+.acceptance a{display:inline-block;background:var(--aqua);color:#fff;padding:13px 36px;border-radius:32px;font-weight:700;text-decoration:none;font-size:.95rem;transition:opacity .2s}
+.acceptance a:hover{opacity:.85}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:28px 40px;text-align:center;color:var(--muted);font-size:.78rem;background:var(--bg);transition:background .3s}
+footer a{color:var(--aqua);text-decoration:none}
+
+/* BACK TO TOP */
+.back-top{position:fixed;bottom:24px;right:24px;background:var(--aqua);color:#fff;width:44px;height:44px;border-radius:50%;border:none;font-size:1.1rem;cursor:pointer;box-shadow:0 4px 16px var(--aqua);transition:all .3s;display:none;align-items:center;justify-content:center}
+.back-top.show{display:flex}
+.back-top:hover{transform:translateY(-3px)}
+
+@media(max-width:640px){
+  nav{padding:14px 16px}
+  .page-wrap{padding:90px 16px 60px}
+  .toc-list{grid-template-columns:1fr}
+  .contacts-grid{grid-template-columns:1fr}
+}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="fizu-logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-12 50 50)">
+          <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="68" cy="45" r="5" fill="white"/>
+        </g>
+      </svg>
+    </div>
+    <span class="fizu-brand">FIZU</span>
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="btn-home">← Voltar ao site</a>
+    <button class="dark-toggle" onclick="toggleDark()"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <a href="login.html" class="btn-entrar">Entrar</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <div class="terms-hero">
+    <h1>Termos de Uso e<br><em>Política de Privacidade</em></h1>
+    <div class="sub">Versão em vigor a partir de: 03 de maio de 2026 · Última atualização: 03 de maio de 2026</div>
+    <div class="founder">🐟 Fundador: Rodolfo Maggessi · fizu.com.br</div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">📋 Índice</div>
+    <ul class="toc-list">
+      <li><a href="#apresentacao">Apresentação</a></li>
+      <li><a href="#definicoes">1. Definições</a></li>
+      <li><a href="#aceitacao">2. Aceitação dos Termos</a></li>
+      <li><a href="#cadastro">3. Cadastro e Conta</a></li>
+      <li><a href="#permanencia">4. Permanência Digital</a></li>
+      <li><a href="#conteudo">5. Conteúdo do Usuário</a></li>
+      <li><a href="#circulos">6. Círculos e Conversas</a></li>
+      <li><a href="#privacidade">7. Privacidade e LGPD</a></li>
+      <li><a href="#propriedade">8. Propriedade Intelectual</a></li>
+      <li><a href="#responsabilidade">9. Limitação de Responsabilidade</a></li>
+      <li><a href="#encerramento">10. Encerramento de Conta</a></li>
+      <li><a href="#geral">11. Disposições Gerais</a></li>
+      <li><a href="#contatos">12. Canais de Atendimento</a></li>
+    </ul>
+  </div>
+
+  <!-- APRESENTACAO -->
+  <div class="terms-section" id="apresentacao">
+    <h2><span class="sec-num">🐟</span> Apresentação</h2>
+    <p>Bem-vindo ao Fizu, plataforma de rede social fundada e operada por <strong>Rodolfo Maggessi</strong> ("Fundador"), com sede no Brasil ("Fizu", "nós", "nossa").</p>
+    <div class="highlight-box">
+      <strong>⚠️ Princípio fundamental</strong>
+      O Fizu é uma rede social baseada na PERMANÊNCIA DIGITAL. Ao utilizar nossa plataforma, você reconhece e aceita que postagens, mensagens, comentários e conteúdos publicados são, por natureza e por design da plataforma, PERMANENTES e não podem ser excluídos unilateralmente pelo usuário.
+    </div>
+    <p>A leitura completa e atenta deste documento é obrigatória antes do uso da plataforma. Ao clicar em "Criar minha conta" ou "Concordo com os Termos", você declara ter lido, compreendido e aceito integralmente todas as disposições aqui contidas.</p>
+  </div>
+
+  <!-- 1. DEFINIÇÕES -->
+  <div class="terms-section" id="definicoes">
+    <h2><span class="sec-num">1</span> Definições</h2>
+    <p>Para os fins destes Termos de Uso, os seguintes termos terão os significados a eles atribuídos:</p>
+    <ul>
+      <li><strong>"Plataforma":</strong> o conjunto de serviços, aplicativos, sítios eletrônicos e funcionalidades oferecidos pelo Fizu, acessíveis via fizu.com.br;</li>
+      <li><strong>"Usuário":</strong> qualquer pessoa física ou jurídica que acesse, cadastre-se ou utilize a Plataforma;</li>
+      <li><strong>"Conteúdo":</strong> toda e qualquer informação, texto, imagem, vídeo, áudio, comentário, mensagem, postagem ou dado inserido, publicado ou compartilhado na Plataforma pelo Usuário;</li>
+      <li><strong>"Círculo":</strong> grupo privado criado pelo Usuário para interação restrita com membros previamente selecionados;</li>
+      <li><strong>"Complemento":</strong> recurso que permite ao Usuário adicionar contexto adicional abaixo de um conteúdo publicado, sem substituir ou excluir o conteúdo original;</li>
+      <li><strong>"SereIA":</strong> assistente de inteligência artificial integrada à Plataforma, cujo objetivo é auxiliar o Usuário a publicar conteúdo de forma consciente e reflexiva;</li>
+      <li><strong>"Permanência Digital":</strong> princípio fundamental da plataforma pelo qual os conteúdos publicados são preservados de forma definitiva, salvo exceções expressamente previstas nestes Termos;</li>
+      <li><strong>"LGPD":</strong> Lei Geral de Proteção de Dados Pessoais (Lei n. 13.709/2018);</li>
+      <li><strong>"Marco Civil":</strong> Lei n. 12.965/2014 — Marco Civil da Internet;</li>
+      <li><strong>"CDC":</strong> Código de Defesa do Consumidor (Lei n. 8.078/1990).</li>
+    </ul>
+  </div>
+
+  <!-- 2. ACEITAÇÃO -->
+  <div class="terms-section" id="aceitacao">
+    <h2><span class="sec-num">2</span> Aceitação dos Termos</h2>
+    <h3>2.1. Forma de Aceitação</h3>
+    <p>A aceitação destes Termos se dá de forma expressa, mediante ato voluntário do Usuário ao clicar no botão de concordância durante o processo de cadastro. Tal ato constitui declaração de vontade válida e vinculante nos termos do artigo 107 do Código Civil Brasileiro (Lei n. 10.406/2002).</p>
+    <h3>2.2. Capacidade Civil</h3>
+    <p>O uso da Plataforma é permitido exclusivamente a pessoas com capacidade civil plena, nos termos dos artigos 3 e 4 do Código Civil Brasileiro. É vedado o cadastro de menores de 18 (dezoito) anos sem o consentimento expresso dos pais ou responsáveis legais, conforme exige o artigo 14, parágrafo 1, da LGPD e o Estatuto da Criança e do Adolescente (Lei n. 8.069/1990).</p>
+    <h3>2.3. Atualizações</h3>
+    <p>O Fizu reserva-se o direito de modificar estes Termos a qualquer tempo, mediante notificação prévia aos Usuários com antecedência mínima de 30 (trinta) dias, por meio de aviso na Plataforma e/ou por e-mail cadastrado. A continuidade de uso após o prazo notificado implica aceitação tácita das alterações.</p>
+  </div>
+
+  <!-- 3. CADASTRO -->
+  <div class="terms-section" id="cadastro">
+    <h2><span class="sec-num">3</span> Cadastro e Conta de Usuário</h2>
+    <h3>3.1. Dados de Cadastro</h3>
+    <p>O Usuário compromete-se a fornecer informações verdadeiras, precisas, atuais e completas no momento do cadastro, respondendo civil e criminalmente pela veracidade das informações prestadas, nos termos do artigo 299 do Código Penal Brasileiro.</p>
+    <h3>3.2. Responsabilidade pela Conta</h3>
+    <p>O Usuário é exclusivamente responsável por manter a confidencialidade de suas credenciais de acesso (login e senha) e por todas as atividades realizadas em sua conta. O Fizu não se responsabiliza por acessos não autorizados decorrentes de negligência do Usuário na guarda de suas credenciais.</p>
+    <h3>3.3. Perfil do Usuário</h3>
+    <p>O perfil do Usuário, incluindo foto, nome de exibição e biografia, pode ser editado a qualquer tempo. O histórico de todas as alterações de perfil será mantido e estará acessível ao próprio Usuário mediante solicitação, como forma de preservar a transparência sobre a evolução da identidade digital do Usuário na Plataforma.</p>
+    <h3>3.4. Vedações no Cadastro</h3>
+    <p>É expressamente vedado ao Usuário:</p>
+    <ul>
+      <li>Criar contas em nome de terceiros sem autorização legal;</li>
+      <li>Utilizar identidades falsas, fictícias ou de terceiros;</li>
+      <li>Criar múltiplas contas para burlar restrições ou banimentos;</li>
+      <li>Utilizar bots, scripts ou meios automatizados para criar contas.</li>
+    </ul>
+  </div>
+
+  <!-- 4. PERMANÊNCIA -->
+  <div class="terms-section" id="permanencia">
+    <h2><span class="sec-num">4</span> Princípio da Permanência Digital</h2>
+    <h3>4.1. Natureza da Permanência</h3>
+    <div class="highlight-box">
+      <strong>🔒 Princípio central do Fizu</strong>
+      TODO o conteúdo publicado na Plataforma — incluindo postagens, mensagens, comentários, vídeos e áudios — é preservado de forma definitiva e inalterável, constituindo característica essencial e indissociável do serviço prestado.
+    </div>
+    <p>Ao aceitar estes Termos, o Usuário declara expressamente ter ciência e concordar com o caráter permanente do conteúdo por ele publicado, não cabendo alegação de desconhecimento posterior.</p>
+    <h3>4.2. Botão de Complemento</h3>
+    <p>O Fizu disponibiliza o recurso "Complemento" como único mecanismo para adicionar contexto adicional a um conteúdo já publicado. O Complemento é exibido abaixo do conteúdo original, de forma claramente identificada, sem substituir, ocultar ou excluir o conteúdo original.</p>
+    <h3>4.3. Exceções à Permanência</h3>
+    <p>A remoção de conteúdo será possível EXCLUSIVAMENTE nas seguintes hipóteses, mediante análise criteriosa e imparcial pelo Fizu:</p>
+    <ul>
+      <li>Comprovação inequívoca de que o conteúdo foi publicado por terceiro não autorizado, mediante usurpação de identidade ou acesso indevido à conta;</li>
+      <li>Determinação judicial transitada em julgado emanada de autoridade competente brasileira;</li>
+      <li>Conteúdo que viole inequivocamente disposições legais de ordem pública, incluindo material de abuso sexual infantil (CSAM), nos termos da Lei n. 11.829/2008;</li>
+      <li>Conteúdo que represente ameaça real e iminente à integridade física de pessoa determinada, devidamente comprovada.</li>
+    </ul>
+    <h3>4.4. Processo de Solicitação de Remoção</h3>
+    <p>Solicitações de remoção de conteúdo devem ser encaminhadas para <strong>privacidade@fizu.com.br</strong>, acompanhadas de documentação comprobatória. O Fizu deliberará no prazo de 30 (trinta) dias úteis, podendo prorrogar por igual período mediante justificativa. A decisão será fundamentada e comunicada ao solicitante.</p>
+  </div>
+
+  <!-- 5. CONTEÚDO -->
+  <div class="terms-section" id="conteudo">
+    <h2><span class="sec-num">5</span> Conteúdo do Usuário</h2>
+    <h3>5.1. Responsabilidade pelo Conteúdo</h3>
+    <p>O Usuário é o único e exclusivo responsável por todo o conteúdo que publicar na Plataforma, respondendo civil e criminalmente perante terceiros e perante o Fizu por quaisquer danos causados, nos termos dos artigos 186, 187 e 927 do Código Civil Brasileiro e do artigo 19 do Marco Civil da Internet.</p>
+    <h3>5.2. Licença de Uso</h3>
+    <p>Ao publicar conteúdo na Plataforma, o Usuário concede ao Fizu licença não exclusiva, mundial, gratuita, irrevogável e sublicenciável para armazenar, reproduzir, exibir, distribuir e adaptar o conteúdo, exclusivamente para fins de operação, manutenção e melhoria da Plataforma.</p>
+    <h3>5.3. Conteúdo Expressamente Proibido</h3>
+    <div class="warning-box">
+      <strong>⚠️ Conteúdos proibidos</strong>
+      A publicação dos conteúdos abaixo resulta em remoção imediata e banimento permanente da plataforma, podendo haver comunicação às autoridades competentes.
+    </div>
+    <ul>
+      <li>Material de abuso sexual infantil (CSAM) ou pornografia envolvendo menores de idade, nos termos da Lei n. 11.829/2008 e do ECA;</li>
+      <li>Incitação ou apologia a crimes, atos de terrorismo, violência ou discriminação, conforme a Lei n. 7.716/1989 e Lei n. 13.260/2016;</li>
+      <li>Discurso de ódio baseado em raça, cor, etnia, religião, origem, sexo, orientação sexual, idade ou deficiência;</li>
+      <li>Pornografia ou conteúdo sexualmente explícito não autorizado, incluindo imagens íntimas sem consentimento (Lei n. 13.718/2018);</li>
+      <li>Violação de direitos autorais, marcas registradas ou outros direitos de propriedade intelectual (Lei n. 9.610/1998);</li>
+      <li>Calúnia, injúria ou difamação, nos termos dos artigos 138, 139 e 140 do Código Penal Brasileiro;</li>
+      <li>Informações falsas que possam causar danos a terceiros ou configurar estelionato;</li>
+      <li>Esquemas fraudulentos, pirâmides financeiras ou práticas ilícitas;</li>
+      <li>Malware, vírus, links phishing ou qualquer código malicioso;</li>
+      <li>Violação da privacidade de terceiros, incluindo divulgação não autorizada de dados pessoais sensíveis (LGPD);</li>
+      <li>Spam, conteúdo duplicado em massa ou publicidade não solicitada;</li>
+      <li>Palavrões, linguagem obscena ou insultuosa, conforme critérios estabelecidos pelos filtros automáticos da Plataforma.</li>
+    </ul>
+  </div>
+
+  <!-- 6. CÍRCULOS -->
+  <div class="terms-section" id="circulos">
+    <h2><span class="sec-num">6</span> Círculos e Conversas Privadas</h2>
+    <h3>6.1. Privacidade dos Círculos</h3>
+    <p>As conversas realizadas no âmbito dos Círculos são privadas por padrão, acessíveis apenas aos membros do respectivo Círculo. O Fizu compromete-se a não divulgar o conteúdo de Círculos privados a terceiros, salvo nas hipóteses previstas no item 4.3 e nas hipóteses legais de requisição por autoridade judicial competente.</p>
+    <h3>6.2. Conversas Tornadas Públicas</h3>
+    <p>O titular do Círculo poderá, a seu exclusivo critério e mediante aprovação dos demais membros, tornar uma conversa acessível a terceiros específicos, gerando um link de acesso temporário. Tal funcionalidade é disponibilizada para fins de transparência e não altera o caráter permanente das mensagens.</p>
+    <h3>6.3. Permanência nas Conversas Privadas</h3>
+    <div class="highlight-box">
+      <strong>🔒 Atenção</strong>
+      O princípio da Permanência Digital aplica-se integralmente às mensagens trocadas em Círculos privados. Os membros do Círculo não podem excluir mensagens enviadas, sendo tal característica elemento essencial do serviço prestado.
+    </div>
+    <h3>6.4. Responsabilidade nas Conversas</h3>
+    <p>Cada Usuário é responsável pelas mensagens que enviar em Círculos, respondendo individualmente por seu conteúdo perante os demais membros e perante a lei.</p>
+  </div>
+
+  <!-- 7. PRIVACIDADE -->
+  <div class="terms-section" id="privacidade">
+    <h2><span class="sec-num">7</span> Política de Privacidade e Proteção de Dados</h2>
+    <h3>7.1. Base Legal para Tratamento</h3>
+    <p>O tratamento de dados pessoais pelo Fizu é realizado com fundamento nas seguintes bases legais previstas no artigo 7 da LGPD:</p>
+    <ul>
+      <li>Consentimento do titular (art. 7, I): para tratamento de dados de cadastro e preferências;</li>
+      <li>Execução de contrato (art. 7, V): para prestação dos serviços contratados;</li>
+      <li>Cumprimento de obrigação legal (art. 7, II): quando exigido por lei ou ordem judicial;</li>
+      <li>Legítimo interesse (art. 7, IX): para melhoria dos serviços e prevenção de fraudes.</li>
+    </ul>
+    <h3>7.2. Dados Coletados</h3>
+    <ul>
+      <li>Dados de cadastro: nome, e-mail, senha (criptografada), data de nascimento, telefone;</li>
+      <li>Dados de perfil: foto, biografia, interesses, objetivos de uso;</li>
+      <li>Dados de conteúdo: postagens, mensagens, vídeos, imagens publicadas;</li>
+      <li>Dados de uso: logs de acesso, endereço IP, dispositivo, navegador, localização aproximada;</li>
+      <li>Dados de interação: curtidas, comentários, compartilhamentos, buscas.</li>
+    </ul>
+    <h3>7.3. Direitos do Titular</h3>
+    <p>Nos termos do artigo 18 da LGPD, o Usuário titular de dados pessoais tem direito a:</p>
+    <ul>
+      <li>Confirmação da existência de tratamento e acesso aos dados;</li>
+      <li>Correção de dados incompletos, inexatos ou desatualizados;</li>
+      <li>Anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+      <li>Portabilidade dos dados, mediante requisição formal;</li>
+      <li>Informação sobre compartilhamento com terceiros;</li>
+      <li>Revogação do consentimento.</li>
+    </ul>
+    <h3>7.4. Compartilhamento de Dados</h3>
+    <div class="highlight-box">
+      <strong>✅ Compromisso</strong>
+      O Fizu NÃO vende dados pessoais de Usuários a terceiros. O compartilhamento ocorre exclusivamente com fornecedores essenciais à operação da Plataforma, mediante contrato de processamento de dados, ou por determinação judicial.
+    </div>
+    <h3>7.5. Segurança dos Dados</h3>
+    <p>O Fizu adota medidas técnicas e organizacionais adequadas para proteger os dados pessoais dos Usuários, incluindo: criptografia de dados em trânsito e em repouso, controle de acesso por autenticação, monitoramento contínuo de segurança e política de mínimo privilégio para acesso interno.</p>
+    <h3>7.6. Retenção de Dados</h3>
+    <p>Os dados pessoais serão mantidos pelo prazo necessário ao cumprimento das finalidades descritas e, após o encerramento da conta, pelo prazo mínimo de 6 (seis) anos, em cumprimento às obrigações legais aplicáveis, incluindo o prazo prescricional civil.</p>
+    <h3>7.7. Encarregado de Dados (DPO)</h3>
+    <p>Nos termos do artigo 41 da LGPD, o Fizu designa Encarregado de Proteção de Dados. Contato: <strong>dpo@fizu.com.br</strong></p>
+  </div>
+
+  <!-- 8. PROPRIEDADE INTELECTUAL -->
+  <div class="terms-section" id="propriedade">
+    <h2><span class="sec-num">8</span> Propriedade Intelectual</h2>
+    <h3>8.1. Titularidade do Fizu</h3>
+    <p>Toda a propriedade intelectual relativa à Plataforma, incluindo a marca "Fizu", logotipo, interface, código-fonte, design, arquitetura de sistemas e nome de domínio, é de titularidade exclusiva do Fizu e de seu Fundador Rodolfo Maggessi, protegida pela Lei n. 9.279/1996, Lei n. 9.610/1998 e tratados internacionais aplicáveis.</p>
+    <h3>8.2. Conteúdo do Usuário</h3>
+    <p>O Usuário mantém a titularidade sobre o conteúdo que publica, concedendo ao Fizu a licença descrita no item 5.2. Ao publicar conteúdo de terceiros, o Usuário declara possuir as autorizações necessárias para tal.</p>
+    <h3>8.3. Denúncias de Violação</h3>
+    <p>Denúncias de violação de direitos autorais devem ser encaminhadas a: <strong>dmca@fizu.com.br</strong></p>
+  </div>
+
+  <!-- 9. RESPONSABILIDADE -->
+  <div class="terms-section" id="responsabilidade">
+    <h2><span class="sec-num">9</span> Limitação de Responsabilidade</h2>
+    <h3>9.1. Disponibilidade</h3>
+    <p>O Fizu envidará seus melhores esforços para manter a Plataforma disponível de forma contínua, mas não garante disponibilidade ininterrupta. Interrupções para manutenção serão comunicadas com antecedência sempre que possível.</p>
+    <h3>9.2. Conteúdo de Terceiros</h3>
+    <p>O Fizu não se responsabiliza pelo conteúdo publicado por Usuários, sendo aplicável o regime de responsabilidade civil do provedor de aplicações previsto nos artigos 18 a 21 do Marco Civil da Internet. O Fizu somente será responsabilizado civilmente por danos decorrentes de conteúdo de terceiros se, após ordem judicial específica, não tomar as providências necessárias.</p>
+    <h3>9.3. Danos Indiretos</h3>
+    <p>Na máxima extensão permitida pela legislação aplicável, o Fizu não será responsável por danos indiretos, incidentais, especiais, consequenciais ou punitivos decorrentes do uso ou impossibilidade de uso da Plataforma.</p>
+  </div>
+
+  <!-- 10. ENCERRAMENTO -->
+  <div class="terms-section" id="encerramento">
+    <h2><span class="sec-num">10</span> Encerramento e Suspensão de Conta</h2>
+    <h3>10.1. Por Iniciativa do Usuário</h3>
+    <p>O Usuário pode solicitar o encerramento de sua conta a qualquer tempo, mediante requisição formal a <strong>contato@fizu.com.br</strong>. O encerramento não implicará a exclusão dos conteúdos publicados, que permanecerão na Plataforma conforme o princípio da Permanência Digital, podendo ser anonimizados a critério do Fizu.</p>
+    <h3>10.2. Por Iniciativa do Fizu</h3>
+    <p>O Fizu poderá suspender ou encerrar contas de Usuários que violem estes Termos, mediante notificação prévia sempre que possível. Em casos graves, como publicação de CSAM ou ameaças à integridade física de terceiros, o encerramento será imediato e sem aviso prévio.</p>
+  </div>
+
+  <!-- 11. GERAL -->
+  <div class="terms-section" id="geral">
+    <h2><span class="sec-num">11</span> Disposições Gerais</h2>
+    <h3>11.1. Legislação Aplicável</h3>
+    <p>Estes Termos são regidos pelas leis da República Federativa do Brasil, em especial pelo Código Civil, Código de Defesa do Consumidor, Marco Civil da Internet, LGPD e demais legislações aplicáveis.</p>
+    <h3>11.2. Foro</h3>
+    <p>Para dirimir quaisquer controvérsias decorrentes destes Termos, fica eleito o foro da comarca do Rio de Janeiro/RJ, com exclusão de qualquer outro, por mais privilegiado que seja.</p>
+    <h3>11.3. Resolução de Conflitos</h3>
+    <p>O Fizu incentiva a resolução amigável de conflitos. O Usuário pode contatar o SAC em: <strong>contato@fizu.com.br</strong>. O Fizu também está aberto à resolução de conflitos por meio de mediação ou arbitragem, nos termos da Lei n. 13.140/2015 e Lei n. 9.307/1996.</p>
+    <h3>11.4. Independência das Cláusulas</h3>
+    <p>A invalidade de qualquer cláusula destes Termos não afetará a validade das demais, que continuarão em pleno vigor.</p>
+  </div>
+
+  <!-- 12. CONTATOS -->
+  <div class="terms-section" id="contatos">
+    <h2><span class="sec-num">12</span> Canais de Atendimento</h2>
+    <p>Para dúvidas, solicitações ou denúncias, o Usuário pode contatar o Fizu pelos seguintes canais:</p>
+    <div class="contacts-grid">
+      <div class="contact-item">
+        <div class="contact-label">SAC Geral</div>
+        <div class="contact-email">contato@fizu.com.br</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Privacidade & LGPD</div>
+        <div class="contact-email">privacidade@fizu.com.br</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Encarregado de Dados (DPO)</div>
+        <div class="contact-email">dpo@fizu.com.br</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Direitos Autorais (DMCA)</div>
+        <div class="contact-email">dmca@fizu.com.br</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Denúncias Urgentes</div>
+        <div class="contact-email">denuncia@fizu.com.br</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">Fundador</div>
+        <div class="contact-email">Rodolfo Maggessi · fizu.com.br</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCEPTANCE -->
+  <div class="acceptance">
+    <h3>🐟 Ao usar o Fizu, você concorda</h3>
+    <p>Ao criar sua conta ou utilizar a Plataforma, você confirma que leu, compreendeu e aceita integralmente estes Termos de Uso e Política de Privacidade.</p>
+    <a href="login.html?tab=signup">Criar minha conta →</a>
+  </div>
+
+</div>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<footer>
+  <p>© 2026 Fizu · Fundado por Rodolfo Maggessi · <a href="index.html">fizu.com.br</a> · Versão: 03 de maio de 2026</p>
+</footer>
+
+<script>
+function toggleDark(){
+  const d=document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fizu-theme',d?'dark':'light');
+  const btn=document.querySelector('.dark-toggle');
+  if(btn){btn.querySelector('.icon-moon').style.display=d?'inline':'none';btn.querySelector('.icon-sun').style.display=d?'none':'inline';}
+}
+(function(){
+  const s=localStorage.getItem('fizu-theme');
+  if(s === 'light'){
+    document.documentElement.classList.remove('dark');
+  } else {
+    document.documentElement.classList.add('dark');
+  }
+})();
+
+// Back to top
+window.addEventListener('scroll',()=>{
+  document.getElementById('backTop').classList.toggle('show',window.scrollY>400);
+});
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>

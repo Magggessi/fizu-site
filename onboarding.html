@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="theme-color" content="#0055a8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="description" content="Fizu — A rede social onde nada se apaga. Postagens, mensagens e vídeos permanentes. Transparência real em relacionamentos, amizades e negócios.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fizu">
+  <meta property="og:title" content="Fizu — O que você diz, permanece.">
+  <meta property="og:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece. E isso muda tudo.">
+  <meta property="og:image" content="https://fizu.com.br/og-image.png">
+  <meta property="og:url" content="https://fizu.com.br">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fizu — O que você diz, permanece.">
+  <meta name="twitter:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece.">
+  <meta name="twitter:image" content="https://fizu.com.br/og-image.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Fizu">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Vamos te conhecer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f7fc; --bg2:#eaf0fb; --text:#0d1628; --text2:#2a4a72;
+  --aqua:#0055a8; --aqua-glow:rgba(0,85,168,0.2); --aqua-dim:rgba(0,85,168,0.08);
+  --gold:#b87800; --muted:#5a7090; --border:rgba(0,85,168,0.15);
+  --card:#fff; --shadow:0 4px 20px rgba(13,22,40,0.07);
+  --shadow-lg:0 12px 40px rgba(13,22,40,0.12);
+}
+html.dark{
+  --bg:#080c14; --bg2:#0d1628; --text:#eef4ff; --text2:#c8d8f0;
+  --aqua:#3b9eff; --aqua-glow:rgba(59,158,255,0.3); --aqua-dim:rgba(59,158,255,0.1);
+  --gold:#f5c842; --muted:#6b8aad; --border:rgba(59,158,255,0.15);
+  --card:rgba(13,22,40,0.9); --shadow:0 4px 20px rgba(0,0,0,0.3);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.5);
+}
+
+/* NOVO LOGO PRO */
+.logo-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff,#7C3AED,#FF2E88);flex-shrink:0}
+.logo-icon svg{width:28px;height:28px}
+.logo-icon path{fill:none;stroke:white;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.logo-icon circle{fill:white}
+.brand-text{font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem;letter-spacing:-.01em;color:var(--text,var(--white,#eef4ff))}
+.brand-text em{color:#3b9eff;font-style:normal}
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+
+/* LAYOUT */
+.page{max-width:680px;margin:0 auto;padding:40px 24px 80px}
+
+/* HEADER */
+.ob-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo svg{width:34px;height:20px}
+.logo path{fill:none;stroke:var(--aqua);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo circle{fill:var(--aqua)}
+.brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;color:var(--text)}
+.brand em{color:var(--aqua);font-style:normal}
+.skip-btn{color:var(--muted);font-size:.82rem;text-decoration:none;border:1px solid var(--border);padding:7px 16px;border-radius:20px;transition:all .2s}
+.skip-btn:hover{color:var(--aqua);border-color:var(--aqua)}
+
+/* PROGRESS */
+.progress-bar{background:var(--border);border-radius:8px;height:4px;margin-bottom:40px;overflow:hidden}
+.progress-fill{background:linear-gradient(90deg,var(--aqua),var(--gold));height:100%;border-radius:8px;transition:width .5s ease}
+.step-count{font-size:.75rem;color:var(--muted);font-weight:600;text-align:right;margin-bottom:8px}
+
+/* STEPS */
+.step-panel{display:none;animation:fadeUp .5s ease forwards}
+.step-panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.step-eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--aqua);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.step-eyebrow::before{content:'';width:16px;height:2px;background:var(--aqua);border-radius:2px}
+.step-title{font-family:'Fraunces',serif;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:900;line-height:1.15;margin-bottom:10px;color:var(--text)}
+.step-title em{color:var(--aqua);font-style:italic}
+.step-sub{color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:32px}
+
+/* SEREIA HINT */
+.sereia-hint{background:var(--aqua-dim);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;margin-bottom:28px}
+.sereia-hint-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e8f2ff,#d0eaf5);border:2px solid var(--aqua);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+html.dark .sereia-hint-av{background:linear-gradient(135deg,#0d1628,#1a0a3d)}
+.sereia-hint-av svg{width:22px;height:22px}
+.sereia-hint p{font-size:.85rem;color:var(--text2);line-height:1.6}
+.sereia-hint strong{color:var(--aqua)}
+
+/* OPTION GRID */
+.opt-grid{display:grid;gap:12px}
+.opt-grid.cols-2{grid-template-columns:1fr 1fr}
+.opt-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+
+.opt-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:18px 16px;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;gap:6px;text-align:left;position:relative;box-shadow:var(--shadow)}
+.opt-card:hover{border-color:var(--aqua);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.opt-card.selected{border-color:var(--aqua);background:var(--aqua-dim);box-shadow:0 0 0 3px var(--aqua-glow)}
+.opt-card.selected .check{opacity:1;transform:scale(1)}
+.check{position:absolute;top:12px;right:12px;width:20px;height:20px;background:var(--aqua);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;opacity:0;transform:scale(0.5);transition:all .25s}
+.opt-icon{font-size:1.6rem;margin-bottom:2px}
+.opt-label{font-weight:700;font-size:.9rem;color:var(--text)}
+.opt-desc{font-size:.78rem;color:var(--muted);line-height:1.45}
+
+/* TOGGLE OPTS */
+.toggle-opts{display:flex;flex-wrap:wrap;gap:10px}
+.toggle-opt{background:var(--card);border:1.5px solid var(--border);border-radius:24px;padding:9px 18px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted);transition:all .22s;box-shadow:var(--shadow)}
+.toggle-opt:hover{border-color:var(--aqua);color:var(--aqua)}
+.toggle-opt.sel{border-color:var(--aqua);background:var(--aqua-dim);color:var(--aqua)}
+
+/* IMPORTANCE SLIDER */
+.importance-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.importance-item:last-child{border:none}
+.imp-label{flex:1;font-size:.88rem;font-weight:600;color:var(--text)}
+.imp-label span{display:block;font-size:.75rem;color:var(--muted);font-weight:400;margin-top:2px}
+.imp-stars{display:flex;gap:4px}
+.imp-star{font-size:1.2rem;cursor:pointer;opacity:.3;transition:opacity .15s;user-select:none}
+.imp-star.on{opacity:1}
+
+/* PHOTO UPLOAD */
+.photo-area{display:flex;flex-direction:column;align-items:center;gap:20px;padding:32px;background:var(--card);border:2px dashed var(--border);border-radius:20px;cursor:pointer;transition:all .25s;text-align:center}
+.photo-area:hover{border-color:var(--aqua);background:var(--aqua-dim)}
+.photo-placeholder{width:80px;height:80px;border-radius:50%;background:var(--bg2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem}
+.photo-area p{color:var(--muted);font-size:.88rem}
+.photo-area strong{color:var(--aqua);display:block;margin-top:4px;font-size:.85rem}
+
+/* BIO */
+.bio-field{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:16px;width:100%;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--text);outline:none;resize:none;transition:border-color .25s;min-height:100px;box-shadow:var(--shadow)}
+.bio-field:focus{border-color:var(--aqua)}
+.bio-field::placeholder{color:var(--muted)}
+.char-count{text-align:right;font-size:.75rem;color:var(--muted);margin-top:6px}
+
+/* NAV BTNS */
+.nav-btns{display:flex;gap:12px;margin-top:36px;justify-content:space-between}
+.btn-back{background:none;border:1.5px solid var(--border);color:var(--muted);padding:13px 28px;border-radius:32px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .25s}
+.btn-back:hover{border-color:var(--aqua);color:var(--aqua)}
+.btn-next{background:var(--aqua);color:#fff;border:none;padding:13px 36px;border-radius:32px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 6px 20px var(--aqua-glow);margin-left:auto}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 10px 28px var(--aqua-glow)}
+.btn-next:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* FINAL */
+.final-screen{text-align:center;padding:40px 0}
+
+.final-screen h2{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;margin-bottom:12px}
+.final-screen p{color:var(--muted);line-height:1.7;margin-bottom:32px}
+.final-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:32px}
+.ftag{background:var(--aqua-dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.8rem;color:var(--aqua);font-weight:600}
+
+@media(max-width:600px){
+  .opt-grid.cols-2,.opt-grid.cols-3{grid-template-columns:1fr}
+}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="ob-header">
+    <a href="index.html" class="logo" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+      <div class="fizu-logo-icon">
+        <svg viewBox="0 0 60 36" fill="none" width="26" height="26">
+          <path d="M8 18C8 18 2 10 2 4C8 6 14 10 18 14C22 8 30 4 40 4C52 4 58 11 58 18C58 25 52 32 40 32C30 32 22 28 18 22C14 26 8 30 2 32C2 26 8 18 8 18Z" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="46" cy="13" r="2.8" fill="white"/>
+        </svg>
+      </div>
+      <span class="fizu-brand">FIZU</span>
+    </a>
+    <a href="feed.html" class="skip-btn">Pular →</a>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="step-count" id="stepCount">Passo 1 de 5</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:20%"></div></div>
+
+  <!-- STEP 1: OBJETIVO -->
+  <div class="step-panel active" id="step1">
+    <div class="step-eyebrow">Objetivo</div>
+    <div class="step-title">Para que você vai usar o <em>Fizu?</em></div>
+    <p class="step-sub">Selecione tudo que se aplica. Isso ajuda a organizar seu feed desde o primeiro dia.</p>
+
+    <div class="sereia-hint">
+      <div class="sereia-hint-av">
+        <svg viewBox="0 0 30 30" fill="none">
+          <ellipse cx="15" cy="11" rx="6.5" ry="7.5" stroke="var(--aqua)" stroke-width="1.3"/>
+          <ellipse cx="12.5" cy="10" rx="1" ry="1.3" fill="var(--aqua)" opacity=".9"/>
+          <ellipse cx="17.5" cy="10" rx="1" ry="1.3" fill="var(--aqua)" opacity=".9"/>
+          <path d="M12.5 13.5 Q15 15.5 17.5 13.5" stroke="var(--aqua)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <!-- óculos -->
+          <rect x="10.5" y="8.2" width="4" height="2.8" rx="1.2" fill="none" stroke="var(--aqua)" stroke-width=".9"/>
+          <rect x="15.5" y="8.2" width="4" height="2.8" rx="1.2" fill="none" stroke="var(--aqua)" stroke-width=".9"/>
+          <line x1="14.5" y1="9.6" x2="15.5" y2="9.6" stroke="var(--aqua)" stroke-width=".9"/>
+          <line x1="10.5" y1="9.6" x2="9.2" y2="9" stroke="var(--aqua)" stroke-width=".9" stroke-linecap="round"/>
+          <line x1="19.5" y1="9.6" x2="20.8" y2="9" stroke="var(--aqua)" stroke-width=".9" stroke-linecap="round"/>
+          <path d="M9 18.5 C9 19.5 11 21 15 21 C19 21 21 19.5 21 18.5" stroke="var(--aqua)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <path d="M12 21 C12 24 10 27 8 28.5 C11 27.5 15 26 15 26 C15 26 19 27.5 22 28.5 C20 27 18 24 18 21" stroke="var(--aqua)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M8.5 9 C7 6 8 2 11 1.5" stroke="#a78bfa" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+          <path d="M21.5 9 C23 6 22 2 19 1.5" stroke="#a78bfa" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <p>Oi! Sou a <strong>SereIA</strong>, sua assistente no Fizu. Essas perguntas levam menos de 2 minutos e fazem toda a diferença no que você vai ver no seu feed. Vamos? 🐟</p>
+    </div>
+
+    <div class="opt-grid cols-2" id="objetivos">
+      <div class="opt-card" onclick="toggleOpt(this,'obj')">
+        <div class="check">✓</div>
+        <div class="opt-icon">💍</div>
+        <div class="opt-label">Relacionamento</div>
+        <div class="opt-desc">Fortalecer meu relacionamento com transparência e confiança real</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'obj')">
+        <div class="check">✓</div>
+        <div class="opt-icon">👥</div>
+        <div class="opt-label">Amizades</div>
+        <div class="opt-desc">Manter amizades verdadeiras com histórico compartilhado</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'obj')">
+        <div class="check">✓</div>
+        <div class="opt-icon">⚖️</div>
+        <div class="opt-label">Negócios e acordos</div>
+        <div class="opt-desc">Registrar combinados, contratos informais e tratativas comerciais</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'obj')">
+        <div class="check">✓</div>
+        <div class="opt-icon">📚</div>
+        <div class="opt-label">Aprendizado</div>
+        <div class="opt-desc">Consumir conteúdo educativo, debates e trocar conhecimento</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'obj')">
+        <div class="check">✓</div>
+        <div class="opt-icon">🏠</div>
+        <div class="opt-label">Família</div>
+        <div class="opt-desc">Criar um espaço seguro e permanente para memórias familiares</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'obj')">
+        <div class="check">✓</div>
+        <div class="opt-icon">🌍</div>
+        <div class="opt-label">Comunidade</div>
+        <div class="opt-desc">Participar de debates, causas e grupos com valores compartilhados</div>
+      </div>
+    </div>
+    <div class="nav-btns"><button class="btn-next" id="nextBtn1" onclick="goNext(2)" disabled>Continuar →</button></div>
+  </div>
+
+  <!-- STEP 2: INTERESSES -->
+  <div class="step-panel" id="step2">
+    <div class="step-eyebrow">Interesses</div>
+    <div class="step-title">O que você gosta de <em>ver e ler?</em></div>
+    <p class="step-sub">Selecione os temas que mais te interessam. Quanto mais você escolher, mais seu feed vai fazer sentido para você.</p>
+
+    <div class="toggle-opts" id="interesses">
+      <div class="toggle-opt" onclick="toggleTag(this)">🧠 Psicologia</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">💼 Empreendedorismo</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">✝️ Fé e espiritualidade</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">⚖️ Direito e justiça</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">📖 Educação</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">💍 Relacionamentos</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🏥 Saúde e bem-estar</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">💰 Finanças pessoais</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🎨 Arte e cultura</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🏋️ Esportes</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🌱 Meio ambiente</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🍳 Gastronomia</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🧒 Parentalidade</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🖥️ Tecnologia</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🗳️ Política</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🎭 Humor</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">🌐 Notícias</div>
+      <div class="toggle-opt" onclick="toggleTag(this)">📸 Fotografia</div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(1)">← Voltar</button>
+      <button class="btn-next" onclick="goNext(3)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PRIORIDADES -->
+  <div class="step-panel" id="step3">
+    <div class="step-eyebrow">Prioridades</div>
+    <div class="step-title">O que mais importa para <em>você?</em></div>
+    <p class="step-sub">Avalie a importância de cada aspecto no seu uso do Fizu. Isso calibra como seu conteúdo é organizado.</p>
+
+    <div id="prioridades">
+      <div class="importance-item">
+        <div class="imp-label">Conteúdo educativo e didático<span>Posts que ensinam algo ou expandem perspectivas</span></div>
+        <div class="imp-stars" data-key="educativo">
+          <span class="imp-star" onclick="setStar(this,1)">★</span>
+          <span class="imp-star" onclick="setStar(this,2)">★</span>
+          <span class="imp-star" onclick="setStar(this,3)">★</span>
+          <span class="imp-star" onclick="setStar(this,4)">★</span>
+          <span class="imp-star" onclick="setStar(this,5)">★</span>
+        </div>
+      </div>
+      <div class="importance-item">
+        <div class="imp-label">Debates e opiniões<span>Discussões saudáveis sobre temas relevantes</span></div>
+        <div class="imp-stars" data-key="debates">
+          <span class="imp-star" onclick="setStar(this,1)">★</span>
+          <span class="imp-star" onclick="setStar(this,2)">★</span>
+          <span class="imp-star" onclick="setStar(this,3)">★</span>
+          <span class="imp-star" onclick="setStar(this,4)">★</span>
+          <span class="imp-star" onclick="setStar(this,5)">★</span>
+        </div>
+      </div>
+      <div class="importance-item">
+        <div class="imp-label">Empreendedorismo e negócios<span>Cases, estratégias, oportunidades</span></div>
+        <div class="imp-stars" data-key="negocios">
+          <span class="imp-star" onclick="setStar(this,1)">★</span>
+          <span class="imp-star" onclick="setStar(this,2)">★</span>
+          <span class="imp-star" onclick="setStar(this,3)">★</span>
+          <span class="imp-star" onclick="setStar(this,4)">★</span>
+          <span class="imp-star" onclick="setStar(this,5)">★</span>
+        </div>
+      </div>
+      <div class="importance-item">
+        <div class="imp-label">Relacionamentos e família<span>Conteúdo sobre vínculos, amor e convivência</span></div>
+        <div class="imp-stars" data-key="relacionamentos">
+          <span class="imp-star" onclick="setStar(this,1)">★</span>
+          <span class="imp-star" onclick="setStar(this,2)">★</span>
+          <span class="imp-star" onclick="setStar(this,3)">★</span>
+          <span class="imp-star" onclick="setStar(this,4)">★</span>
+          <span class="imp-star" onclick="setStar(this,5)">★</span>
+        </div>
+      </div>
+      <div class="importance-item">
+        <div class="imp-label">Humor e entretenimento<span>Conteúdo leve, divertido e criativo</span></div>
+        <div class="imp-stars" data-key="humor">
+          <span class="imp-star" onclick="setStar(this,1)">★</span>
+          <span class="imp-star" onclick="setStar(this,2)">★</span>
+          <span class="imp-star" onclick="setStar(this,3)">★</span>
+          <span class="imp-star" onclick="setStar(this,4)">★</span>
+          <span class="imp-star" onclick="setStar(this,5)">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(2)">← Voltar</button>
+      <button class="btn-next" onclick="goNext(4)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: PERFIL -->
+  <div class="step-panel" id="step4">
+    <div class="step-eyebrow">Seu perfil</div>
+    <div class="step-title">Como você quer ser <em>visto?</em></div>
+    <p class="step-sub">Adicione uma foto e uma bio. Lembre: isso é permanente no Fizu — você pode complementar depois, mas não apagar.</p>
+
+    <div class="photo-area" onclick="document.getElementById('photoInput').click()" style="margin-bottom:24px">
+      <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+      <div class="photo-placeholder" id="photoPreview">📷</div>
+      <p>Clique para adicionar sua foto</p>
+      <strong>Formatos: JPG, PNG · Máx. 5MB</strong>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Nome de exibição</label>
+      <input type="text" id="displayName" placeholder="Como você quer ser chamado?" style="width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;color:var(--text);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:.93rem;outline:none;transition:border-color .25s;box-shadow:var(--shadow)" onfocus="this.style.borderColor='var(--aqua)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+
+    <div>
+      <label style="display:block;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Bio <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+      <textarea class="bio-field" id="bioField" placeholder="Conte um pouco sobre você — o que te move, o que você valoriza..." maxlength="160" oninput="document.getElementById('charCount').textContent=this.value.length+'/160'"></textarea>
+      <div class="char-count" id="charCount">0/160</div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(3)">← Voltar</button>
+      <button class="btn-next" onclick="goNext(5)">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: CÍRCULOS -->
+  <div class="step-panel" id="step5">
+    <div class="step-eyebrow">Círculos</div>
+    <div class="step-title">Quer criar seu primeiro <em>Círculo?</em></div>
+    <p class="step-sub">Círculos são grupos privados — para casal, família, sócios ou amigos próximos. As conversas ficam entre vocês, mas podem ser tornadas públicas para terceiros mediante aprovação.</p>
+
+    <div class="opt-grid cols-2" id="circulos">
+      <div class="opt-card" onclick="toggleOpt(this,'circ')">
+        <div class="check">✓</div>
+        <div class="opt-icon">💑</div>
+        <div class="opt-label">Círculo do Casal</div>
+        <div class="opt-desc">Espaço privado só para vocês dois — com histórico permanente que pode ser compartilhado quando quiserem</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'circ')">
+        <div class="check">✓</div>
+        <div class="opt-icon">👨‍👩‍👧‍👦</div>
+        <div class="opt-label">Círculo da Família</div>
+        <div class="opt-desc">Memórias, combinados e conversas familiares preservadas para sempre</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'circ')">
+        <div class="check">✓</div>
+        <div class="opt-icon">🤝</div>
+        <div class="opt-label">Círculo de Sócios</div>
+        <div class="opt-desc">Tratativas comerciais e acordos de negócio com registro permanente de tudo que foi combinado</div>
+      </div>
+      <div class="opt-card" onclick="toggleOpt(this,'circ')">
+        <div class="check">✓</div>
+        <div class="opt-icon">🫂</div>
+        <div class="opt-label">Círculo de Amigos</div>
+        <div class="opt-desc">Grupo seleto de amizades verdadeiras com histórico preservado</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding:16px;background:var(--aqua-dim);border:1px solid var(--border);border-radius:12px;font-size:.83rem;color:var(--muted)">
+      🔒 <strong style="color:var(--text)">Sobre privacidade dos Círculos:</strong> As conversas são privadas por padrão. O dono pode gerar um link de acesso temporário para compartilhar com quem quiser — com aprovação de todos os membros. O histórico completo fica sempre preservado.
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goBack(4)">← Voltar</button>
+      <button class="btn-next" onclick="finish()">Entrar no Fizu 🐟</button>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="step-panel" id="stepFinal">
+    <div class="final-screen">
+      <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#3b9eff,#7C3AED,#FF2E88);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 8px 32px rgba(124,58,237,0.4)">
+        <svg viewBox="0 0 60 36" fill="none" width="48" height="48">
+          <path d="M8 18C8 18 2 10 2 4C8 6 14 10 18 14C22 8 30 4 40 4C52 4 58 11 58 18C58 25 52 32 40 32C30 32 22 28 18 22C14 26 8 30 2 32C2 26 8 18 8 18Z" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="46" cy="13" r="2.8" fill="white"/>
+        </svg>
+      </div>
+      <h2>Tudo pronto, <span style="color:var(--aqua)" id="welcomeName">bem-vindo</span>! 🎉</h2>
+      <p>Seu feed já está calibrado com suas preferências. A SereIA vai estar com você sempre que precisar. Lembre: aqui, o que você diz, permanece.</p>
+      <div class="final-tags" id="finalTags"></div>
+
+      <div id="zariBox" style="display:none;background:var(--aqua-dim);border:1px solid var(--aqua-glow);border-radius:16px;padding:16px 20px;margin:20px 0;text-align:left;display:none;align-items:flex-start;gap:12px">
+        <div style="font-size:1.8rem;flex-shrink:0">🐬</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--aqua);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Zari • Agente IA</div>
+          <div id="zariWelcome" style="font-size:.9rem;color:var(--text);line-height:1.6"></div>
+        </div>
+      </div>
+
+      <a href="feed.html" style="display:inline-block;background:var(--aqua);color:#fff;padding:15px 40px;border-radius:32px;font-weight:700;text-decoration:none;font-size:1rem;box-shadow:0 6px 24px var(--aqua-glow)">Ir para o meu feed →</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://tnwildfshzrvktrlfjhz.supabase.co',
+  'sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN'
+);
+
+// Carrega nome real do usuário ao abrir
+(async function() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      const u = session.user;
+      const nomeReal = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || '';
+      if (nomeReal) {
+        const nameInput = document.getElementById('displayName');
+        if (nameInput && !nameInput.value) nameInput.value = nomeReal;
+      }
+    }
+  } catch(e) {}
+})();
+
+
+// Trata erros de OAuth na URL (ex: Unable to exchange external code)
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const errDesc = params.get('error_description');
+  if (errDesc) {
+    console.warn('OAuth error:', errDesc);
+    // Limpa a URL sem recarregar a página
+    window.history.replaceState({}, '', '/onboarding.html');
+  }
+})();
+
+let currentStep=1;
+const totalSteps=5;
+
+function updateProgress(step){
+  document.getElementById('progressFill').style.width=(step/totalSteps*100)+'%';
+  document.getElementById('stepCount').textContent='Passo '+step+' de '+totalSteps;
+}
+
+function goNext(step){
+  document.getElementById('step'+(step-1)).classList.remove('active');
+  document.getElementById('step'+step).classList.add('active');
+  currentStep=step;
+  updateProgress(step);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goBack(step){
+  document.getElementById('step'+(step+1)).classList.remove('active');
+  document.getElementById('step'+step).classList.add('active');
+  currentStep=step;
+  updateProgress(step);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleOpt(el,group){
+  el.classList.toggle('selected');
+  if(group==='obj'){
+    const hasSelected=document.querySelectorAll('#objetivos .selected').length>0;
+    document.getElementById('nextBtn1').disabled=!hasSelected;
+  }
+}
+
+function toggleTag(el){el.classList.toggle('sel')}
+
+function setStar(el,val){
+  const group=el.closest('.imp-stars');
+  const stars=group.querySelectorAll('.imp-star');
+  stars.forEach((s,i)=>s.classList.toggle('on',i<val));
+}
+
+function previewPhoto(input){
+  if(input.files&&input.files[0]){
+    const r=new FileReader();
+    r.onload=e=>{
+      const p=document.getElementById('photoPreview');
+      p.innerHTML='<img src="'+e.target.result+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover">';
+    };
+    r.readAsDataURL(input.files[0]);
+  }
+}
+
+async function finish(){
+  const nameInput=document.getElementById('displayName');
+  const name=nameInput?.value?.trim()||'amigo';
+  const bioInput=document.getElementById('userBio');
+  const bio=bioInput?.value?.trim()||'';
+
+  // Salva no Supabase
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      const userId = session.user.id;
+
+      // Upload foto se selecionada
+      let fotoUrl = session.user.user_metadata?.avatar_url || null;
+      const photoInput = document.getElementById('photoInput');
+      if (photoInput?.files?.[0]) {
+        const file = photoInput.files[0];
+        const ext = file.name.split('.').pop();
+        const path = `${userId}/${Date.now()}.${ext}`;
+        const { error: upErr } = await sb.storage.from('avatares').upload(path, file, { upsert: true });
+        if (!upErr) {
+          const { data: urlData } = sb.storage.from('avatares').getPublicUrl(path);
+          fotoUrl = urlData.publicUrl;
+        }
+      }
+
+      // Salva/atualiza perfil
+      await sb.from('perfis').upsert({
+        id: userId,
+        nome: name,
+        biografia: bio,
+        foto_url: fotoUrl,
+        onboarding_completo: true,
+        criado_em: new Date().toISOString()
+      }, { onConflict: 'id' });
+
+      // Mensagem de boas-vindas da Zari
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 150,
+            system: `Você é Zari 🐬, agente de IA da rede social Fizu. Sua energia é leve, acolhedora e motivadora.
+Dê uma mensagem de boas-vindas calorosa e personalizada para o novo usuário.
+Máximo 2 frases. Use o nome da pessoa. Seja genuíno e animado.
+Responda APENAS com o texto da mensagem, sem aspas nem introdução.`,
+            messages: [{ role: 'user', content: `O novo usuário se chama ${name}. Dê boas-vindas ao Fizu!` }]
+          })
+        });
+        const data = await res.json();
+        const msgZari = data.content?.[0]?.text?.trim();
+        if (msgZari) {
+          document.getElementById('zariWelcome').textContent = msgZari;
+          document.getElementById('zariBox').style.display = 'flex';
+        }
+      } catch(e) {
+        document.getElementById('zariWelcome').textContent = `${name}, seja muito bem-vindo ao Fizu! 🐬 Aqui suas palavras têm peso e permanecem para sempre. Que sua jornada seja autêntica e incrível!`;
+        document.getElementById('zariBox').style.display = 'flex';
+      }
+    }
+  } catch(e) { console.error('Erro ao salvar onboarding:', e); }
+
+  document.getElementById('step5').classList.remove('active');
+  document.getElementById('stepFinal').classList.add('active');
+  document.getElementById('welcomeName').textContent=name||'bem-vindo';
+  document.getElementById('progressFill').style.width='100%';
+  document.getElementById('stepCount').textContent='Concluído! 🎉';
+
+  const tags=[];
+  document.querySelectorAll('#objetivos .selected .opt-label').forEach(l=>tags.push(l.textContent));
+  document.querySelectorAll('#interesses .sel').forEach(t=>tags.push(t.textContent));
+  const container=document.getElementById('finalTags');
+  tags.slice(0,8).forEach(t=>{
+    const d=document.createElement('div');
+    d.className='ftag';d.textContent=t;container.appendChild(d);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Dark mode
+(function(){
+  const saved=localStorage.getItem('fizu-theme');
+  const sys=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(saved?saved==='dark':sys) document.documentElement.classList.add('dark');
+})();
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#0055a8">
+<link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Fizu">
+<meta property="og:title" id="og-title" content="Fizu — Perfil">
+<meta property="og:description" id="og-desc" content="Veja este perfil na rede da verdade permanente.">
+<meta property="og:image" id="og-img" content="https://fizu.com.br/og-image.png">
+<meta property="og:url" id="og-url" content="https://fizu.com.br">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" id="tw-title" content="Fizu — Perfil">
+<meta name="twitter:description" id="tw-desc" content="Veja este perfil no Fizu.">
+<meta name="twitter:image" id="tw-img" content="https://fizu.com.br/og-image.png">
+<title id="page-title">Fizu — Perfil</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4f7fc;--text:#0d1628;--text2:#1e3252;--aqua:#0055a8;--aqua-glow:rgba(0,85,168,0.2);--aqua-dim:rgba(0,85,168,0.08);--muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#ffffff;--gold:#b87800}
+html.dark{--bg:#080c14;--text:#eef4ff;--text2:#c8d8f0;--aqua:#3b9eff;--aqua-glow:rgba(59,158,255,0.3);--aqua-dim:rgba(59,158,255,0.09);--muted:#6b8aad;--border:rgba(59,158,255,0.13);--card:rgba(13,22,40,0.95);--gold:#f5c842}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.wrap{max-width:480px;width:100%}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.logo-box{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b9eff,#7c3aed,#ff2e88);display:flex;align-items:center;justify-content:center}
+.fizu-brand{font-weight:900;font-size:1.3rem;letter-spacing:.06em}
+html.dark .fizu-brand{color:#fff}html:not(.dark) .fizu-brand{color:#0055a8}
+.perfil-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.1)}
+.av{width:80px;height:80px;border-radius:50%;background:var(--aqua-dim);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;color:var(--aqua);margin:0 auto 14px;overflow:hidden;position:relative;border:3px solid var(--border)}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.p-nome{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;margin-bottom:6px}
+.p-bio{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:16px;max-width:360px;margin-left:auto;margin-right:auto}
+.p-stats{display:flex;gap:28px;justify-content:center;margin-bottom:20px}
+.p-stat-num{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--text)}
+.p-stat-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.btn-feed{display:block;background:var(--aqua);color:#fff;padding:12px 28px;border-radius:12px;font-weight:700;font-size:.92rem;text-decoration:none;box-shadow:0 4px 20px var(--aqua-glow);margin-bottom:10px;transition:all .25s}
+.btn-feed:hover{opacity:.88}
+.btn-sec{display:block;color:var(--muted);font-size:.82rem;text-decoration:none;padding:9px;border-radius:10px;border:1px solid var(--border);transition:all .25s}
+.btn-sec:hover{border-color:var(--aqua);color:var(--aqua)}
+.posts-preview{margin-top:20px;border-top:1px solid var(--border);padding-top:16px;text-align:left}
+.post-mini{padding:10px 0;border-bottom:1px solid var(--border);font-size:.84rem;color:var(--text2);line-height:1.5}
+.post-mini:last-child{border:none}
+.post-mini-tempo{font-size:.7rem;color:var(--muted);margin-top:3px}
+.loading{text-align:center;padding:48px;color:var(--muted)}
+.spin{width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--aqua);animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeUp .4s ease forwards}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-row">
+    <div class="logo-box">
+      <svg viewBox="0 0 100 100" fill="none" width="22" height="22">
+        <g transform="rotate(-12 50 50)">
+          <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="68" cy="45" r="5" fill="white"/>
+        </g>
+      </svg>
+    </div>
+    <span class="fizu-brand">FIZU</span>
+  </div>
+  <div id="conteudo"><div class="loading"><div class="spin"></div>Carregando perfil...</div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const saved = localStorage.getItem('fizu-theme');
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (saved ? saved !== 'dark' : !sys) document.documentElement.classList.remove('dark');
+})();
+const sb = supabase.createClient('https://tnwildfshzrvktrlfjhz.supabase.co','sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN');
+
+function getUserId() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('id')) return { type: 'id', value: params.get('id') };
+  if (params.get('nome')) return { type: 'nome', value: params.get('nome') };
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const slug = parts[parts.length - 1] || null;
+  if (!slug) return null;
+  // UUID pattern
+  if (/^[0-9a-f-]{36}$/i.test(slug)) return { type: 'id', value: slug };
+  return { type: 'nome', value: slug };
+}
+function fmt(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function carregarPerfil() {
+  const userRef = getUserId();
+  const el = document.getElementById('conteudo');
+  if (!userRef) {
+    el.innerHTML = '<div class="loading">Perfil não encontrado. <a href="feed.html" style="color:var(--aqua)">Ver feed →</a></div>';
+    return;
+  }
+  try {
+    let query = sb.from('perfis').select('*');
+    if (userRef.type === 'id') query = query.eq('id', userRef.value);
+    else query = query.ilike('nome', userRef.value);
+    const { data: p } = await query.single();
+    if (!p) { el.innerHTML = '<div class="loading">Perfil não encontrado.</div>'; return; }
+    const { data: posts } = await sb.from('posts').select('id,conteudo,criado_em').eq('autor_id', userId).neq('status','removido').order('criado_em',{ascending:false}).limit(3);
+    const nome = p.nome || 'Usuário Fizu';
+    const ini = nome.charAt(0).toUpperCase();
+    const foto = p.foto_url;
+    const bio = p.biografia || '';
+    const feedUrl = `https://fizu.com.br/feed.html`;
+    const profileUrl = `https://fizu.com.br/u/${userId}`;
+    // OG
+    const setM = (id, v) => { const e = document.querySelector(id); if(e) e.setAttribute('content',v); };
+    setM('#og-title', `${nome} no Fizu`);
+    setM('#og-desc', bio || `Veja o perfil de ${nome} na rede da verdade permanente.`);
+    setM('#og-url', profileUrl);
+    if (foto) { setM('#og-img', foto); setM('#tw-img', foto); }
+    setM('#tw-title', `${nome} no Fizu`);
+    setM('#tw-desc', bio || `Perfil de ${nome} no Fizu.`);
+    document.getElementById('page-title').textContent = `${nome} — Fizu`;
+
+    const fotoHtml = foto ? `<div class="av"><img src="${foto}" alt="${esc(ini)}" onerror="this.style.display='none'"></div>` : `<div class="av">${ini}</div>`;
+    const postsHtml = (posts||[]).map(post => `<div class="post-mini">${esc((post.conteudo||'').substring(0,120))}${(post.conteudo||'').length>120?'…':''}<div class="post-mini-tempo">${fmt(post.criado_em)}</div></div>`).join('');
+
+    el.innerHTML = `<div class="perfil-card fade-in">
+      ${fotoHtml}
+      <div class="p-nome">${esc(nome)}</div>
+      ${bio ? `<div class="p-bio">${esc(bio)}</div>` : ''}
+      <div class="p-stats">
+        <div><div class="p-stat-num">${p.seguidores_count||0}</div><div class="p-stat-lbl">Seguidores</div></div>
+        <div><div class="p-stat-num">${p.seguindo_count||0}</div><div class="p-stat-lbl">Seguindo</div></div>
+        <div><div class="p-stat-num">${p.streak_atual||0}🔥</div><div class="p-stat-lbl">Dias seguidos</div></div>
+      </div>
+      <a href="${feedUrl}" class="btn-feed">🐟 Ver perfil completo no Fizu</a>
+      <a href="index.html" class="btn-sec">O que é o Fizu?</a>
+      ${postsHtml ? `<div class="posts-preview"><div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Posts recentes</div>${postsHtml}</div>` : ''}
+    </div>`;
+  } catch(e) {
+    el.innerHTML = '<div class="loading">Erro ao carregar. <a href="feed.html" style="color:var(--aqua)">Ver feed →</a></div>';
+  }
+}
+carregarPerfil();
+</script>
+</body>
+</html>

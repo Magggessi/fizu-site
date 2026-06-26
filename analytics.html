@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fizu Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4f7fc;--text:#0d1628;--muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;--aqua:#0055a8}
+html.dark{--bg:#080c14;--text:#eef4ff;--muted:#6b8aad;--border:rgba(59,158,255,0.13);--card:rgba(13,22,40,0.95);--aqua:#3b9eff}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:24px;min-height:100vh}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.header h1{font-family:'Fraunces',serif;font-size:1.6rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
+.stat-num{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--aqua)}
+.stat-lbl{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.stat-delta{font-size:.75rem;margin-top:4px}
+.delta-up{color:#10b981}.delta-down{color:#ef4444}
+.section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.section h3{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border)}
+td{padding:8px 8px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border:none}
+.badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px}
+.badge-green{background:rgba(16,185,129,.15);color:#10b981}
+.badge-blue{background:rgba(59,158,255,.15);color:#3b9eff}
+.bar-wrap{background:var(--bg);border-radius:4px;height:8px;overflow:hidden;width:100px;display:inline-block;vertical-align:middle;margin-left:8px}
+.bar-fill{height:100%;background:var(--aqua);border-radius:4px}
+.loading-spin{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--aqua);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <span style="font-size:1.5rem">🐟</span>
+  <h1>Fizu Analytics</h1>
+  <span style="margin-left:auto;font-size:.78rem;color:var(--muted)" id="lastUpdate"></span>
+</div>
+
+<div class="grid" id="statsGrid">
+  <div class="stat-card"><div class="stat-num loading-spin" id="s-usuarios"></div><div class="stat-lbl">Usuários totais</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-dau">—</div><div class="stat-lbl">Ativos hoje (DAU)</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-posts">—</div><div class="stat-lbl">Posts hoje</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-posts-total">—</div><div class="stat-lbl">Posts totais</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-comentarios">—</div><div class="stat-lbl">Comentários hoje</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-streak-medio">—</div><div class="stat-lbl">Streak médio</div><div class="stat-delta" style="color:var(--muted);font-size:.7rem">dias de sequência</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-cofre">—</div><div class="stat-lbl">Memórias no Cofre</div></div>
+  <div class="stat-card"><div class="stat-num" id="s-seguindo">—</div><div class="stat-lbl">Conexões (follows)</div></div>
+</div>
+
+<div class="section">
+  <h3>Top usuários — streak 🔥</h3>
+  <table><thead><tr><th>#</th><th>Usuário</th><th>Streak</th><th>Nível</th></tr></thead>
+  <tbody id="topStreak"><tr><td colspan="4" style="text-align:center;color:var(--muted)">Carregando...</td></tr></tbody></table>
+</div>
+
+<div class="section">
+  <h3>Posts recentes (últimas 24h)</h3>
+  <table><thead><tr><th>Autor</th><th>Preview</th><th>Curtidas</th><th>Hora</th></tr></thead>
+  <tbody id="postsRecentes"><tr><td colspan="4" style="text-align:center;color:var(--muted)">Carregando...</td></tr></tbody></table>
+</div>
+
+<div class="section">
+  <h3>Distribuição de níveis</h3>
+  <div id="niveisDistrib" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:4px">Carregando...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){const s=localStorage.getItem('fizu-theme');const sys=window.matchMedia('(prefers-color-scheme:dark)').matches;if(s?s!=='dark':!sys)document.documentElement.classList.remove('dark');})();
+
+const sb = supabase.createClient('https://tnwildfshzrvktrlfjhz.supabase.co','sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN');
+const NIVEIS=[{label:'Arquivo Vivo 🏛️',dias:365,cor:'#d4b8ff'},{label:'Ouro 🥇',dias:90,cor:'#ffd566'},{label:'Prata 🥈',dias:30,cor:'#b8c8f0'},{label:'Bronze 🥉',dias:7,cor:'#f5c08a'},{label:'Novo 🐟',dias:0,cor:'#3b9eff'}];
+function getNivel(d){for(const n of NIVEIS)if(d>=n.dias)return n;return NIVEIS[4];}
+function fmt(iso){return new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function esc(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function loadAnalytics() {
+  document.getElementById('lastUpdate').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR');
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const hojeISO = hoje.toISOString();
+  const agentIds=['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006'];
+
+  const [
+    {count:totalUsuarios},{count:postsHoje},{count:postsTotal},
+    {count:comentariosHoje},{count:cofre},{count:follows},
+    {data:perfis},{data:postsRec}
+  ] = await Promise.all([
+    sb.from('perfis').select('*',{count:'exact',head:true}).not('id','in',`(${agentIds.join(',')})`),
+    sb.from('posts').select('*',{count:'exact',head:true}).gte('criado_em',hojeISO).not('autor_id','in',`(${agentIds.join(',')})`),
+    sb.from('posts').select('*',{count:'exact',head:true}).not('autor_id','in',`(${agentIds.join(',')})`),
+    sb.from('comentarios').select('*',{count:'exact',head:true}).gte('criado_em',hojeISO),
+    sb.from('cofre_memorias').select('*',{count:'exact',head:true}),
+    sb.from('seguidores').select('*',{count:'exact',head:true}),
+    sb.from('perfis').select('id,nome,streak_atual,streak_maximo,criado_em').not('id','in',`(${agentIds.join(',')})`).order('streak_atual',{ascending:false}).limit(10),
+    sb.from('posts').select('autor_id,conteudo,curtidas_count,criado_em,perfis(nome)').gte('criado_em',hojeISO).not('autor_id','in',`(${agentIds.join(',')})`).order('criado_em',{ascending:false}).limit(10),
+  ]);
+
+  document.getElementById('s-usuarios').innerHTML=totalUsuarios||0;
+  document.getElementById('s-posts').textContent=postsHoje||0;
+  document.getElementById('s-posts-total').textContent=postsTotal||0;
+  document.getElementById('s-comentarios').textContent=comentariosHoje||0;
+  document.getElementById('s-cofre').textContent=cofre||0;
+  document.getElementById('s-seguindo').textContent=follows||0;
+
+  const streaks=(perfis||[]).map(p=>p.streak_atual||0);
+  const streakMedio=streaks.length?Math.round(streaks.reduce((a,b)=>a+b,0)/streaks.length):0;
+  document.getElementById('s-streak-medio').textContent=streakMedio+'d';
+
+  // DAU — usuários com ultimo_acesso = hoje
+  const {count:dau}=await sb.from('perfis').select('*',{count:'exact',head:true}).eq('ultimo_acesso',hoje.toISOString().split('T')[0]).not('id','in',`(${agentIds.join(',')})`);
+  document.getElementById('s-dau').textContent=dau||0;
+
+  // Top streak
+  document.getElementById('topStreak').innerHTML=(perfis||[]).map((p,i)=>{
+    const dias=Math.floor((Date.now()-new Date(p.criado_em).getTime())/86400000);
+    const n=getNivel(dias);
+    return `<tr><td style="color:var(--muted)">${i+1}</td><td>${esc(p.nome||'—')}</td><td><strong>${p.streak_atual||0}</strong>🔥 <span class="bar-wrap"><span class="bar-fill" style="width:${Math.min(100,(p.streak_atual||0)/30*100)}%"></span></span></td><td><span style="color:${n.cor}">${n.label}</span></td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="color:var(--muted)">Sem dados</td></tr>';
+
+  // Posts recentes
+  document.getElementById('postsRecentes').innerHTML=(postsRec||[]).map(p=>`<tr><td>${esc(p.perfis?.nome||'—')}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((p.conteudo||'').substring(0,60))}</td><td>${p.curtidas_count||0}</td><td>${fmt(p.criado_em)}</td></tr>`).join('')||'<tr><td colspan="4" style="color:var(--muted)">Sem posts hoje</td></tr>';
+
+  // Distribuição de níveis
+  const contagens={arquivo:0,ouro:0,prata:0,bronze:0,novo:0};
+  (perfis||[]).forEach(p=>{
+    const dias=Math.floor((Date.now()-new Date(p.criado_em).getTime())/86400000);
+    if(dias>=365)contagens.arquivo++;
+    else if(dias>=90)contagens.ouro++;
+    else if(dias>=30)contagens.prata++;
+    else if(dias>=7)contagens.bronze++;
+    else contagens.novo++;
+  });
+  const nKeys=[['arquivo','Arquivo Vivo 🏛️','#d4b8ff'],['ouro','Ouro 🥇','#ffd566'],['prata','Prata 🥈','#b8c8f0'],['bronze','Bronze 🥉','#f5c08a'],['novo','Novo 🐟','#3b9eff']];
+  const total2=Object.values(contagens).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('niveisDistrib').innerHTML=nKeys.map(([k,l,c])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.4rem;font-weight:900;color:${c}">${contagens[k]}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">${l}</div><div style="font-size:.68rem;color:var(--muted)">${Math.round(contagens[k]/total2*100)}%</div></div>`).join('');
+}
+
+loadAnalytics();
+setInterval(loadAnalytics, 60000); // atualiza a cada minuto
+</script>
+</body>
+</html>

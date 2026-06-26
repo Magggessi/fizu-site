@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Moderação</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f7fc;--bg2:#eaf0fb;--text:#0d1628;--text2:#2a4a72;
+  --aqua:#0055a8;--aqua-dim:rgba(0,85,168,0.06);--aqua-glow:rgba(0,85,168,0.25);
+  --gold:#b87800;--coral:#cc3333;--green:#059669;
+  --muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;
+  --nav-bg:rgba(244,247,252,0.97);--shadow:0 4px 20px rgba(13,22,40,0.07);
+}
+html.dark{
+  --bg:#080c14;--bg2:#0d1628;--text:#eef4ff;--text2:#c8d8f0;
+  --aqua:#3b9eff;--aqua-dim:rgba(59,158,255,0.08);--aqua-glow:rgba(59,158,255,0.25);
+  --gold:#f5c842;--coral:#ff6b6b;--green:#10b981;
+  --muted:#6b8aad;--border:rgba(59,158,255,0.15);--card:rgba(13,22,40,0.9);
+  --nav-bg:rgba(8,12,20,0.97);--shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo svg{width:32px;height:19px}
+.logo path{fill:none;stroke:var(--aqua);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo circle{fill:var(--aqua)}
+.brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;color:var(--text)}
+.brand em{color:var(--aqua);font-style:normal}
+.nav-right{display:flex;align-items:center;gap:12px}
+.dark-toggle{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:6px 12px;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .22s}
+.dark-toggle:hover{border-color:var(--aqua);color:var(--aqua)}
+.icon-moon{display:inline}.icon-sun{display:none}
+html.dark .icon-moon{display:none}html.dark .icon-sun{display:inline}
+.btn-feed{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s}
+.btn-feed:hover{color:var(--aqua)}
+
+.page{max-width:1000px;margin:0 auto;padding:76px 24px 60px}
+
+/* HEADER */
+.mod-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.mod-title{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;color:var(--text)}
+.mod-title span{color:var(--aqua)}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap}
+.stat-pill{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 18px;text-align:center;min-width:90px;box-shadow:var(--shadow)}
+.stat-num{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:var(--text);display:block}
+.stat-lbl{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:var(--muted);border-radius:9px;cursor:pointer;transition:all .22s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.active{background:var(--card);color:var(--aqua);box-shadow:var(--shadow)}
+.badge-count{background:var(--coral);color:#fff;font-size:.65rem;font-weight:800;padding:1px 6px;border-radius:10px}
+
+/* VIDEO CARD */
+.mod-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:var(--shadow);transition:all .3s}
+.mod-card:hover{border-color:rgba(0,85,168,.25);box-shadow:0 8px 32px rgba(13,22,40,.1)}
+.mod-card-header{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.mod-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0;background:linear-gradient(135deg,var(--aqua),#005f78)}
+.mod-info{flex:1}
+.mod-name{font-weight:700;font-size:.9rem;color:var(--text)}
+.mod-date{font-size:.73rem;color:var(--muted);margin-top:2px}
+.mod-type{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:8px;display:inline-block;margin-top:4px}
+.type-video{background:rgba(124,58,237,0.1);color:#7c3aed}
+.type-texto{background:var(--aqua-dim);color:var(--aqua)}
+html.dark .type-video{color:#a78bfa}
+
+/* VIDEO PREVIEW */
+.mod-video{border-radius:12px;overflow:hidden;background:var(--bg2);margin-bottom:14px;position:relative}
+.mod-video video{width:100%;max-height:240px;display:block}
+.mod-video-placeholder{aspect-ratio:16/9;background:linear-gradient(135deg,#1a3a6b,var(--aqua));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.play-icon{width:52px;height:52px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;border:2px solid rgba(255,255,255,0.3);transition:all .25s}
+.play-icon:hover{background:rgba(255,255,255,0.25);transform:scale(1.05)}
+.video-info-bar{position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.6);color:#fff;font-size:.72rem;padding:4px 10px;border-radius:8px;backdrop-filter:blur(4px)}
+
+/* TEXTO SUSPEITO */
+.mod-texto-box{background:var(--bg2);border-radius:12px;padding:14px;font-size:.9rem;color:var(--text2);line-height:1.65;margin-bottom:14px;border-left:3px solid var(--coral)}
+.flagged-word{background:rgba(204,51,51,0.15);color:var(--coral);padding:1px 4px;border-radius:4px;font-weight:600}
+
+/* ACTIONS */
+.mod-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-aprovar{background:var(--green);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:6px}
+.btn-aprovar:hover{opacity:.88;transform:translateY(-1px)}
+.btn-rejeitar{background:none;border:1.5px solid var(--coral);color:var(--coral);padding:9px 22px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:6px}
+.btn-rejeitar:hover{background:rgba(204,51,51,0.08)}
+.btn-ver-perfil{background:none;border:1.5px solid var(--border);color:var(--muted);padding:9px 18px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer;transition:all .25s}
+.btn-ver-perfil:hover{border-color:var(--aqua);color:var(--aqua)}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 24px;color:var(--muted)}
+.empty-state .e-icon{font-size:3rem;margin-bottom:16px}
+.empty-state h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.empty-state p{font-size:.88rem;line-height:1.65}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 24px;font-size:.88rem;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:999;transition:transform .35s ease;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.aprovado{border-color:var(--green);color:var(--green)}
+.toast.rejeitado{border-color:var(--coral);color:var(--coral)}
+
+/* PANEL TABS */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="feed.html" class="logo">
+    <div class="fizu-logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-12 50 50)">
+          <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="68" cy="45" r="5" fill="white"/>
+        </g>
+      </svg>
+    </div>
+    <span class="fizu-brand">FIZU</span>
+  </a>
+  <div class="nav-right">
+    <a href="feed.html" class="btn-feed">← Feed</a>
+    <a href="mensagens.html" style="background:var(--aqua);color:#fff;padding:8px 18px;border-radius:20px;font-size:.83rem;font-weight:700;text-decoration:none">📬 Mensagens de contato</a>
+    <button class="dark-toggle" onclick="toggleDark()"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="mod-header">
+    <div>
+      <div class="mod-title">Painel de <span>Moderação</span></div>
+      <div style="color:var(--muted);font-size:.85rem;margin-top:4px">Fundador: Rodolfo Maggessi · fizu.com.br</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-pill">
+        <span class="stat-num" id="statPendente">3</span>
+        <span class="stat-lbl">Pendentes</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" style="color:var(--green)" id="statAprovado">0</span>
+        <span class="stat-lbl">Aprovados</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" style="color:var(--coral)" id="statRejeitado">0</span>
+        <span class="stat-lbl">Rejeitados</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('videos')">🎬 Vídeos <span class="badge-count" id="badgeVideos">2</span></button>
+    <button class="tab" onclick="switchTab('textos')">📝 Textos suspeitos <span class="badge-count" id="badgeTextos">1</span></button>
+    <button class="tab" onclick="switchTab('aprovados')">✅ Aprovados</button>
+    <button class="tab" onclick="switchTab('rejeitados')">❌ Rejeitados</button>
+  </div>
+
+  <!-- VÍDEOS PENDENTES -->
+  <div class="tab-panel active" id="panel-videos">
+    <div class="mod-card" id="card-v1">
+      <div class="mod-card-header">
+        <div class="mod-av">JP</div>
+        <div class="mod-info">
+          <div class="mod-name">João Paulo Silva</div>
+          <div class="mod-date">Enviado em 04/05/2026 às 17:42</div>
+          <span class="mod-type type-video">🎬 Vídeo · 28,4 MB · MP4</span>
+        </div>
+      </div>
+      <div class="mod-video">
+        <div class="mod-video-placeholder" onclick="simularVideo(this)">
+          <div class="video-info-bar">28,4 MB · 2:14 min</div>
+          <div class="play-icon">▶</div>
+          <div style="color:rgba(255,255,255,0.7);font-size:.82rem">Clique para visualizar</div>
+        </div>
+      </div>
+      <div style="font-size:.85rem;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        <strong>Legenda do post:</strong> "Meu depoimento sobre como o Fizu mudou meu negócio em 6 meses. Vale assistir! 🙏"
+      </div>
+      <div class="mod-actions">
+        <button class="btn-aprovar" onclick="aprovar('v1','João Paulo Silva')">✅ Aprovar e publicar</button>
+        <button class="btn-rejeitar" onclick="rejeitar('v1')">❌ Rejeitar</button>
+        <button class="btn-ver-perfil">👤 Ver perfil</button>
+      </div>
+    </div>
+
+    <div class="mod-card" id="card-v2">
+      <div class="mod-card-header">
+        <div class="mod-av" style="background:linear-gradient(135deg,#b87800,#f5c842)">MC</div>
+        <div class="mod-info">
+          <div class="mod-name">Maria Clara Ferreira</div>
+          <div class="mod-date">Enviado em 04/05/2026 às 15:18</div>
+          <span class="mod-type type-video">🎬 Vídeo · 45,1 MB · MP4</span>
+        </div>
+      </div>
+      <div class="mod-video">
+        <div class="mod-video-placeholder" onclick="simularVideo(this)">
+          <div class="video-info-bar">45,1 MB · 3:52 min</div>
+          <div class="play-icon">▶</div>
+          <div style="color:rgba(255,255,255,0.7);font-size:.82rem">Clique para visualizar</div>
+        </div>
+      </div>
+      <div style="font-size:.85rem;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        <strong>Legenda do post:</strong> "Tutorial: como usar os Círculos do Fizu para organizar sua equipe de trabalho 💼"
+      </div>
+      <div class="mod-actions">
+        <button class="btn-aprovar" onclick="aprovar('v2','Maria Clara Ferreira')">✅ Aprovar e publicar</button>
+        <button class="btn-rejeitar" onclick="rejeitar('v2')">❌ Rejeitar</button>
+        <button class="btn-ver-perfil">👤 Ver perfil</button>
+      </div>
+    </div>
+
+    <div id="empty-videos" style="display:none">
+      <div class="empty-state">
+        <div class="e-icon">🎉</div>
+        <h3>Nenhum vídeo pendente</h3>
+        <p>Todos os vídeos foram analisados. Bom trabalho!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEXTOS SUSPEITOS -->
+  <div class="tab-panel" id="panel-textos">
+    <div class="mod-card" id="card-t1">
+      <div class="mod-card-header">
+        <div class="mod-av" style="background:linear-gradient(135deg,#cc3333,#ff6b6b)">RS</div>
+        <div class="mod-info">
+          <div class="mod-name">Roberto Santos</div>
+          <div class="mod-date">Detectado em 04/05/2026 às 14:03</div>
+          <span class="mod-type type-texto">📝 Texto com alerta</span>
+        </div>
+      </div>
+      <div class="mod-texto-box">
+        "Esse cara é um <span class="flagged-word">idiota</span> completo, não sabe nada sobre negócios. Qualquer um que seguir ele vai se <span class="flagged-word">destruir</span> financeiramente."
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:14px">
+        ⚠️ Palavras sinalizadas: <strong style="color:var(--coral)">idiota, destruir</strong> · Tom: potencialmente ofensivo
+      </div>
+      <div class="mod-actions">
+        <button class="btn-aprovar" onclick="aprovar('t1','Roberto Santos')">✅ Aprovar mesmo assim</button>
+        <button class="btn-rejeitar" onclick="rejeitar('t1')">❌ Bloquear postagem</button>
+        <button class="btn-ver-perfil">👤 Ver perfil</button>
+      </div>
+    </div>
+
+    <div id="empty-textos" style="display:none">
+      <div class="empty-state">
+        <div class="e-icon">✨</div>
+        <h3>Nenhum texto suspeito</h3>
+        <p>A SereIA não sinalizou nenhum conteúdo para revisão.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- APROVADOS -->
+  <div class="tab-panel" id="panel-aprovados">
+    <div id="lista-aprovados"></div>
+    <div class="empty-state" id="empty-aprovados">
+      <div class="e-icon">⏳</div>
+      <h3>Nenhuma aprovação ainda</h3>
+      <p>Os conteúdos aprovados aparecerão aqui para seu histórico.</p>
+    </div>
+  </div>
+
+  <!-- REJEITADOS -->
+  <div class="tab-panel" id="panel-rejeitados">
+    <div id="lista-rejeitados"></div>
+    <div class="empty-state" id="empty-rejeitados">
+      <div class="e-icon">⏳</div>
+      <h3>Nenhuma rejeição ainda</h3>
+      <p>Os conteúdos rejeitados aparecerão aqui para seu histórico.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL REJEITAR -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)" id="rejeitarModal">
+  <div style="background:var(--card);border-radius:20px;padding:28px;max-width:420px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,0.3)">
+    <h3 style="font-family:'Fraunces',serif;font-weight:900;font-size:1.15rem;margin-bottom:12px">Rejeitar conteúdo</h3>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px">Selecione o motivo da rejeição. O usuário será notificado.</p>
+    <select id="motivoRejeicao" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);outline:none;margin-bottom:16px">
+      <option>Conteúdo impróprio ou ofensivo</option>
+      <option>Conteúdo sexual ou nudez</option>
+      <option>Ameaça ou discurso de ódio</option>
+      <option>Spam ou publicidade não autorizada</option>
+      <option>Violação de direitos autorais</option>
+      <option>Conteúdo enganoso ou falso</option>
+      <option>Outro motivo</option>
+    </select>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('rejeitarModal').style.display='none'" style="background:none;border:1.5px solid var(--border);color:var(--muted);padding:9px 20px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer">Cancelar</button>
+      <button onclick="confirmarRejeicao()" style="background:var(--coral);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">Confirmar rejeição</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let cardParaRejeitar = null;
+let aprovados = 0, rejeitados = 0;
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+function simularVideo(el) {
+  el.innerHTML = '<div style="background:#000;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem;flex-direction:column;gap:8px"><div style="font-size:2rem">▶</div><div>Visualização disponível no app completo</div></div>';
+}
+
+function aprovar(id, nome) {
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(40px)';
+  card.style.transition = 'all .4s ease';
+  setTimeout(() => {
+    card.remove();
+    aprovados++;
+    document.getElementById('statAprovado').textContent = aprovados;
+    atualizarPendente();
+    mostrarToast('✅ ' + nome + ' — conteúdo aprovado e publicado!', 'aprovado');
+    atualizarListaAprovados(nome);
+  }, 400);
+}
+
+function rejeitar(id) {
+  cardParaRejeitar = id;
+  document.getElementById('rejeitarModal').style.display = 'flex';
+}
+
+function confirmarRejeicao() {
+  document.getElementById('rejeitarModal').style.display = 'none';
+  const card = document.getElementById('card-' + cardParaRejeitar);
+  if (!card) return;
+  const nome = card.querySelector('.mod-name').textContent;
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(-40px)';
+  card.style.transition = 'all .4s ease';
+  setTimeout(() => {
+    card.remove();
+    rejeitados++;
+    document.getElementById('statRejeitado').textContent = rejeitados;
+    atualizarPendente();
+    mostrarToast('❌ Conteúdo rejeitado. Usuário será notificado.', 'rejeitado');
+    atualizarListaRejeitados(nome);
+  }, 400);
+}
+
+function atualizarPendente() {
+  const pendente = document.querySelectorAll('.mod-card').length;
+  document.getElementById('statPendente').textContent = pendente;
+  const bV = document.querySelectorAll('#panel-videos .mod-card').length;
+  const bT = document.querySelectorAll('#panel-textos .mod-card').length;
+  document.getElementById('badgeVideos').textContent = bV;
+  document.getElementById('badgeTextos').textContent = bT;
+  if(bV === 0) document.getElementById('empty-videos').style.display = 'block';
+  if(bT === 0) document.getElementById('empty-textos').style.display = 'block';
+}
+
+function atualizarListaAprovados(nome) {
+  document.getElementById('empty-aprovados').style.display = 'none';
+  const item = document.createElement('div');
+  item.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;font-size:.88rem';
+  item.innerHTML = '<span style="color:var(--text)">✅ <strong>' + nome + '</strong> — conteúdo aprovado</span><span style="color:var(--muted);font-size:.75rem">' + new Date().toLocaleTimeString('pt-BR') + '</span>';
+  document.getElementById('lista-aprovados').prepend(item);
+}
+
+function atualizarListaRejeitados(nome) {
+  document.getElementById('empty-rejeitados').style.display = 'none';
+  const motivo = document.getElementById('motivoRejeicao').value;
+  const item = document.createElement('div');
+  item.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px;font-size:.88rem';
+  item.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><span style="color:var(--text)">❌ <strong>' + nome + '</strong></span><span style="color:var(--muted);font-size:.75rem">' + new Date().toLocaleTimeString('pt-BR') + '</span></div><div style="color:var(--coral);font-size:.8rem">' + motivo + '</div>';
+  document.getElementById('lista-rejeitados').prepend(item);
+}
+
+function mostrarToast(msg, tipo) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + tipo + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function toggleDark() {
+  const d = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fizu-theme', d ? 'dark' : 'light');
+}
+(function() {
+  const s = localStorage.getItem('fizu-theme');
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (s ? s === 'dark' : sys) document.documentElement.classList.add('dark');
+})();
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>

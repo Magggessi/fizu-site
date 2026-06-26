@@ -1,0 +1,4 @@
+// Fizu Analytics Config
+// fizu.com.br  → G-LKTCXCMC6X
+// fizubr.com   → G-6H9GBZJL0E
+// Para o fizubr, troque o ID no script do GA em cada arquivo HTML

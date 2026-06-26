@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Mensagens de contato</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4f7fc;--bg2:#eaf0fb;--text:#0d1628;--text2:#2a4a72;--aqua:#0055a8;--aqua-dim:rgba(0,85,168,0.06);--gold:#b87800;--coral:#cc3333;--green:#059669;--muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;--nav-bg:rgba(244,247,252,0.97);--shadow:0 4px 20px rgba(13,22,40,0.07)}
+html.dark{--bg:#080c14;--bg2:#0d1628;--text:#eef4ff;--text2:#c8d8f0;--aqua:#3b9eff;--aqua-dim:rgba(59,158,255,0.08);--gold:#f5c842;--coral:#ff6b6b;--green:#10b981;--muted:#6b8aad;--border:rgba(59,158,255,0.15);--card:rgba(13,22,40,0.9);--nav-bg:rgba(8,12,20,0.97);--shadow:0 4px 20px rgba(0,0,0,0.3)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo svg{width:32px;height:19px}
+.logo path{fill:none;stroke:var(--aqua);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo circle{fill:var(--aqua)}
+.brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;color:var(--text)}
+.brand em{color:var(--aqua);font-style:normal}
+.nav-right{display:flex;align-items:center;gap:12px}
+.dark-toggle{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:6px 12px;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .22s}
+.dark-toggle:hover{border-color:var(--aqua);color:var(--aqua)}
+.icon-moon{display:inline}.icon-sun{display:none}
+html.dark .icon-moon{display:none}html.dark .icon-sun{display:inline}
+.btn-back{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s}
+.btn-back:hover{color:var(--aqua)}
+
+.page{max-width:900px;margin:0 auto;padding:76px 24px 60px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900}
+.page-title span{color:var(--aqua)}
+.btn-refresh{background:var(--aqua);color:#fff;border:none;padding:9px 20px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-refresh:hover{opacity:.85}
+
+.filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-btn{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .22s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--aqua);color:var(--aqua);background:var(--aqua-dim)}
+
+.msg-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:var(--shadow);transition:all .3s;cursor:pointer}
+.msg-card:hover{border-color:rgba(0,85,168,.3);transform:translateY(-2px)}
+.msg-card.nao-lido{border-left:3px solid var(--aqua)}
+.msg-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.msg-nome{font-weight:700;font-size:.92rem;color:var(--text)}
+.msg-email{font-size:.78rem;color:var(--muted);margin-top:2px}
+.msg-data{font-size:.74rem;color:var(--muted);white-space:nowrap}
+.assunto-pill{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:10px;display:inline-block;margin-bottom:8px}
+.a-sac{background:var(--aqua-dim);color:var(--aqua)}
+.a-privacidade{background:rgba(124,58,237,0.1);color:#7c3aed}
+.a-denuncia{background:rgba(204,51,51,0.1);color:var(--coral)}
+.a-remocao{background:rgba(184,120,0,0.1);color:var(--gold)}
+.a-autorais{background:rgba(5,150,105,0.1);color:var(--green)}
+.a-imprensa{background:rgba(13,22,40,0.08);color:var(--text2)}
+html.dark .a-imprensa{background:rgba(255,255,255,0.08);color:var(--muted)}
+.msg-texto{font-size:.88rem;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.msg-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.btn-lido{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-lido:hover{border-color:var(--green);color:var(--green)}
+.btn-responder{background:var(--aqua);color:#fff;border:none;padding:6px 14px;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .2s;text-decoration:none;display:inline-block}
+.btn-responder:hover{opacity:.85}
+.nao-lido-badge{width:8px;height:8px;background:var(--aqua);border-radius:50%;flex-shrink:0;margin-top:6px}
+
+.loading{text-align:center;padding:48px;color:var(--muted);font-size:.95rem}
+.empty{text-align:center;padding:60px 24px;color:var(--muted)}
+.empty .e-icon{font-size:3rem;margin-bottom:16px}
+.empty h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow)}
+.stat-n{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;color:var(--text);display:block}
+.stat-l{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+
+/* DETAIL MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
+.modal-bg.show{display:flex}
+.modal-box{background:var(--card);border-radius:20px;padding:28px;width:100%;max-width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-head h3{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:900;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:4px 8px;border-radius:8px}
+.modal-close:hover{background:var(--bg2);color:var(--coral)}
+.detail-row{display:flex;gap:12px;margin-bottom:10px}
+.detail-lbl{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;min-width:80px;padding-top:2px}
+.detail-val{font-size:.9rem;color:var(--text2);flex:1;line-height:1.6}
+.detail-msg{background:var(--bg2);border-radius:12px;padding:16px;font-size:.9rem;color:var(--text2);line-height:1.7;margin-top:4px}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="moderacao.html" class="logo">
+    <div class="fizu-logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-12 50 50)">
+          <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="68" cy="45" r="5" fill="white"/>
+        </g>
+      </svg>
+    </div>
+    <span class="fizu-brand">FIZU</span>
+  </a>
+  <div class="nav-right">
+    <a href="moderacao.html" class="btn-back">← Moderação</a>
+    <button class="dark-toggle" onclick="toggleDark()"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Mensagens de <span>Contato</span></div>
+      <div style="color:var(--muted);font-size:.83rem;margin-top:4px">Formulário de contato · fizu.com.br</div>
+    </div>
+    <button class="btn-refresh" onclick="carregarMensagens()">↻ Atualizar</button>
+  </div>
+
+  <div class="stats" id="statsRow">
+    <div class="stat"><span class="stat-n" id="s-total">—</span><span class="stat-l">Total</span></div>
+    <div class="stat"><span class="stat-n" id="s-nao-lido" style="color:var(--aqua)">—</span><span class="stat-l">Não lidas</span></div>
+    <div class="stat"><span class="stat-n" id="s-denuncia" style="color:var(--coral)">—</span><span class="stat-l">Denúncias</span></div>
+    <div class="stat"><span class="stat-n" id="s-hoje">—</span><span class="stat-l">Hoje</span></div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filtrar('todos',this)">Todas</button>
+    <button class="filter-btn" onclick="filtrar('SAC Geral',this)">SAC</button>
+    <button class="filter-btn" onclick="filtrar('Privacidade & LGPD',this)">Privacidade</button>
+    <button class="filter-btn" onclick="filtrar('Denúncia urgente',this)">Denúncias</button>
+    <button class="filter-btn" onclick="filtrar('Solicitação de remoção',this)">Remoção</button>
+    <button class="filter-btn" onclick="filtrar('Imprensa & Parcerias',this)">Imprensa</button>
+  </div>
+
+  <div id="listaMensagens"><div class="loading">🐟 Carregando mensagens...</div></div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitle">Mensagem</h3>
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://tnwildfshzrvktrlfjhz.supabase.co',
+  'sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN'
+);
+
+let todasMensagens = [];
+let filtroAtual = 'todos';
+
+function assuntoClass(a) {
+  if(!a) return 'a-sac';
+  const m = a.toLowerCase();
+  if(m.includes('privacidade')||m.includes('lgpd')) return 'a-privacidade';
+  if(m.includes('denúncia')||m.includes('denuncia')) return 'a-denuncia';
+  if(m.includes('remoção')||m.includes('remocao')) return 'a-remocao';
+  if(m.includes('autorais')||m.includes('direitos')) return 'a-autorais';
+  if(m.includes('imprensa')||m.includes('parcerias')) return 'a-imprensa';
+  return 'a-sac';
+}
+
+function formatarData(d) {
+  return new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+async function carregarMensagens() {
+  document.getElementById('listaMensagens').innerHTML = '<div class="loading">🐟 Carregando mensagens...</div>';
+
+  const { data, error } = await sb
+    .from('contatos')
+    .select('*')
+    .order('criado_em', { ascending: false });
+
+  if(error) {
+    document.getElementById('listaMensagens').innerHTML = '<div class="empty"><div class="e-icon">⚠️</div><h3>Erro ao carregar</h3><p>' + error.message + '</p></div>';
+    return;
+  }
+
+  todasMensagens = data || [];
+  atualizarStats();
+  renderMensagens();
+}
+
+function atualizarStats() {
+  const hoje = new Date().toDateString();
+  const naoLidas = todasMensagens.filter(m => !m.lido).length;
+  const denuncias = todasMensagens.filter(m => m.assunto && m.assunto.toLowerCase().includes('denúncia')).length;
+  const deHoje = todasMensagens.filter(m => new Date(m.criado_em).toDateString() === hoje).length;
+  document.getElementById('s-total').textContent = todasMensagens.length;
+  document.getElementById('s-nao-lido').textContent = naoLidas;
+  document.getElementById('s-denuncia').textContent = denuncias;
+  document.getElementById('s-hoje').textContent = deHoje;
+}
+
+function renderMensagens() {
+  const lista = filtroAtual === 'todos'
+    ? todasMensagens
+    : todasMensagens.filter(m => m.assunto === filtroAtual);
+
+  if(!lista.length) {
+    document.getElementById('listaMensagens').innerHTML = '<div class="empty"><div class="e-icon">📭</div><h3>Nenhuma mensagem</h3><p>Ainda não há mensagens nesta categoria.</p></div>';
+    return;
+  }
+
+  document.getElementById('listaMensagens').innerHTML = lista.map(m => `
+    <div class="msg-card ${!m.lido ? 'nao-lido' : ''}" onclick="verMensagem('${m.id}')">
+      <div class="msg-header">
+        <div>
+          <div class="msg-nome">${m.nome || '—'} ${!m.lido ? '' : ''}</div>
+          <div class="msg-email">${m.email || ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${!m.lido ? '<div class="nao-lido-badge"></div>' : ''}
+          <div class="msg-data">${formatarData(m.criado_em)}</div>
+        </div>
+      </div>
+      <span class="assunto-pill ${assuntoClass(m.assunto)}">${m.assunto || 'SAC Geral'}</span>
+      <div class="msg-texto">${m.mensagem || ''}</div>
+      <div class="msg-actions" onclick="event.stopPropagation()">
+        ${!m.lido ? `<button class="btn-lido" onclick="marcarLido('${m.id}')">✓ Marcar como lida</button>` : '<span style="font-size:.78rem;color:var(--muted)">✓ Lida</span>'}
+        <a class="btn-responder" href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.assunto || 'Fizu - Contato')}">Responder por e-mail</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filtrar(assunto, btn) {
+  filtroAtual = assunto;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMensagens();
+}
+
+async function marcarLido(id) {
+  await sb.from('contatos').update({ lido: true }).eq('id', id);
+  const msg = todasMensagens.find(m => m.id === id);
+  if(msg) msg.lido = true;
+  atualizarStats();
+  renderMensagens();
+}
+
+function verMensagem(id) {
+  const m = todasMensagens.find(x => x.id === id);
+  if(!m) return;
+  document.getElementById('modalTitle').textContent = m.assunto || 'Mensagem';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="detail-row"><span class="detail-lbl">Nome</span><span class="detail-val">${m.nome}</span></div>
+    <div class="detail-row"><span class="detail-lbl">E-mail</span><span class="detail-val"><a href="mailto:${m.email}" style="color:var(--aqua)">${m.email}</a></span></div>
+    <div class="detail-row"><span class="detail-lbl">Assunto</span><span class="detail-val"><span class="assunto-pill ${assuntoClass(m.assunto)}">${m.assunto}</span></span></div>
+    <div class="detail-row"><span class="detail-lbl">Data</span><span class="detail-val">${formatarData(m.criado_em)}</span></div>
+    ${m.url_conteudo ? `<div class="detail-row"><span class="detail-lbl">URL</span><span class="detail-val"><a href="${m.url_conteudo}" target="_blank" style="color:var(--aqua)">${m.url_conteudo}</a></span></div>` : ''}
+    <div style="margin-top:16px"><div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Mensagem</div><div class="detail-msg">${m.mensagem}</div></div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      ${!m.lido ? `<button class="btn-lido" onclick="marcarLido('${m.id}');fecharModal()">✓ Marcar como lida</button>` : ''}
+      <a class="btn-responder" href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.assunto || 'Fizu')}&body=Olá ${m.nome},%0A%0A">Responder por e-mail</a>
+    </div>
+  `;
+  document.getElementById('detailModal').classList.add('show');
+  if(!m.lido) marcarLido(id);
+}
+
+function fecharModal() {
+  document.getElementById('detailModal').classList.remove('show');
+}
+
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if(e.target === this) fecharModal();
+});
+
+function toggleDark() {
+  const d = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fizu-theme', d ? 'dark' : 'light');
+}
+(function() {
+  const s = localStorage.getItem('fizu-theme');
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(s ? s === 'dark' : sys) document.documentElement.classList.add('dark');
+})();
+
+carregarMensagens();
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>

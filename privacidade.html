@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="theme-color" content="#0055a8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="description" content="Fizu — A rede social onde nada se apaga. Postagens, mensagens e vídeos permanentes. Transparência real em relacionamentos, amizades e negócios.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fizu">
+  <meta property="og:title" content="Fizu — O que você diz, permanece.">
+  <meta property="og:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece. E isso muda tudo.">
+  <meta property="og:image" content="https://fizu.com.br/og-image.png">
+  <meta property="og:url" content="https://fizu.com.br">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fizu — O que você diz, permanece.">
+  <meta name="twitter:description" content="A rede social da verdade permanente. Nada se apaga. Tudo permanece.">
+  <meta name="twitter:image" content="https://fizu.com.br/og-image.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Fizu">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizu — Política de Privacidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f7fc;--bg2:#eaf0fb;--text:#0d1628;--text2:#2a4a72;
+  --aqua:#0055a8;--aqua-dim:rgba(0,85,168,0.06);--gold:#b87800;
+  --muted:#5a7090;--border:rgba(0,85,168,0.15);--card:#fff;
+  --nav-bg:rgba(244,247,252,0.97);--shadow:0 4px 20px rgba(13,22,40,0.07);
+}
+html.dark{
+  --bg:#080c14;--bg2:#0d1628;--text:#eef4ff;--text2:#c8d8f0;
+  --aqua:#3b9eff;--aqua-dim:rgba(59,158,255,0.08);--gold:#f5c842;
+  --muted:#6b8aad;--border:rgba(59,158,255,0.15);--card:rgba(13,22,40,0.9);
+  --nav-bg:rgba(8,12,20,0.97);--shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;transition:background .3s,color .3s;line-height:1.7}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo svg{width:32px;height:19px}
+.logo path{fill:none;stroke:var(--aqua);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.logo circle{fill:var(--aqua)}
+.brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;color:var(--text)}
+.brand em{color:var(--aqua);font-style:normal}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-home{color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s}
+.btn-home:hover{color:var(--aqua)}
+.btn-entrar{background:var(--aqua);color:#fff;padding:8px 20px;border-radius:24px;font-size:.85rem;font-weight:700;text-decoration:none}
+.btn-entrar:hover{opacity:.85}
+.dark-toggle{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:6px 12px;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .22s}
+.dark-toggle:hover{border-color:var(--aqua);color:var(--aqua)}
+.icon-moon{display:inline}.icon-sun{display:none}
+html.dark .icon-moon{display:none}html.dark .icon-sun{display:inline}
+
+.page-wrap{max-width:860px;margin:0 auto;padding:100px 24px 80px}
+
+.hero{text-align:center;padding:48px 0 40px;border-bottom:2px solid var(--aqua);margin-bottom:48px}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;margin-bottom:8px}
+.hero h1 em{color:var(--aqua);font-style:italic}
+.hero .sub{color:var(--muted);font-size:.9rem;margin-top:12px}
+.hero .founder{margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:var(--aqua-dim);border:1px solid var(--border);padding:8px 18px;border-radius:24px;font-size:.83rem;color:var(--aqua);font-weight:600}
+
+.toc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:48px;box-shadow:var(--shadow)}
+.toc-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px}
+.toc-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.toc-list a{color:var(--muted);text-decoration:none;font-size:.84rem;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:6px}
+.toc-list a:hover{color:var(--aqua)}
+.toc-list a::before{content:'→';color:var(--aqua);font-size:.75rem}
+
+.section{margin-bottom:52px;scroll-margin-top:80px}
+.section h2{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:var(--aqua);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.section h2 .num{background:var(--aqua);color:#fff;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0}
+.section h3{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin:24px 0 10px}
+.section p{color:var(--text2);font-size:.95rem;line-height:1.82;margin-bottom:14px;text-align:justify}
+.section ul{list-style:none;margin:10px 0 16px}
+.section ul li{color:var(--text2);font-size:.93rem;line-height:1.72;padding:6px 0 6px 24px;position:relative;border-bottom:1px solid var(--border)}
+.section ul li:last-child{border:none}
+.section ul li::before{content:'🐟';position:absolute;left:0;top:7px;font-size:.75rem}
+
+.highlight{background:var(--aqua-dim);border-left:3px solid var(--aqua);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0;font-size:.9rem;color:var(--text2);line-height:1.7}
+.highlight strong{color:var(--aqua);display:block;margin-bottom:4px;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+
+.rights-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.right-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:border-color .2s}
+.right-item:hover{border-color:var(--aqua)}
+.right-icon{font-size:1.4rem;margin-bottom:8px}
+.right-title{font-weight:700;font-size:.88rem;color:var(--text);margin-bottom:4px}
+.right-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+
+.cta-box{background:linear-gradient(135deg,var(--aqua-dim),rgba(184,120,0,0.05));border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;margin-top:48px}
+.cta-box h3{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;margin-bottom:12px}
+.cta-box p{color:var(--muted);font-size:.9rem;margin-bottom:24px;text-align:center}
+.cta-box a{display:inline-block;background:var(--aqua);color:#fff;padding:12px 32px;border-radius:32px;font-weight:700;text-decoration:none;font-size:.95rem}
+.cta-box a:hover{opacity:.85}
+
+footer{border-top:1px solid var(--border);padding:28px 40px;text-align:center;color:var(--muted);font-size:.78rem;background:var(--bg);transition:background .3s}
+footer a{color:var(--aqua);text-decoration:none;margin:0 8px}
+
+.back-top{position:fixed;bottom:24px;right:24px;background:var(--aqua);color:#fff;width:44px;height:44px;border-radius:50%;border:none;font-size:1.1rem;cursor:pointer;box-shadow:0 4px 16px var(--aqua);transition:all .3s;display:none;align-items:center;justify-content:center}
+.back-top.show{display:flex}
+
+@media(max-width:640px){
+  nav{padding:14px 16px}
+  .page-wrap{padding:90px 16px 60px}
+  .toc-list,.rights-grid{grid-template-columns:1fr}
+}
+
+/* ═══ BIG TECH OVERRIDES ═══ */
+/* Fish stroke color */
+:root { --fish-stroke: #0055a8; }
+html.dark { --fish-stroke: #ffffff; }
+
+/* Font — Inter (sem serifa, minimalista, Big Tech) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+body { font-family: 'Inter', 'DM Sans', sans-serif !important; }
+
+/* Page fish */
+.page-fish { width: 80px; height: 80px; display: block; }
+.hero-fish-wrap { margin: 0 auto 32px; display: flex; justify-content: center; }
+
+/* H1 — clean, no serif */
+h1 { font-family: 'Inter', sans-serif !important; font-weight: 800 !important; letter-spacing: -.03em !important; }
+h2 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; letter-spacing: -.02em !important; }
+h3, h4 { font-family: 'Inter', sans-serif !important; font-weight: 700 !important; }
+
+/* Nav links — Inter */
+nav a, .nav-logo { font-family: 'Inter', sans-serif !important; }
+
+/* FIZU brand — white, Inter, bold */
+
+
+/* Buttons — less rounded, more serious */
+.btn-main { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+.btn-sec { border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+.nav-cta { border-radius: 8px !important; }
+
+/* Ticker — Inter italic */
+.ticker-inner span { font-family: 'Inter', sans-serif !important; font-style: normal !important; font-weight: 500 !important; letter-spacing: .04em !important; }
+
+/* Section labels */
+.lbl { font-family: 'Inter', sans-serif !important; font-weight: 600 !important; }
+
+/* Pills */
+.pill { border-radius: 4px !important; font-family: 'Inter', sans-serif !important; }
+
+/* Cards — sharper corners */
+.truth-card, .pillar, .sereia-card, .proof-card, .s-item { border-radius: 12px !important; }
+
+
+
+
+
+/* ═══ FIZU LOGO PRO ═══ */
+.fizu-logo-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.fizu-logo-icon svg{width:26px;height:26px}
+
+
+
+
+/* Mobile toggle fix */
+@media(max-width:768px){
+  .dark-toggle{padding:5px 8px;font-size:.72rem;white-space:nowrap}
+  .nav-right{gap:6px}
+  .btn-entrar{padding:7px 14px;font-size:.8rem}
+}
+
+
+.fizu-brand{font-family:'Inter','DM Sans',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:.06em;-webkit-font-smoothing:antialiased}
+html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#0055a8!important}
+html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKTCXCMC6X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LKTCXCMC6X');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="fizu-logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-12 50 50)">
+          <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="68" cy="45" r="5" fill="white"/>
+        </g>
+      </svg>
+    </div>
+    <span class="fizu-brand">FIZU</span>
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="btn-home">← Voltar ao site</a>
+    <button class="dark-toggle" onclick="toggleDark()"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <a href="login.html" class="btn-entrar">Entrar</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="hero">
+    <h1>Política de <em>Privacidade</em></h1>
+    <div class="sub">Versão em vigor a partir de: 03 de maio de 2026 · Última atualização: 03 de maio de 2026</div>
+    <div class="founder">🐟 Fundador: Rodolfo Maggessi · fizu.com.br</div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">📋 Índice</div>
+    <ul class="toc-list">
+      <li><a href="#compromisso">Nosso Compromisso</a></li>
+      <li><a href="#coleta">1. Dados que Coletamos</a></li>
+      <li><a href="#uso">2. Como Usamos seus Dados</a></li>
+      <li><a href="#bases">3. Bases Legais (LGPD)</a></li>
+      <li><a href="#compartilhamento">4. Compartilhamento</a></li>
+      <li><a href="#seguranca">5. Segurança</a></li>
+      <li><a href="#retencao">6. Retenção dos Dados</a></li>
+      <li><a href="#direitos">7. Seus Direitos</a></li>
+      <li><a href="#cookies">8. Cookies</a></li>
+      <li><a href="#menores">9. Menores de Idade</a></li>
+      <li><a href="#internacional">10. Transferência Internacional</a></li>
+      <li><a href="#dpo">11. Encarregado de Dados</a></li>
+    </ul>
+  </div>
+
+  <!-- COMPROMISSO -->
+  <div class="section" id="compromisso">
+    <h2><span class="num">🐟</span> Nosso Compromisso</h2>
+    <div class="highlight">
+      <strong>✅ Promessa do Fizu</strong>
+      O Fizu NÃO vende, NÃO aluga e NÃO comercializa seus dados pessoais com terceiros. Jamais. Seus dados são seus — e nós os tratamos com o máximo de cuidado e responsabilidade.
+    </div>
+    <p>Esta Política de Privacidade descreve como o Fizu, fundado por <strong>Rodolfo Maggessi</strong>, coleta, usa, armazena e protege os dados pessoais dos Usuários, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei n. 13.709/2018), o Marco Civil da Internet (Lei n. 12.965/2014) e demais legislações aplicáveis.</p>
+    <p>Ao usar a Plataforma, você concorda com as práticas descritas nesta Política. Recomendamos a leitura completa e periódica deste documento.</p>
+  </div>
+
+  <!-- 1. COLETA -->
+  <div class="section" id="coleta">
+    <h2><span class="num">1</span> Dados que Coletamos</h2>
+    <h3>1.1. Dados fornecidos por você</h3>
+    <ul>
+      <li><strong>Cadastro:</strong> nome completo, e-mail, senha (armazenada de forma criptografada), data de nascimento e telefone (opcional);</li>
+      <li><strong>Perfil:</strong> foto, nome de exibição, biografia, interesses e objetivos de uso declarados no onboarding;</li>
+      <li><strong>Conteúdo publicado:</strong> postagens, comentários, mensagens, vídeos, imagens e demais mídias que você compartilha.</li>
+    </ul>
+    <h3>1.2. Dados coletados automaticamente</h3>
+    <ul>
+      <li><strong>Dados de acesso:</strong> endereço IP, data e hora de acesso, tipo e versão do navegador, sistema operacional e dispositivo;</li>
+      <li><strong>Dados de uso:</strong> páginas visitadas, tempo de sessão, cliques, buscas realizadas e funcionalidades utilizadas;</li>
+      <li><strong>Dados de localização:</strong> localização aproximada com base no IP (não coletamos GPS sem sua autorização explícita);</li>
+      <li><strong>Cookies e tecnologias similares:</strong> conforme descrito na seção 8 desta Política.</li>
+    </ul>
+    <h3>1.3. Dados de terceiros</h3>
+    <p>Se você optar por fazer login com Google, Apple ou Facebook, receberemos as informações básicas de perfil autorizadas por você junto a esses provedores (nome, e-mail e foto). Não recebemos senhas de serviços de terceiros.</p>
+  </div>
+
+  <!-- 2. USO -->
+  <div class="section" id="uso">
+    <h2><span class="num">2</span> Como Usamos seus Dados</h2>
+    <ul>
+      <li>Criar e gerenciar sua conta na Plataforma;</li>
+      <li>Personalizar seu feed e recomendar conteúdo relevante aos seus interesses;</li>
+      <li>Operar as funcionalidades da Plataforma, incluindo Círculos, SereIA e Complementos;</li>
+      <li>Moderar conteúdo e garantir a segurança da comunidade;</li>
+      <li>Enviar comunicações sobre atualizações, novidades e alertas de segurança;</li>
+      <li>Analisar padrões de uso para melhorar continuamente a experiência;</li>
+      <li>Cumprir obrigações legais e atender a ordens judiciais;</li>
+      <li>Prevenir fraudes, abusos e atividades maliciosas na Plataforma.</li>
+    </ul>
+    <div class="highlight">
+      <strong>🚫 O que nunca fazemos</strong>
+      Não usamos seus dados para publicidade de terceiros, não vendemos sua base para anunciantes e não criamos perfis comportamentais para fins comerciais externos.
+    </div>
+  </div>
+
+  <!-- 3. BASES LEGAIS -->
+  <div class="section" id="bases">
+    <h2><span class="num">3</span> Bases Legais (LGPD)</h2>
+    <p>Todo tratamento de dados pessoais realizado pelo Fizu possui amparo em pelo menos uma das bases legais previstas no artigo 7 da LGPD:</p>
+    <ul>
+      <li><strong>Consentimento (art. 7, I):</strong> quando você nos autoriza expressamente a tratar seus dados, como ao aceitar cookies não essenciais;</li>
+      <li><strong>Execução de contrato (art. 7, V):</strong> para prestar os serviços que você contratou ao criar sua conta;</li>
+      <li><strong>Cumprimento de obrigação legal (art. 7, II):</strong> quando a lei nos exige manter ou fornecer determinados dados;</li>
+      <li><strong>Legítimo interesse (art. 7, IX):</strong> para melhorar nossos serviços, prevenir fraudes e garantir a segurança da Plataforma, sempre respeitando seus direitos fundamentais.</li>
+    </ul>
+  </div>
+
+  <!-- 4. COMPARTILHAMENTO -->
+  <div class="section" id="compartilhamento">
+    <h2><span class="num">4</span> Compartilhamento de Dados</h2>
+    <p>O Fizu pode compartilhar dados pessoais apenas nas seguintes situações:</p>
+    <ul>
+      <li><strong>Fornecedores de infraestrutura:</strong> empresas que nos prestam serviços essenciais de hospedagem, autenticação e processamento de dados (como Supabase e Netlify), sempre mediante contrato com cláusulas de proteção de dados;</li>
+      <li><strong>Autoridades competentes:</strong> quando exigido por lei, ordem judicial ou requisição de autoridade pública legítima;</li>
+      <li><strong>Proteção de direitos:</strong> quando necessário para proteger os direitos, propriedade ou segurança do Fizu, de seus Usuários ou de terceiros.</li>
+    </ul>
+    <div class="highlight">
+      <strong>✅ Garantia</strong>
+      Nunca compartilhamos seus dados com empresas de publicidade, data brokers, plataformas de anúncios ou qualquer terceiro para fins comerciais.
+    </div>
+  </div>
+
+  <!-- 5. SEGURANÇA -->
+  <div class="section" id="seguranca">
+    <h2><span class="num">5</span> Segurança dos Dados</h2>
+    <p>Adotamos as seguintes medidas técnicas e organizacionais para proteger seus dados:</p>
+    <ul>
+      <li>Criptografia de dados em trânsito (TLS/HTTPS) e em repouso;</li>
+      <li>Senhas armazenadas com hash criptográfico seguro (bcrypt) — nunca em texto claro;</li>
+      <li>Autenticação segura via provedores certificados (Supabase Auth);</li>
+      <li>Acesso interno restrito ao mínimo necessário (princípio do menor privilégio);</li>
+      <li>Monitoramento contínuo de acessos e atividades suspeitas;</li>
+      <li>Backups regulares e planos de recuperação de desastres.</li>
+    </ul>
+    <p>Em caso de incidente de segurança que possa afetar seus dados, notificaremos você e a Autoridade Nacional de Proteção de Dados (ANPD) nos prazos previstos pela LGPD.</p>
+  </div>
+
+  <!-- 6. RETENÇÃO -->
+  <div class="section" id="retencao">
+    <h2><span class="num">6</span> Retenção dos Dados</h2>
+    <p>Mantemos seus dados pessoais pelo tempo necessário para as finalidades descritas nesta Política:</p>
+    <ul>
+      <li><strong>Conta ativa:</strong> dados mantidos durante toda a vigência da conta;</li>
+      <li><strong>Após encerramento da conta:</strong> dados mantidos por no mínimo 6 (seis) anos, em conformidade com o prazo prescricional civil e obrigações fiscais;</li>
+      <li><strong>Conteúdo publicado:</strong> permanece na Plataforma conforme o Princípio da Permanência Digital, podendo ser anonimizado após o encerramento da conta;</li>
+      <li><strong>Logs de acesso:</strong> mantidos por 6 (seis) meses, conforme o artigo 15 do Marco Civil da Internet.</li>
+    </ul>
+  </div>
+
+  <!-- 7. DIREITOS -->
+  <div class="section" id="direitos">
+    <h2><span class="num">7</span> Seus Direitos</h2>
+    <p>Nos termos do artigo 18 da LGPD, você tem os seguintes direitos em relação aos seus dados pessoais:</p>
+    <div class="rights-grid">
+      <div class="right-item">
+        <div class="right-icon">👁️</div>
+        <div class="right-title">Acesso</div>
+        <div class="right-desc">Saber quais dados temos sobre você e como os usamos</div>
+      </div>
+      <div class="right-item">
+        <div class="right-icon">✏️</div>
+        <div class="right-title">Correção</div>
+        <div class="right-desc">Corrigir dados incompletos, inexatos ou desatualizados</div>
+      </div>
+      <div class="right-item">
+        <div class="right-icon">🗑️</div>
+        <div class="right-title">Eliminação</div>
+        <div class="right-desc">Solicitar a exclusão de dados tratados com base no consentimento</div>
+      </div>
+      <div class="right-item">
+        <div class="right-icon">📦</div>
+        <div class="right-title">Portabilidade</div>
+        <div class="right-desc">Receber seus dados em formato estruturado e legível</div>
+      </div>
+      <div class="right-item">
+        <div class="right-icon">🚫</div>
+        <div class="right-title">Oposição</div>
+        <div class="right-desc">Opor-se ao tratamento baseado em legítimo interesse</div>
+      </div>
+      <div class="right-item">
+        <div class="right-icon">↩️</div>
+        <div class="right-title">Revogação</div>
+        <div class="right-desc">Revogar o consentimento dado a qualquer momento</div>
+      </div>
+    </div>
+    <p style="margin-top:20px">Para exercer qualquer destes direitos, acesse nossa <a href="contato.html" style="color:var(--aqua);font-weight:600">página de contato</a> e selecione o assunto "Privacidade & LGPD".</p>
+  </div>
+
+  <!-- 8. COOKIES -->
+  <div class="section" id="cookies">
+    <h2><span class="num">8</span> Cookies e Tecnologias Similares</h2>
+    <h3>8.1. O que são cookies</h3>
+    <p>Cookies são pequenos arquivos de texto armazenados no seu dispositivo que nos ajudam a oferecer uma experiência melhor e mais personalizada.</p>
+    <h3>8.2. Tipos de cookies que usamos</h3>
+    <ul>
+      <li><strong>Essenciais:</strong> necessários para o funcionamento básico da Plataforma, como manter sua sessão ativa após o login. Não podem ser desativados;</li>
+      <li><strong>De preferências:</strong> lembram suas configurações, como o modo claro ou escuro escolhido;</li>
+      <li><strong>Analíticos:</strong> nos ajudam a entender como os Usuários navegam na Plataforma, de forma agregada e anônima.</li>
+    </ul>
+    <p>Você pode gerenciar cookies nas configurações do seu navegador. A desativação de cookies essenciais pode prejudicar o funcionamento da Plataforma.</p>
+  </div>
+
+  <!-- 9. MENORES -->
+  <div class="section" id="menores">
+    <h2><span class="num">9</span> Menores de Idade</h2>
+    <p>O Fizu não é direcionado a menores de 18 (dezoito) anos. Não coletamos intencionalmente dados de menores sem o consentimento expresso dos pais ou responsáveis legais, conforme exigido pelo artigo 14 da LGPD e pelo Estatuto da Criança e do Adolescente.</p>
+    <p>Se identificarmos que um menor se cadastrou sem autorização, tomaremos as medidas cabíveis para encerrar a conta e eliminar os dados coletados. Para denúncias, acesse nossa <a href="contato.html" style="color:var(--aqua);font-weight:600">página de contato</a>.</p>
+  </div>
+
+  <!-- 10. INTERNACIONAL -->
+  <div class="section" id="internacional">
+    <h2><span class="num">10</span> Transferência Internacional de Dados</h2>
+    <p>Alguns de nossos fornecedores de infraestrutura podem armazenar dados em servidores localizados fora do Brasil. Quando isso ocorrer, garantimos que a transferência obedece às disposições do artigo 33 da LGPD, assegurando que o país destinatário oferece grau de proteção de dados adequado ou que existem garantias contratuais suficientes.</p>
+    <p>Atualmente, utilizamos serviços da Supabase (EUA) e Netlify (EUA), ambos com políticas de proteção de dados compatíveis com os padrões internacionais.</p>
+  </div>
+
+  <!-- 11. DPO -->
+  <div class="section" id="dpo">
+    <h2><span class="num">11</span> Encarregado de Dados (DPO)</h2>
+    <p>Nos termos do artigo 41 da LGPD, o Fizu designa Encarregado de Proteção de Dados Pessoais (DPO), responsável por atuar como canal de comunicação entre o Fizu, os Usuários e a Autoridade Nacional de Proteção de Dados (ANPD).</p>
+    <p>Para exercer seus direitos ou esclarecer dúvidas sobre privacidade, utilize nossa <a href="contato.html" style="color:var(--aqua);font-weight:600">página de contato</a> selecionando o assunto "Privacidade & LGPD".</p>
+    <div class="highlight">
+      <strong>📋 Atualizações desta Política</strong>
+      Esta Política pode ser atualizada periodicamente. Notificaremos você com antecedência mínima de 30 dias por e-mail ou aviso na Plataforma. A versão atual estará sempre disponível em fizu.com.br/privacidade.
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h3>🐟 Dúvidas sobre privacidade?</h3>
+    <p>Nossa equipe está pronta para responder qualquer dúvida sobre como tratamos seus dados.</p>
+    <a href="contato.html">Falar com a equipe →</a>
+  </div>
+
+</div>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<footer>
+  <p>© 2026 Fizu · Fundado por Rodolfo Maggessi ·
+    <a href="index.html">Início</a>
+    <a href="termos.html">Termos de Uso</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="contato.html">Contato</a>
+  </p>
+</footer>
+
+<script>
+function toggleDark(){
+  const d=document.documentElement.classList.toggle('dark');
+  localStorage.setItem('fizu-theme',d?'dark':'light');
+  const btn=document.querySelector('.dark-toggle');
+  if(btn){btn.querySelector('.icon-moon').style.display=d?'inline':'none';btn.querySelector('.icon-sun').style.display=d?'none':'inline';}
+}
+(function(){
+  const s=localStorage.getItem('fizu-theme');
+  if(s === 'light'){
+    document.documentElement.classList.remove('dark');
+  } else {
+    document.documentElement.classList.add('dark');
+  }
+})();
+window.addEventListener('scroll',()=>{
+  document.getElementById('backTop').classList.toggle('show',window.scrollY>400);
+});
+</script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").then(()=>console.log("SW registrado")).catch(e=>console.error("SW erro:",e))}</script>
+</body>
+</html>
