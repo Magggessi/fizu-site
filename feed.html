@@ -6619,6 +6619,10 @@ async function abrirMarketplace(el) {
                      animation:mkt-pulse 2.5s ease-in-out infinite">
         🏪 + Publicar anúncio
       </button>
+      <button onclick="mktAbrirPropostas()"
+              style="display:block;margin:12px auto 0;background:none;border:none;color:var(--muted);font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline">
+        📋 Minhas propostas
+      </button>
     </div>
   </div>
 
@@ -11663,6 +11667,19 @@ async function mktEnviarProposta() {
     }
     if (!convId) throw new Error('sem conversa');
 
+    // Registro PERMANENTE da proposta (DNA Fizu)
+    const { error: errP } = await sb.from('propostas').insert({
+      listing_id:   l.id,
+      comprador_id: usuarioAtual.id,
+      vendedor_id:  l.vendedorId,
+      valor:        valor,
+      condicoes:    cond || null,
+      validade:     prazo || null,
+      conversa_id:  convId,
+      status:       'pendente'
+    });
+    if (errP) throw errP;
+
     const { error: errM } = await sb.from('mensagens')
       .insert({ conversa_id: convId, autor_id: usuarioAtual.id, conteudo: texto });
     if (errM) throw errM;
@@ -11701,6 +11718,126 @@ async function mktRemoverListing() {
     abrirMarketplace();
   } catch(e) {
     mostrarToast('Erro ao remover anúncio', 'error');
+  }
+}
+
+// ── Minhas propostas (recebidas + enviadas) ──────────────────────────
+const MKT_PROP_STATUS = {
+  pendente:  { label:'Pendente',  cor:'#c8960c', bg:'rgba(200,150,12,.12)' },
+  aceita:    { label:'Aceita',    cor:'#10b981', bg:'rgba(16,185,129,.12)' },
+  recusada:  { label:'Recusada',  cor:'var(--coral)', bg:'rgba(204,51,51,.10)' },
+  cancelada: { label:'Cancelada', cor:'var(--muted)', bg:'var(--bg2)' }
+};
+
+async function mktAbrirPropostas() {
+  if (!usuarioAtual) { pedirLogin('marketplace'); return; }
+  const feedEl = document.getElementById('feedPostsReais');
+  if (!feedEl) return;
+  mostrarAnthosChatBtn(false);
+  feedEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted)">📋<div style="margin-top:8px">Carregando propostas...</div></div>`;
+
+  let recebidas = [], enviadas = [];
+  try {
+    const r1 = await sb.from('propostas').select('*').eq('vendedor_id', usuarioAtual.id).order('criado_em', { ascending:false });
+    const r2 = await sb.from('propostas').select('*').eq('comprador_id', usuarioAtual.id).order('criado_em', { ascending:false });
+    recebidas = r1.data || [];
+    enviadas  = r2.data || [];
+  } catch(e) {}
+
+  // Resolve títulos de anúncios e nomes das outras partes (queries separadas)
+  const todas = [...recebidas, ...enviadas];
+  const listingIds = [...new Set(todas.map(p => p.listing_id).filter(Boolean))];
+  const pessoaIds  = [...new Set(todas.map(p => p.vendedor_id === usuarioAtual.id ? p.comprador_id : p.vendedor_id).filter(Boolean))];
+  let titulos = {}, nomes = {}, fotos = {};
+  try {
+    if (listingIds.length) {
+      const { data } = await sb.from('marketplace_listings').select('id, titulo').in('id', listingIds);
+      (data||[]).forEach(l => { titulos[l.id] = l.titulo; });
+    }
+    if (pessoaIds.length) {
+      const { data } = await sb.from('perfis').select('id, nome, foto_url').in('id', pessoaIds);
+      (data||[]).forEach(p => { nomes[p.id] = p.nome; fotos[p.id] = p.foto_url; });
+    }
+  } catch(e) {}
+
+  const valorFmt = v => (v != null) ? `R$ ${Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2})}` : 'A combinar';
+
+  const cardProposta = (p, ehRecebida) => {
+    const st = MKT_PROP_STATUS[p.status] || MKT_PROP_STATUS.pendente;
+    const outroId = ehRecebida ? p.comprador_id : p.vendedor_id;
+    const titulo = titulos[p.listing_id] || 'Anúncio';
+    const nome = nomes[outroId] || 'Usuário';
+    const data = new Date(p.criado_em).toLocaleDateString('pt-BR');
+    let acoes = '';
+    if (p.status === 'pendente') {
+      if (ehRecebida) {
+        acoes = `<div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="mktResponderProposta('${p.id}','aceita')" style="flex:1;background:#10b981;color:#fff;border:none;border-radius:10px;padding:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit">✓ Aceitar</button>
+          <button onclick="mktResponderProposta('${p.id}','recusada')" style="flex:1;background:var(--bg2);color:var(--coral);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit">✕ Recusar</button>
+        </div>`;
+      } else {
+        acoes = `<button onclick="mktResponderProposta('${p.id}','cancelada')" style="margin-top:12px;width:100%;background:var(--bg2);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:9px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit">Cancelar proposta</button>`;
+      }
+    }
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
+        <div style="font-weight:700;color:var(--text);font-size:.92rem;line-height:1.3">${escapeHtml(titulo)}</div>
+        <span style="flex-shrink:0;font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:20px;color:${st.cor};background:${st.bg}">${st.label}</span>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">${ehRecebida ? 'De' : 'Para'} <strong style="color:var(--text2)">${escapeHtml(nome)}</strong> · ${data}</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;color:var(--aqua);margin-bottom:4px">${valorFmt(p.valor)}</div>
+      ${p.condicoes ? `<div style="font-size:.82rem;color:var(--text2);margin-bottom:2px">📝 ${escapeHtml(p.condicoes)}</div>` : ''}
+      ${p.validade ? `<div style="font-size:.78rem;color:var(--muted)">⏳ ${escapeHtml(p.validade)}</div>` : ''}
+      ${acoes}
+      <button onclick="mktAbrirConversaProposta('${outroId}','${escapeHtml(nome).replace(/'/g,"&#39;")}','${(fotos[outroId]||'').replace(/'/g,"&#39;")}')" style="margin-top:10px;background:none;border:none;color:var(--aqua);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;padding:0">💬 Abrir conversa</button>
+    </div>`;
+  };
+
+  const secao = (titulo, arr, ehRecebida) => `
+    <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 10px">${titulo} ${arr.length?`· ${arr.length}`:''}</div>
+    ${arr.length ? arr.map(p => cardProposta(p, ehRecebida)).join('') : `<div style="font-size:.82rem;color:var(--muted);padding:8px 0 4px">Nenhuma proposta aqui ainda.</div>`}`;
+
+  feedEl.innerHTML = `
+    <div style="max-width:600px;margin:0 auto;padding:0 4px 40px">
+      <button onclick="abrirMarketplace()" style="background:none;border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit;margin:8px 0 4px">← Marketplace</button>
+      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:800;color:var(--text);margin:8px 0 2px">📋 Minhas propostas</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Todo registro é permanente. O combinado fica documentado.</div>
+      ${secao('Recebidas', recebidas, true)}
+      ${secao('Enviadas', enviadas, false)}
+    </div>`;
+  if (window.scrollTo) window.scrollTo(0,0);
+}
+
+async function mktResponderProposta(id, novoStatus) {
+  if (!usuarioAtual) return;
+  const verbo = { aceita:'aceitar', recusada:'recusar', cancelada:'cancelar' }[novoStatus] || 'atualizar';
+  if (!confirm(`Confirma ${verbo} esta proposta? Esta ação é permanente.`)) return;
+  try {
+    // Busca a proposta pra pegar conversa e partes (pra notificar no chat)
+    const { data: prop } = await sb.from('propostas').select('*').eq('id', id).single();
+    const { error } = await sb.from('propostas').update({ status: novoStatus }).eq('id', id);
+    if (error) throw error;
+
+    // Notifica no Messenger (registro permanente da resposta)
+    if (prop?.conversa_id) {
+      const msg = { aceita:'✅ Proposta ACEITA. O combinado está registrado.', recusada:'❌ Proposta recusada.', cancelada:'↩️ Proposta cancelada pelo comprador.' }[novoStatus] || 'Proposta atualizada.';
+      await sb.from('mensagens').insert({ conversa_id: prop.conversa_id, autor_id: usuarioAtual.id, conteudo: `📋 ${msg}` });
+      await sb.from('conversas').update({ ultima_mensagem: `📋 ${msg}`, ultima_mensagem_em: new Date().toISOString() }).eq('id', prop.conversa_id);
+    }
+
+    mostrarToast(`Proposta ${MKT_PROP_STATUS[novoStatus]?.label?.toLowerCase() || 'atualizada'} 📋`, 'success');
+    mktAbrirPropostas();
+  } catch(e) {
+    console.error(e);
+    mostrarToast('Erro ao responder proposta. Tente novamente.', 'error');
+  }
+}
+
+function mktAbrirConversaProposta(outroId, nome, foto) {
+  if (isMobile()) {
+    abrirChatMobile().then(() => setTimeout(() => abrirConversaMobile(null, outroId, nome, foto), 350));
+  } else {
+    iniciarConversaCom(outroId, nome, foto);
   }
 }
 
