@@ -1234,7 +1234,7 @@ html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#005
     </div>
     <span class="fizu-brand">FIZU</span>
   </a>
-  <div class="search-bar"><input type="text" id="searchInput" placeholder="Buscar no Fizu..." onkeypress="if(event.key==='Enter'){_buscaAba='posts';mostrarAbaBusca(this.value)}" oninput="if(!this.value)carregarPosts()"><span class="search-icon">🔍</span></div>
+  <div class="search-bar"><input type="text" id="searchInput" placeholder="Buscar no Fizu..." onkeypress="if(event.key==='Enter'){_buscaAba='posts';mostrarAbaBusca(this.value)}" oninput="if(!this.value)carregarPosts()"><span class="search-icon" style="pointer-events:auto;cursor:pointer" onclick="var v=document.getElementById('searchInput').value.trim();if(v){_buscaAba='posts';mostrarAbaBusca(v)}else{document.getElementById('searchInput').focus()}">🔍</span></div>
   <button onclick="abrirMarketplace(document.getElementById('tab-marketplace'))" id="navMktBtn"
     style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
            border:1.5px solid #c8960c;
@@ -8513,6 +8513,39 @@ async function carregarNotificacoes() {
     }
   } catch(e) {}
 
+  // Propostas (derivadas da tabela propostas)
+  try {
+    const [rec, resp] = await Promise.all([
+      sb.from('propostas').select('id, valor, comprador_id, criado_em').eq('vendedor_id', usuarioAtual.id).eq('status','pendente').order('criado_em',{ascending:false}).limit(15),
+      sb.from('propostas').select('id, valor, vendedor_id, status, respondido_em').eq('comprador_id', usuarioAtual.id).in('status',['aceita','recusada']).order('respondido_em',{ascending:false}).limit(15)
+    ]);
+    const recebidas = rec.data || [], respondidas = resp.data || [];
+    const pIds = [...new Set([...recebidas.map(p=>p.comprador_id), ...respondidas.map(p=>p.vendedor_id)].filter(Boolean))];
+    const pMap = {};
+    if (pIds.length) {
+      const { data } = await sb.from('perfis').select('id, nome, foto_url').in('id', pIds);
+      (data||[]).forEach(p => { pMap[p.id] = p; });
+    }
+    const fmtV = v => v != null ? `R$ ${Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2})}` : 'um valor';
+    const propostaItems = [
+      ...recebidas.map(p => ({
+        id:'prop_new_'+p.id, tipo:'proposta', emoji:'📋',
+        nome: pMap[p.comprador_id]?.nome || 'Alguém', foto: pMap[p.comprador_id]?.foto_url,
+        texto: `fez uma proposta de ${fmtV(p.valor)}`, tempo: p.criado_em, autorId: p.comprador_id
+      })),
+      ...respondidas.map(p => ({
+        id:'prop_resp_'+p.id, tipo:'proposta', emoji: p.status==='aceita'?'✅':'📋',
+        nome: pMap[p.vendedor_id]?.nome || 'O vendedor', foto: pMap[p.vendedor_id]?.foto_url,
+        texto: p.status==='aceita' ? `aceitou sua proposta de ${fmtV(p.valor)} 🎉` : `recusou sua proposta de ${fmtV(p.valor)}`,
+        tempo: p.respondido_em || p.criado_em, autorId: p.vendedor_id
+      }))
+    ];
+    if (propostaItems.length) {
+      notificacoesList = [...notificacoesList, ...propostaItems]
+        .sort((a,b) => new Date(b.tempo) - new Date(a.tempo)).slice(0, 30);
+    }
+  } catch(e) {}
+
   // Conta não lidas
   const naoLidas = notificacoesList.filter(n => !notificacoesLidas.has(n.id)).length;
   const badge = document.getElementById('notif-badge');
@@ -8541,6 +8574,12 @@ function iniciarRealtimeNotificacoes() {
       await carregarNotificacoes();
     })
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contatos' }, async () => {
+      await carregarNotificacoes();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'propostas' }, async () => {
+      await carregarNotificacoes();
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'propostas' }, async () => {
       await carregarNotificacoes();
     })
     .subscribe();
@@ -8575,8 +8614,11 @@ async function abrirNotificacoes(el) {
       const avatarHtml = n.foto 
         ? `<div style="width:42px;height:42px;border-radius:50%;background-image:url(${n.foto});background-size:cover;background-position:center;flex-shrink:0"></div>`
         : `<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex-shrink:0">${inicial}</div>`;
-      const icon = n.tipo === 'curtida' ? '❤️' : '💬';
-      return `<div class="post-card" style="display:flex;gap:12px;align-items:center;padding:14px 16px;cursor:pointer" onclick="voltarFeed()">
+      const icon = n.emoji || (n.tipo === 'curtida' ? '❤️' : '💬');
+      const acaoN = n.tipo === 'proposta' ? 'mktAbrirPropostas()'
+                  : n.tipo === 'seguidor' ? `abrirPerfilPublico('${n.autorId}')`
+                  : 'voltarFeed()';
+      return `<div class="post-card" style="display:flex;gap:12px;align-items:center;padding:14px 16px;cursor:pointer" onclick="${acaoN}">
         <div style="position:relative">
           ${avatarHtml}
           <div style="position:absolute;bottom:-2px;right:-2px;font-size:.8rem">${icon}</div>
@@ -9810,7 +9852,9 @@ async function renderNotifDropdown() {
            <div style="position:absolute;bottom:-2px;right:-2px;font-size:.75rem;background:var(--card);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center">${n.emoji}</div>
          </div>`;
 
-    const acao = n.tipo === 'seguidor'
+    const acao = n.tipo === 'proposta'
+      ? `fecharNotifDropdown();mktAbrirPropostas()`
+      : n.tipo === 'seguidor'
       ? `fecharNotifDropdown();abrirPerfilPublico('${n.autorId}')`
       : `fecharNotifDropdown();voltarFeed()`;
 
