@@ -11476,7 +11476,7 @@ async function mktImportarUrl() {
                 border:2px solid ${i===0?'var(--aqua)':'var(--border)'}" onerror="this.style.display='none'">`
       ).join('');
     }
-    const badge = { mercadolivre:'🛒 Mercado Livre', olx:'📋 OLX', shopee:'🛍️ Shopee', amazon:'📦 Amazon' };
+    const badge = { mercadolivre:'🛒 Mercado Livre', olx:'📋 OLX', shopee:'🛍️ Shopee', amazon:'📦 Amazon', remax:'🏠 RE/MAX', imovel:'🏠 Imóvel', enjoei:'👕 Enjoei' };
     statusEl.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;font-size:.82rem">
       ✅ Importado de ${badge[result.plataforma]||result.plataforma} — revise antes de publicar.</div>`;
   } catch(e) {
