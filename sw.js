@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fizu-v18';
+const CACHE_NAME = 'fizu-v19';
 
 // Só cacheia assets que nunca mudam (fontes, libs externas)
 // HTML NUNCA é cacheado — sempre busca do servidor

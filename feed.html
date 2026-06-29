@@ -4193,13 +4193,50 @@ function renderCofreUpload(feedEl) {
       </div>
     </div>
 
+    <div style="font-size:.82rem;font-weight:700;color:var(--text);margin:16px 0 10px">🔵 Meta (Instagram · Facebook · Threads)</div>
+    <div class="cofre-upload-card" id="card-meta" onclick="document.getElementById('input-meta').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="cofreDrop(event,'meta')"
+         style="grid-column:span 3;max-width:100%;padding:16px 20px">
+      <input type="file" id="input-meta" class="cofre-input" accept=".zip" onchange="cofreLoad(event,'meta')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="display:flex;align-items:center;gap:6px;font-size:1.5rem">
+          <svg width="28" height="28" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="metaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0082FB"/><stop offset="100%" style="stop-color:#00B2FF"/></linearGradient></defs>
+            <path d="M18 2C9.163 2 2 9.163 2 18s7.163 16 16 16 16-7.163 16-16S26.837 2 18 2z" fill="url(#metaGrad)"/>
+            <path d="M8.5 18c0-3.6 2.8-6.5 6.5-6.5 1.8 0 3.2.6 4.4 1.8l2.4-2.4C19.8 8.9 17.3 8 14.5 8 9.8 8 6 11.6 6 18s3.8 10 8.5 10c4.6 0 8.5-3.6 8.5-10 0-.6 0-1.2-.1-1.8H14.5v3.4h7.5c-.3 1.7-1.3 3-2.8 3.9-1.3.8-2.9 1.3-4.7 1.3-4.1 0-7.5-3.5-7.5-6.8z" fill="white"/>
+          </svg>
+          <span style="font-size:.95rem;font-weight:800;color:var(--text)">Central de Contas Meta</span>
+        </div>
+        <div style="flex:1;text-align:left">
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.5">Exporte em <strong style="color:var(--text)">accountscenter.instagram.com → Suas informações → Baixar suas informações</strong><br>Selecione Facebook, Instagram, Threads ou Meta — e arraste o .zip aqui</div>
+        </div>
+      </div>
+      <div class="cofre-file-count" id="count-meta" style="display:none;margin-top:8px"></div>
+    </div>
+
     </div>
 
     <div style="font-size:.82rem;font-weight:700;color:var(--text);margin:16px 0 10px">📷 Fotos & Galeria</div>
     <div class="cofre-cloud-grid">
       <div class="cofre-cloud-card" onclick="abrirGoogleFotos()">
         <span class="cofre-cloud-tag tag-soon">OAuth</span>
-        <div class="cofre-cloud-icon">🌈</div>
+        <div class="cofre-cloud-icon" style="display:flex;justify-content:center;margin-bottom:8px">
+          <svg width="38" height="38" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 4.5C13.23 4.5 4.5 13.23 4.5 24S13.23 43.5 24 43.5 43.5 34.77 43.5 24 34.77 4.5 24 4.5z" fill="none"/>
+            <!-- Pétala azul (topo) -->
+            <path d="M24 4.5A9.75 9.75 0 0 1 24 24 9.75 9.75 0 0 1 24 4.5z" fill="#4285F4"/>
+            <!-- Pétala vermelha (direita) -->  
+            <path d="M43.5 24A9.75 9.75 0 0 1 24 24 9.75 9.75 0 0 1 43.5 24z" fill="#EA4335"/>
+            <!-- Pétala amarela (baixo) -->
+            <path d="M24 43.5A9.75 9.75 0 0 1 24 24 9.75 9.75 0 0 1 24 43.5z" fill="#FBBC05"/>
+            <!-- Pétala verde (esquerda) -->
+            <path d="M4.5 24A9.75 9.75 0 0 1 24 24 9.75 9.75 0 0 1 4.5 24z" fill="#34A853"/>
+            <!-- Centro branco -->
+            <circle cx="24" cy="24" r="5.5" fill="white"/>
+          </svg>
+        </div>
         <div class="cofre-cloud-name">Google Fotos</div>
         <div class="cofre-cloud-hint">Importe via Google Takeout ou conecte sua conta Google</div>
       </div>
@@ -4223,7 +4260,8 @@ function renderCofreUpload(feedEl) {
 // ── Drag & Drop ──
 function cofreDrop(event, rede) {
   event.preventDefault();
-  document.getElementById('card-' + rede).classList.remove('dragover');
+  const card = document.getElementById('card-' + rede);
+  if (card) card.classList.remove('dragover');
   const file = event.dataTransfer.files[0];
   if (file) cofreProcessFile(file, rede);
 }
@@ -4282,19 +4320,54 @@ async function cofreParseZip(file, rede) {
   }
   const zip = await JSZip.loadAsync(file);
   const results = [];
-  const jsonFiles = Object.keys(zip.files).filter(f => f.endsWith('.json') || f.endsWith('.js'));
+  const allFiles = Object.keys(zip.files);
+  const jsonFiles = allFiles.filter(f => f.endsWith('.json') || f.endsWith('.js'));
 
-  for (const fname of jsonFiles) {
+  // Detectar se é ZIP da Meta Central (tem pasta "personal_information" ou "your_activity_across_facebook")
+  const isMetaCentral = allFiles.some(f => 
+    f.includes('personal_information') || 
+    f.includes('your_activity_across_facebook') ||
+    f.includes('your_instagram_activity') ||
+    f.includes('logged_information') ||
+    f.includes('comments_and_reactions')
+  );
+
+  // Arquivos relevantes para importar (posts, comentários, stories)
+  const relevantPaths = [
+    'posts/', 'content/', 'comments/', 'your_posts', 'media/', 'threads/',
+    'your_activity_across_facebook/posts/', 'your_instagram_activity/content/',
+    'logged_information/', 'comments_and_reactions/'
+  ];
+
+  const targetFiles = isMetaCentral
+    ? jsonFiles.filter(f => relevantPaths.some(p => f.includes(p)) && !f.includes('checkpoint'))
+    : jsonFiles;
+
+  const filesToProcess = targetFiles.length > 0 ? targetFiles : jsonFiles;
+
+  for (const fname of filesToProcess.slice(0, 50)) { // limite de 50 arquivos por ZIP
     try {
       let text = await zip.files[fname].async('text');
-      // Twitter exporta como JS: window.YTD.tweets.part0 = [...]
       if (fname.includes('tweet') || fname.endsWith('.js')) {
         text = text.replace(/^[^=]+=\s*/, '');
       }
-      const parsed = cofreParseJSON(text, rede, fname);
+      const redeDetectada = isMetaCentral ? 'meta' : rede;
+      const parsed = cofreParseJSON(text, redeDetectada, fname);
       results.push(...parsed);
     } catch(e) {}
   }
+
+  if (results.length === 0 && isMetaCentral) {
+    // Tentar todos os JSON se os filtrados não acharam nada
+    for (const fname of jsonFiles.slice(0, 100)) {
+      try {
+        const text = await zip.files[fname].async('text');
+        const parsed = cofreParseJSON(text, 'meta', fname);
+        results.push(...parsed);
+      } catch(e) {}
+    }
+  }
+
   return results;
 }
 
@@ -4347,8 +4420,6 @@ function cofreParseJSON(text, rede, fname = '') {
         const texto = tw?.full_text || tw?.text || '';
         const ts = tw?.created_at;
         if (!texto) return;
-        if (texto.startsWith('RT @')) { // pular retweets se quiser — mantemos por ora
-        }
         results.push({
           rede: 'twitter',
           tipo: texto.startsWith('RT @') ? 'retweet' : 'tweet',
@@ -4358,6 +4429,85 @@ function cofreParseJSON(text, rede, fname = '') {
           metadata: { tweet_id: tw?.id_str || tw?.id || null, likes: tw?.favorite_count || 0 }
         });
       });
+
+    } else if (rede === 'meta' || rede === 'instagram' || rede === 'facebook') {
+      // Meta Central / Instagram / Facebook unificado
+      // Tentar vários formatos de arquivo da exportacao Meta
+      
+      // Formato Instagram: posts_1.json, content/posts_1.json
+      const igPosts = json?.media || json?.posts_1 || 
+                      (Array.isArray(json) ? json : null);
+      if (igPosts && Array.isArray(igPosts)) {
+        igPosts.forEach(p => {
+          const caption = p?.title || p?.media?.[0]?.title || p?.string_map_data?.Caption?.value || '';
+          const ts = p?.creation_timestamp || p?.taken_at_timestamp;
+          if (!caption && !ts) return;
+          results.push({
+            rede: rede === 'meta' ? 'instagram' : rede,
+            tipo: 'post',
+            conteudo: caption || '',
+            midia_url: null,
+            data_original: ts ? new Date(ts * 1000).toISOString() : null,
+            metadata: {}
+          });
+        });
+      }
+
+      // Formato Facebook: status_updates, your_posts
+      const fbPosts = json?.status_updates || json?.timeline_posts || 
+                      json?.your_posts || json?.v2;
+      if (fbPosts && Array.isArray(fbPosts)) {
+        fbPosts.forEach(p => {
+          const texto = p?.data?.[0]?.post || p?.title || 
+                        p?.attachments?.[0]?.data?.[0]?.post || '';
+          const ts = p?.timestamp;
+          if (!texto && !ts) return;
+          results.push({
+            rede: rede === 'meta' ? 'facebook' : rede,
+            tipo: 'post',
+            conteudo: texto || '',
+            midia_url: null,
+            data_original: ts ? new Date(ts * 1000).toISOString() : null,
+            metadata: {}
+          });
+        });
+      }
+
+      // Formato Threads / outros
+      const threads = json?.threads || json?.ig_threads;
+      if (threads && Array.isArray(threads)) {
+        threads.forEach(t => {
+          const texto = t?.post?.caption?.text || t?.string_map_data?.Text?.value || '';
+          const ts = t?.creation_timestamp || t?.taken_at;
+          if (!texto) return;
+          results.push({
+            rede: 'threads',
+            tipo: 'post',
+            conteudo: texto,
+            midia_url: null,
+            data_original: ts ? new Date(ts * 1000).toISOString() : null,
+            metadata: {}
+          });
+        });
+      }
+
+      // Formato comentarios Instagram
+      const comments = json?.comments_media_comments || json?.media_comments;
+      if (comments && Array.isArray(comments)) {
+        comments.forEach(c => {
+          const texto = c?.string_list_data?.[0]?.value || c?.comment?.comment || '';
+          const ts = c?.string_list_data?.[0]?.timestamp || c?.timestamp;
+          if (!texto) return;
+          results.push({
+            rede: 'instagram',
+            tipo: 'comentario',
+            conteudo: texto,
+            midia_url: null,
+            data_original: ts ? new Date(ts * 1000).toISOString() : null,
+            metadata: {}
+          });
+        });
+      }
     }
   } catch(e) {}
   return results.filter(r => r.conteudo?.trim() || r.data_original);
