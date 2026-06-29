@@ -1457,7 +1457,7 @@ html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#005
   <div class="compose-panel">
     <div class="compose-panel-head">
       <div class="compose-panel-title">Nova postagem</div>
-      <button class="compose-close" onclick="document.getElementById('composeModal').classList.remove('show')">✕</button>
+      <button class="compose-close" onclick="fecharCompose()">✕</button>
     </div>
     <div class="sereia-hint-compose">
       <svg viewBox="0 0 30 32" fill="none" width="28" height="28" style="flex-shrink:0">
@@ -1585,11 +1585,42 @@ function switchTab(el){
 
 function openCompose(){
   if(!usuarioAtual){ pedirLogin('postar'); return; }
+  // Sempre começa limpo — evita post acidental com conteúdo residual
   if (window.SEREIA && window.SEREIA.ativo) sairModoSereia();
-  document.getElementById('composeModal').classList.add('show');
+  window.SEREIA = { ativo: false, imagemUrl: null, publicando: false };
   const ta = document.getElementById('composeText');
-  ta.focus();
-  if (!ta._mencaoIniciado) { iniciarAutocompleteMencao(ta); ta._mencaoIniciado = true; }
+  if (ta) { ta.value = ''; ta.maxLength = 500; ta.placeholder = 'O que você quer compartilhar? Cole um link do Instagram ou YouTube para embutir o post.'; }
+  const charCount = document.getElementById('composeCharCount');
+  if (charCount) charCount.textContent = '0/500';
+  const prev = document.getElementById('sereiaPreviewBox');
+  if (prev) { prev.style.display = 'none'; prev.innerHTML = ''; }
+  const btnNormal = document.getElementById('btnPublicarNormal');
+  if (btnNormal) btnNormal.style.display = '';
+  const btnGerar = document.getElementById('btnGerarSereia');
+  if (btnGerar) btnGerar.style.display = 'none';
+  const btnS = document.getElementById('btnModoSereia');
+  if (btnS) { btnS.textContent = '✨ SereIA'; btnS.style.background = ''; btnS.style.border = ''; btnS.style.color = ''; btnS.style.animation = ''; btnS.classList.remove('ativo'); }
+  document.getElementById('composeModal').classList.add('show');
+  if (ta) {
+    ta.focus();
+    if (!ta._mencaoIniciado) { iniciarAutocompleteMencao(ta); ta._mencaoIniciado = true; }
+  }
+}
+
+function fecharCompose() {
+  // Limpar tudo antes de fechar — evita posts acidentais
+  const ta = document.getElementById('composeText');
+  if (ta) ta.value = '';
+  const charCount = document.getElementById('composeCharCount');
+  if (charCount) charCount.textContent = '0/500';
+  if (window.SEREIA && window.SEREIA.ativo) sairModoSereia();
+  window.SEREIA = { ativo: false, imagemUrl: null, publicando: false };
+  const prev = document.getElementById('sereiaPreviewBox');
+  if (prev) { prev.style.display = 'none'; prev.innerHTML = ''; }
+  // Remover preview de mídia se houver
+  const mediaPreview = document.getElementById('composeMediaPreview');
+  if (mediaPreview) mediaPreview.innerHTML = '';
+  document.getElementById('composeModal').classList.remove('show');
 }
 
 function openPublicAccess(){
@@ -1617,7 +1648,7 @@ function sendRequest(){
 }
 
 document.querySelectorAll('.modal-overlay').forEach(m=>{
-  m.addEventListener('click',function(e){if(e.target===this){this.classList.remove('show')}});
+  m.addEventListener('click',function(e){if(e.target===this){fecharCompose()}});
 });
 
 // ══════════════════════════════════════════
@@ -1869,13 +1900,13 @@ async function sereiaPublicar() {
     conteudo: texto,
     tipo: window.SEREIA.imagemUrl ? 'foto' : 'texto',
     midia_url: window.SEREIA.imagemUrl || null,
+    gerado_ia: true,
+    ia_modelo: 'SereIA',
     criado_em: new Date().toISOString()
   });
   window.SEREIA.publicando = false;
   if (error) { mostrarToast('Erro: ' + error.message, 'error'); return; }
-  document.getElementById('composeModal').classList.remove('show');
-  document.getElementById('composeText').value = '';
-  sairModoSereia();
+  fecharCompose();
   mostrarToast('Publicado com a SereIA ✨', 'success');
   if (typeof carregarPosts === 'function') carregarPosts();
 }
@@ -2581,6 +2612,7 @@ function _renderPost(post, perfisMap) {
       ${post.is_ritual && post.ritual_agente_nome
         ? `<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);border-radius:20px;padding:3px 9px;font-size:.68rem;font-weight:700;color:var(--aqua)">${post.ritual_agente_emoji||'🌊'} Ritual · ${post.ritual_agente_nome}</div>`
         : '<div class="eternal-pill">⚓ eterno</div>'}
+      ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ''}
     </div>
     <div class="post-body">${linkify(post.conteudo)}</div>
     ${renderMidia(post)}
