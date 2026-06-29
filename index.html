@@ -232,22 +232,68 @@ html.light .post-textarea{background:rgba(248,250,255,.8)}
   animation:fade-up .7s .35s cubic-bezier(.22,1,.36,1) both;
 }
 .chute-card{
-  background:rgba(8,12,20,.88);border:1px solid rgba(255,223,0,.25);
-  border-radius:16px;padding:12px 18px;backdrop-filter:blur(14px);
+  background:rgba(8,12,20,.92);
+  border:1.5px solid rgba(255,223,0,.35);
+  border-radius:18px;padding:14px 18px 14px 18px;backdrop-filter:blur(16px);
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative;
+  box-shadow:0 0 24px rgba(255,223,0,.1),0 4px 20px rgba(0,0,0,.3);
+  overflow:hidden;
 }
-html.light .chute-card{background:rgba(240,244,252,.95)}
-.chute-label{font-size:.7rem;font-weight:700;color:var(--br-yellow);letter-spacing:.05em;white-space:nowrap;flex-shrink:0}
-html.light .chute-label{color:#8a6500}
+/* brilho dourado pulsante */
+.chute-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,223,0,.04) 50%,transparent 70%);
+  background-size:200% 100%;
+  animation:chute-shimmer 2.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes chute-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+html.light .chute-card{background:rgba(255,252,230,.97);border-color:rgba(180,140,0,.4);box-shadow:0 0 20px rgba(180,140,0,.15)}
+
+/* Moedas flutuantes */
+.moedas-float{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;gap:3px;pointer-events:none}
+.moeda{
+  font-size:1.1rem;
+  animation:moeda-float 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 4px rgba(255,223,0,.6));
+}
+.moeda:nth-child(2){animation-delay:.35s;animation-duration:2.3s}
+.moeda:nth-child(3){animation-delay:.7s;animation-duration:1.9s}
+@keyframes moeda-float{
+  0%,100%{transform:translateY(0) rotate(-5deg)}
+  50%{transform:translateY(-6px) rotate(5deg)}
+}
+
+.chute-label{font-size:.7rem;font-weight:700;color:#f5c842;letter-spacing:.05em;white-space:nowrap;flex-shrink:0}
+html.light .chute-label{color:#7a5a00}
+.chute-premio{font-size:.62rem;color:#f5c842;font-weight:700;opacity:.85;margin-top:1px}
+html.light .chute-premio{color:#9a7000}
 .chute-inputs{display:flex;align-items:center;gap:6px}
-.chute-flag{font-size:1.1rem}
-.chute-input{width:40px;height:36px;background:rgba(255,223,0,.08);border:1.5px solid rgba(255,223,0,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:900;text-align:center;outline:none;transition:border-color .2s}
-html.light .chute-input{background:rgba(0,120,60,.06);border-color:rgba(0,120,60,.25)}
-.chute-input:focus{border-color:var(--br-yellow)}
-.chute-x{font-size:.75rem;font-weight:700;color:var(--muted)}
-.chute-btn{background:linear-gradient(135deg,var(--br-green),#004499);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:.76rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s;margin-left:auto}
-.chute-btn:hover{transform:scale(1.03)}
-.chute-fechar{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:rgba(100,120,160,.3);border:none;color:var(--muted);cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.chute-flag{font-size:1.15rem}
+.chute-input{
+  width:42px;height:38px;
+  background:rgba(255,223,0,.08);
+  border:1.5px solid rgba(255,223,0,.3);
+  border-radius:9px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:1.15rem;font-weight:900;
+  text-align:center;outline:none;transition:all .2s;
+}
+html.light .chute-input{background:rgba(0,100,40,.07);border-color:rgba(0,120,60,.3);color:#0d1628}
+.chute-input:focus{border-color:#f5c842;box-shadow:0 0 0 2px rgba(245,200,66,.2)}
+.chute-x{font-size:.78rem;font-weight:700;color:var(--muted)}
+.chute-btn{
+  background:linear-gradient(135deg,#009c3b,#002776);
+  color:#fff;border:none;border-radius:12px;
+  padding:9px 16px;font-size:.78rem;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  white-space:nowrap;transition:all .2s;
+  box-shadow:0 3px 10px rgba(0,156,59,.35);
+  flex-shrink:0;
+}
+.chute-btn:hover{transform:scale(1.04);box-shadow:0 5px 16px rgba(0,156,59,.5)}
+.chute-btn:active{transform:scale(.97)}
+.chute-fechar{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:rgba(100,120,160,.35);border:none;color:var(--muted);cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;z-index:2}
+.chute-fechar:hover{background:rgba(200,50,50,.4);color:#fff}
 
 /* ── LINKS ── */
 .links-wrap{
@@ -429,10 +475,16 @@ html.light .copa-badge{background:rgba(240,244,252,.95)}
 
     <!-- Chute do placar -->
     <div class="chute-wrap" id="chuteWrap">
-      <div class="chute-card">
+      <div class="chute-card" id="chuteCard">
+        <!-- Moedas animadas -->
+        <div class="moedas-float" aria-hidden="true">
+          <span class="moeda">🪙</span>
+          <span class="moeda">🪙</span>
+          <span class="moeda">🪙</span>
+        </div>
         <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
-          <div class="chute-label">⚽ Seu palpite BRA × JPN</div>
-          <div style="font-size:.62rem;color:#f5c842;font-weight:700;letter-spacing:.03em">🪙 Acertou? Ganhe 1.000 FizuCoins!</div>
+          <div class="chute-label">⚽ Seu palpite: BRA × JPN</div>
+          <div class="chute-premio">🪙 Acerte o placar exato → <strong>1.000 FizuCoins!</strong></div>
         </div>
         <div class="chute-inputs">
           <span class="chute-flag">🇧🇷</span>
@@ -441,7 +493,7 @@ html.light .copa-badge{background:rgba(240,244,252,.95)}
           <input class="chute-input" id="chuteJpn" type="number" min="0" max="20" value="0">
           <span class="chute-flag">🇯🇵</span>
         </div>
-        <button class="chute-btn" onclick="postarChute()">Registrar palpite</button>
+        <button class="chute-btn" id="chuteBtn" onclick="postarChute()">Registrar palpite →</button>
         <button class="chute-fechar" onclick="document.getElementById('chuteWrap').style.display='none'" title="Fechar">✕</button>
       </div>
     </div>
@@ -616,9 +668,22 @@ function ativarSereia(){document.getElementById('postBox').classList.add('sereia
 // SESSÃO
 async function verificarSessao(){
   try{
-    const tk=JSON.parse(localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token')||'{}');
-    const r=await fetch(`${SUPA_URL}/auth/v1/user`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${tk.access_token||''}`}});
-    if(r.ok){const d=await r.json();return d.id?d:null;}return null;
+    // Supabase v2: chave pode ser 'sb-<ref>-auth-token' com valor JSON {access_token,...}
+    // ou armazenado por key diferente — varrer localStorage
+    let token = null;
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && k.includes('auth-token')){
+        try{
+          const v=JSON.parse(localStorage.getItem(k)||'{}');
+          if(v.access_token){token=v.access_token;break;}
+        }catch{}
+      }
+    }
+    if(!token) return null;
+    const r=await fetch(`${SUPA_URL}/auth/v1/user`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`}});
+    if(r.ok){const d=await r.json();return d.id?d:null;}
+    return null;
   }catch{return null;}
 }
 async function publicarIndex(){
@@ -663,21 +728,24 @@ async function postarChute(){
   const bra = parseInt(document.getElementById('chuteBra').value) || 0;
   const jpn = parseInt(document.getElementById('chuteJpn').value) || 0;
 
-  // Verificar sessão
-  const tk = JSON.parse(localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token') || '{}');
-  const token = tk?.access_token;
+  // Buscar token robusto
+  let token = null;
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.includes('auth-token')){
+      try{const v=JSON.parse(localStorage.getItem(k)||'{}');if(v.access_token){token=v.access_token;break;}}catch{}
+    }
+  }
   if (!token) {
-    // Salva palpite para após login
     sessionStorage.setItem('palpite_pendente', JSON.stringify({bra, jpn}));
-    toast('Faça login para registrar seu palpite!');
-    setTimeout(() => window.location.href = '/feed#', 1200);
+    toast('Faça login para registrar seu palpite! 🔒');
+    setTimeout(() => window.location.href = '/feed#', 1400);
     return;
   }
 
-  const btn = document.querySelector('.chute-btn');
-  const orig = btn.textContent;
-  btn.textContent = '⚡ Registrando...';
-  btn.disabled = true;
+  const btn = document.getElementById('chuteBtn');
+  const orig = btn?.textContent || 'Registrar palpite →';
+  if(btn){btn.textContent='⚡ Registrando...';btn.disabled=true;}
 
   try {
     const res = await fetch(`${SUPA_URL}/functions/v1/copa-palpite`, {
@@ -692,30 +760,28 @@ async function postarChute(){
     const r = await res.json();
 
     if (r.ok) {
-      // Mostrar sucesso no card do chute
-      document.querySelector('.chute-card').innerHTML = `
-        <div style="text-align:center;padding:8px 0;width:100%">
-          <div style="font-size:1.1rem;margin-bottom:4px">⚽ Palpite registrado!</div>
-          <div style="font-size:1.3rem;font-weight:900;margin:6px 0">🇧🇷 ${bra} × ${jpn} 🇯🇵</div>
-          <div style="font-size:.72rem;color:#f5c842;font-weight:700">+10 FizuCoins agora · +1.000 se acertar 🪙</div>
-          <a href="/feed#post-${r.post_id}" style="display:inline-block;margin-top:8px;font-size:.76rem;color:var(--aqua);text-decoration:none">Ver no feed →</a>
+      document.getElementById('chuteCard').innerHTML = `
+        <div style="text-align:center;padding:10px 4px;width:100%">
+          <div style="font-size:1.6rem;margin-bottom:2px;animation:moeda-float 1s ease-in-out infinite">🪙</div>
+          <div style="font-size:1rem;font-weight:800;margin-bottom:4px">⚽ Palpite registrado!</div>
+          <div style="font-size:1.4rem;font-weight:900;color:#f5c842;margin:6px 0">🇧🇷 ${bra} × ${jpn} 🇯🇵</div>
+          <div style="font-size:.72rem;color:#f5c842;font-weight:700;margin-bottom:8px">+10 FizuCoins na conta · +1.000 se acertar o placar exato! 🏆</div>
+          ${r.post_id ? '<a href="/feed#post-'+r.post_id+'" style="display:inline-block;background:rgba(59,158,255,.12);border:1px solid rgba(59,158,255,.3);border-radius:20px;padding:6px 16px;font-size:.76rem;font-weight:600;color:#3b9eff;text-decoration:none">Ver post no feed →</a>' : ''}
         </div>`;
     } else if (res.status === 409) {
-      // Já votou
-      document.querySelector('.chute-card').innerHTML = `
-        <div style="text-align:center;padding:8px 0;width:100%">
-          <div style="font-size:.85rem;font-weight:700;margin-bottom:4px">Você já registrou seu palpite!</div>
-          <div style="font-size:.75rem;color:var(--muted)">${r.error}</div>
+      document.getElementById('chuteCard').innerHTML = `
+        <div style="text-align:center;padding:10px 4px;width:100%">
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">✅ Palpite já registrado!</div>
+          <div style="font-size:.8rem;color:#6b8aad;margin-bottom:8px">${r.error}</div>
+          <a href="/feed#" style="font-size:.76rem;color:#3b9eff;text-decoration:none">Ver no feed →</a>
         </div>`;
     } else {
       toast(r.error || 'Erro ao registrar. Tente de novo.');
-      btn.textContent = orig;
-      btn.disabled = false;
+      if(btn){btn.textContent=orig;btn.disabled=false;}
     }
   } catch(e) {
     toast('Erro de conexão. Tente de novo.');
-    btn.textContent = orig;
-    btn.disabled = false;
+    if(btn){btn.textContent=orig;btn.disabled=false;}
   }
 }
 
