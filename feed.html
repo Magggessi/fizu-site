@@ -5036,12 +5036,12 @@ function iniciarRealtime() {
     }, async (payload) => {
       const postId = payload.new?.post_id;
       if (!postId) return;
-      // Atualiza contagem do post no feed
+      // Atualiza contagem visual do post no feed
       const countEl = document.querySelector(`#post-${postId} .coment-count`);
       if (countEl) countEl.textContent = String(parseInt(countEl.textContent||'0') + 1);
-      // Se comentários estão abertos, recarrega
+      // Recarrega comentários se o painel estiver aberto (independente de ter cards ou não)
       const commentsEl = document.getElementById('comments-' + postId);
-      if (commentsEl && commentsEl.style.display !== 'none' && commentsEl.querySelector('.comment-card')) {
+      if (commentsEl && commentsEl.style.display !== 'none') {
         await carregarComentarios(postId);
       }
     })
