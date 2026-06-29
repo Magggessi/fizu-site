@@ -234,10 +234,10 @@ html.light .post-textarea{background:rgba(248,250,255,.8)}
 .chute-card{
   background:rgba(8,12,20,.92);
   border:1.5px solid rgba(255,223,0,.35);
-  border-radius:18px;padding:14px 18px 14px 18px;backdrop-filter:blur(16px);
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative;
+  border-radius:18px;padding:14px 18px;backdrop-filter:blur(16px);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   box-shadow:0 0 24px rgba(255,223,0,.1),0 4px 20px rgba(0,0,0,.3);
-  overflow:hidden;
+  position:relative;
 }
 /* brilho dourado pulsante */
 .chute-card::before{
@@ -251,17 +251,21 @@ html.light .post-textarea{background:rgba(248,250,255,.8)}
 html.light .chute-card{background:rgba(255,252,230,.97);border-color:rgba(180,140,0,.4);box-shadow:0 0 20px rgba(180,140,0,.15)}
 
 /* Moedas flutuantes */
-.moedas-float{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;gap:3px;pointer-events:none}
-.moeda{
-  font-size:1.1rem;
-  animation:moeda-float 2s ease-in-out infinite;
-  filter:drop-shadow(0 0 4px rgba(255,223,0,.6));
+.moedas-float{
+  display:flex;gap:4px;align-items:center;
+  pointer-events:none;flex-shrink:0;
 }
-.moeda:nth-child(2){animation-delay:.35s;animation-duration:2.3s}
-.moeda:nth-child(3){animation-delay:.7s;animation-duration:1.9s}
+.moeda{
+  font-size:1.2rem;
+  animation:moeda-float 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 5px rgba(255,223,0,.7));
+  display:inline-block;
+}
+.moeda:nth-child(2){animation-delay:.4s;animation-duration:2.4s}
+.moeda:nth-child(3){animation-delay:.8s;animation-duration:1.8s}
 @keyframes moeda-float{
-  0%,100%{transform:translateY(0) rotate(-5deg)}
-  50%{transform:translateY(-6px) rotate(5deg)}
+  0%,100%{transform:translateY(0) rotate(-8deg) scale(1)}
+  50%{transform:translateY(-7px) rotate(8deg) scale(1.1)}
 }
 
 .chute-label{font-size:.7rem;font-weight:700;color:#f5c842;letter-spacing:.05em;white-space:nowrap;flex-shrink:0}
@@ -476,15 +480,16 @@ html.light .copa-badge{background:rgba(240,244,252,.95)}
     <!-- Chute do placar -->
     <div class="chute-wrap" id="chuteWrap">
       <div class="chute-card" id="chuteCard">
-        <!-- Moedas animadas -->
-        <div class="moedas-float" aria-hidden="true">
-          <span class="moeda">🪙</span>
-          <span class="moeda">🪙</span>
-          <span class="moeda">🪙</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
-          <div class="chute-label">⚽ Seu palpite: BRA × JPN</div>
-          <div class="chute-premio">🪙 Acerte o placar exato → <strong>1.000 FizuCoins!</strong></div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="chute-label">⚽ Palpite BRA × JPN</div>
+            <div class="moedas-float" aria-hidden="true">
+              <span class="moeda">🪙</span>
+              <span class="moeda">🪙</span>
+              <span class="moeda">🪙</span>
+            </div>
+          </div>
+          <div class="chute-premio">Acerte o placar exato → <strong style="color:#f5c842">1.000 FizuCoins!</strong></div>
         </div>
         <div class="chute-inputs">
           <span class="chute-flag">🇧🇷</span>
@@ -745,7 +750,10 @@ async function postarChute(){
 
   const btn = document.getElementById('chuteBtn');
   const orig = btn?.textContent || 'Registrar palpite →';
-  if(btn){btn.textContent='⚡ Registrando...';btn.disabled=true;}
+  if(btn){btn.textContent='⚡ Enviando...';btn.disabled=true;btn.style.opacity='.7';}
+  // Feedback imediato no card
+  const premio = document.querySelector('.chute-premio');
+  if(premio) premio.textContent = '⏳ Registrando seu palpite...';
 
   try {
     const res = await fetch(`${SUPA_URL}/functions/v1/copa-palpite`, {
@@ -755,7 +763,7 @@ async function postarChute(){
         'apikey': SUPA_KEY,
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ gols_casa: bra, gols_fora: jpn })
+      body: JSON.stringify({ gols_casa: bra, gols_fora: jpn, _token: token })
     });
     const r = await res.json();
 

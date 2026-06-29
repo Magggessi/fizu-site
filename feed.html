@@ -3000,6 +3000,7 @@ async function abrirPerfilPublico(userId) {
           ${avatarPerfil}
           <div class="post-meta"><div class="post-name">${escapeHtml(nome)}</div><div class="post-time">${formatarTempo(post.criado_em)}</div></div>
           <div class="eternal-pill">⚓ eterno</div>
+          ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
         </div>
         <div class="post-body">${linkify(post.conteudo)}</div>
         ${renderMidia(post)}
@@ -3335,6 +3336,7 @@ async function renderizarPosts(posts, feedEl) {
           <div class="post-time">${formatarTempo(post.criado_em)}</div>
         </div>
         <div class="eternal-pill">⚓ eterno</div>
+        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -4986,6 +4988,7 @@ function iniciarRealtime() {
             <div class="post-time">agora</div>
           </div>
           <div class="eternal-pill">⚓ eterno</div>
+          ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
         </div>
         <div class="post-body">${linkify(post.conteudo)}</div>
         ${renderMidia(post)}
@@ -9240,6 +9243,7 @@ async function explorarPosts(el) {
           <div class="post-time">${formatarTempo(post.criado_em)}</div>
         </div>
         <div class="eternal-pill">⚓ eterno</div>
+        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -9318,6 +9322,7 @@ async function explorarRecentes(el) {
           <div class="post-time">${formatarTempo(post.criado_em)}</div>
         </div>
         <div class="eternal-pill">⚓ eterno</div>
+        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -10583,6 +10588,7 @@ async function buscarPosts(query) {
       <div class="post-header">${avatarHtml}
         <div class="post-meta"><div class="post-name">${nome}</div><div class="post-time">${tempo}</div></div>
         <div class="eternal-pill">⚓ eterno</div>
+        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
