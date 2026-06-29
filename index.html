@@ -166,18 +166,17 @@ html,body{
   box-shadow:0 0 32px rgba(59,158,255,0.35);
 }
 .logo-txt{
-  font-family:'Fraunces',serif;
-  font-size:3.2rem;font-weight:900;
-  letter-spacing:-.02em;
-  background:linear-gradient(135deg,#eef4ff 0%,#3b9eff 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
+  font-family:'Inter',sans-serif;
+  font-size:3rem;font-weight:900;
+  letter-spacing:.04em;
+  color:#ffffff;
   line-height:1;
 }
+html.light .logo-txt{color:#0d1628}
 .logo-sub{
   font-size:.72rem;color:var(--muted);
   letter-spacing:.08em;text-transform:uppercase;
-  margin-top:2px;
+  margin-top:4px;
 }
 
 /* ── BARRA PRINCIPAL ── */
@@ -531,6 +530,99 @@ html.light .theme-toggle{background:rgba(255,255,255,0.85);border-color:rgba(0,8
 html.light .sereia-preview{background:rgba(248,250,255,0.9);border-color:rgba(0,85,204,0.15)}
 html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--text)}
 
+/* ── TOPO AÇÕES ── */
+.topo-acoes{
+  position:fixed;top:16px;right:16px;z-index:20;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-entrar-topo{
+  background:linear-gradient(135deg,#3b9eff,#7C3AED);
+  color:#fff;text-decoration:none;
+  border-radius:20px;padding:8px 18px;
+  font-size:.82rem;font-weight:700;
+  font-family:"DM Sans",sans-serif;
+  transition:all .2s;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(59,158,255,0.3);
+}
+.btn-entrar-topo:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(59,158,255,0.4)}
+.theme-toggle{
+  background:rgba(13,22,40,0.8);
+  border:1px solid rgba(59,158,255,0.2);
+  border-radius:50%;width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;cursor:pointer;
+  backdrop-filter:blur(8px);transition:all .2s;
+}
+.theme-toggle:hover{border-color:var(--aqua);transform:scale(1.08)}
+html.light .btn-entrar-topo{box-shadow:0 4px 14px rgba(0,85,204,0.25)}
+html.light .theme-toggle{background:rgba(255,255,255,0.85);border-color:rgba(0,85,204,0.2)}
+
+/* ── CHUTE DO PLACAR ── */
+.chute-wrap{
+  position:fixed;top:76px;left:50%;transform:translateX(-50%);
+  z-index:15;
+  animation:placar-in .5s .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+.chute-card{
+  background:rgba(8,12,20,0.92);
+  border:1px solid rgba(255,223,0,0.3);
+  border-radius:20px;padding:14px 20px;
+  backdrop-filter:blur(16px);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  position:relative;
+}
+.chute-label{font-size:.72rem;font-weight:700;color:var(--br-yellow);letter-spacing:.05em;white-space:nowrap}
+.chute-inputs{display:flex;align-items:center;gap:8px}
+.chute-time-wrap{display:flex;align-items:center;gap:6px}
+.chute-flag{font-size:1.3rem}
+.chute-input{
+  width:44px;height:40px;
+  background:rgba(255,223,0,0.08);
+  border:1.5px solid rgba(255,223,0,0.3);
+  border-radius:10px;
+  color:var(--text);font-family:"DM Sans",sans-serif;
+  font-size:1.3rem;font-weight:900;text-align:center;
+  outline:none;transition:border-color .2s;
+}
+.chute-input:focus{border-color:var(--br-yellow)}
+.chute-x{font-size:.8rem;font-weight:700;color:var(--muted)}
+.chute-btn{
+  background:linear-gradient(135deg,var(--br-green),var(--br-blue));
+  color:#fff;border:none;border-radius:14px;
+  padding:8px 16px;font-size:.78rem;font-weight:700;
+  cursor:pointer;font-family:"DM Sans",sans-serif;
+  white-space:nowrap;transition:all .2s;
+}
+.chute-btn:hover{transform:scale(1.03)}
+.chute-fechar{
+  position:absolute;top:-8px;right:-8px;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(255,255,255,0.1);border:none;
+  color:var(--muted);cursor:pointer;font-size:.75rem;
+  display:flex;align-items:center;justify-content:center;
+}
+html.light .chute-card{background:rgba(240,244,252,0.95)}
+html.light .chute-input{background:rgba(0,156,59,0.06);border-color:rgba(0,156,59,0.3);color:var(--text)}
+
+/* ── RODAPÉ ── */
+.footer-idx{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:24px 32px;
+  margin-top:40px;
+}
+.footer-inner{
+  max-width:800px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.footer-copy{font-size:.72rem;color:var(--muted)}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.footer-link{color:var(--muted);text-decoration:none;font-size:.78rem;transition:color .2s}
+.footer-link:hover{color:var(--aqua)}
+html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
+
 /* MOBILE */
 @media(max-width:600px){
   .logo-txt{font-size:2.4rem}
@@ -543,6 +635,13 @@ html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--te
   .search-wrap{max-width:100%}
   .barra-input{font-size:.95rem;padding:16px 56px 16px 18px}
   .links-row{flex-direction:column;gap:10px}
+  .topo-acoes{top:12px;right:12px;gap:6px}
+  .btn-entrar-topo{padding:7px 14px;font-size:.76rem}
+  .theme-toggle{width:34px;height:34px;font-size:.85rem}
+  .chute-card{padding:10px 14px;gap:10px}
+  .chute-label{font-size:.66rem}
+  .footer-inner{flex-direction:column;align-items:flex-start}
+  .footer-links{gap:12px}
 }
 </style>
 </head>
@@ -571,13 +670,33 @@ html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--te
   </div>
 </div>
 
+<!-- Chute do placar -->
+<div class="chute-wrap" id="chuteWrap">
+  <div class="chute-card">
+    <div class="chute-label">⚽ Seu chute no placar</div>
+    <div class="chute-inputs">
+      <div class="chute-time-wrap">
+        <span class="chute-flag">🇧🇷</span>
+        <input class="chute-input" id="chuteBra" type="number" min="0" max="20" value="2" placeholder="0">
+      </div>
+      <span class="chute-x">×</span>
+      <div class="chute-time-wrap">
+        <input class="chute-input" id="chuteJpn" type="number" min="0" max="20" value="0" placeholder="0">
+        <span class="chute-flag">🇯🇵</span>
+      </div>
+    </div>
+    <button class="chute-btn" onclick="postarChute()">Postar meu chute no Fizu</button>
+    <button class="chute-fechar" onclick="document.getElementById('chuteWrap').style.display='none'">✕</button>
+  </div>
+</div>
+
 <!-- Centro -->
 <main class="centro">
 
   <!-- Logo -->
   <div class="logo-wrap">
-    <div class="fizu-logo-icon" style="width:60px;height:60px;border-radius:16px;box-shadow:0 0 40px rgba(124,58,237,0.45)">
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:40px;height:40px">
+    <div class="fizu-logo-icon" style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(124,58,237,0.45),0 4px 20px rgba(59,158,255,0.3);flex-shrink:0">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:42px;height:42px">
         <g transform="rotate(-12 50 50)">
           <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
           <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
@@ -586,7 +705,7 @@ html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--te
       </svg>
     </div>
     <div>
-      <div class="logo-txt">Fizu</div>
+      <div class="logo-txt">FIZU</div>
       <div class="logo-sub">O que você diz, permanece</div>
     </div>
   </div>
@@ -652,9 +771,12 @@ html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--te
 </main>
 
 <!-- Toggle dark/light -->
-<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
-  <span id="themeIcon">☀️</span>
-</button>
+<div class="topo-acoes">
+  <a href="/feed#" class="btn-entrar-topo">Entrar →</a>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
+    <span id="themeIcon">☀️</span>
+  </button>
+</div>
 
 <!-- Badge Copa -->
 <div class="copa-badge">
@@ -697,6 +819,32 @@ html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--te
     </div>
   </div>
 </div>
+
+<!-- Rodapé -->
+<footer class="footer-idx">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 100 100" fill="none" style="width:18px;height:18px">
+          <g transform="rotate(-12 50 50)">
+            <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+            <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="68" cy="45" r="5" fill="white"/>
+          </g>
+        </svg>
+      </div>
+      <span style="font-family:'Inter',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:.05em">FIZU</span>
+      <span class="footer-copy">© 2026 Fizu. Construído sobre transparência e confiança.</span>
+    </div>
+    <div class="footer-links">
+      <a href="sobre.html" class="footer-link">🐟 Entender o Fizu</a>
+      <a href="termos.html" class="footer-link">Termos de Uso</a>
+      <a href="privacidade.html" class="footer-link">Privacidade</a>
+      <a href="contato.html" class="footer-link">Contato</a>
+      <a href="/feed#" class="footer-link">Entrar</a>
+    </div>
+  </div>
+</footer>
 
 <!-- Toast -->
 <div class="toast-idx" id="toast"></div>
@@ -979,6 +1127,44 @@ function toggleTheme() {
 }
 
 initTheme();
+
+// ── CHUTE DO PLACAR ──
+const JOGO_HOJE = { casa: 'Brasil', casa_flag: '🇧🇷', fora: 'Japão', fora_flag: '🇯🇵', competicao: 'Copa do Mundo 2026' };
+
+async function postarChute() {
+  const bra = document.getElementById('chuteBra').value || '0';
+  const jpn = document.getElementById('chuteJpn').value || '0';
+  const texto = `⚽ Meu chute no placar:\n${JOGO_HOJE.casa_flag} ${JOGO_HOJE.casa} ${bra} × ${jpn} ${JOGO_HOJE.fora} ${JOGO_HOJE.fora_flag}\n\n${JOGO_HOJE.competicao} — e você, qual é seu chute?`;
+  // Verifica se está logado
+  const session = await verificarSessao();
+  if (!session) {
+    window.location.href = '/feed#login?next=chute-' + encodeURIComponent(bra+'-'+jpn);
+    return;
+  }
+  window.location.href = `/feed#novo-post=${encodeURIComponent(texto)}`;
+}
+
+async function verificarSessao() {
+  try {
+    const r = await fetch(`${SUPA_URL}/auth/v1/user`, {
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token') ? JSON.parse(localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token')).access_token : ''}` }
+    });
+    if (r.ok) { const d = await r.json(); return d.id ? d : null; }
+    return null;
+  } catch { return null; }
+}
+
+// Gate de login: postar exige sessão
+async function publicarIndex() {
+  const texto = document.getElementById('postTexto').value.trim();
+  if (!texto) { mostrarToast('Escreva algo para publicar'); return; }
+  const session = await verificarSessao();
+  if (!session) {
+    window.location.href = `/feed#login?next=post&texto=${encodeURIComponent(texto)}`;
+    return;
+  }
+  window.location.href = `/feed#novo-post=${encodeURIComponent(texto)}`;
+}
 
 // SW
 if ('serviceWorker' in navigator) {
