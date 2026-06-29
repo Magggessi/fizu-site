@@ -1713,7 +1713,8 @@ function toggleModoSereia() {
   const panel = document.querySelector('#composeModal .compose-panel');
   const ta = document.getElementById('composeText');
   panel?.classList.add('modo-sereia');
-  document.getElementById('btnModoSereia')?.classList.add('ativo');
+  const _btnS = document.getElementById('btnModoSereia');
+  if (_btnS) { _btnS.classList.add('ativo'); _btnS.textContent = '✕ Modo normal'; _btnS.style.background = 'var(--card)'; _btnS.style.border = '1.5px solid var(--border)'; _btnS.style.color = 'var(--muted)'; _btnS.style.animation = 'none'; }
   ta.value = '';
   ta.placeholder = '✨ Descreva sua ideia... a SereIA escreve o post e cria uma imagem pra você.';
   ta.maxLength = 800; // SereIA pode gerar textos maiores
@@ -1733,7 +1734,8 @@ function sairModoSereia() {
   window.SEREIA.imagemUrl = null;
   const panel = document.querySelector('#composeModal .compose-panel');
   panel?.classList.remove('modo-sereia');
-  document.getElementById('btnModoSereia')?.classList.remove('ativo');
+  const _btnSN = document.getElementById('btnModoSereia');
+  if (_btnSN) { _btnSN.classList.remove('ativo'); _btnSN.textContent = '✨ SereIA'; _btnSN.style.background = ''; _btnSN.style.border = ''; _btnSN.style.color = ''; _btnSN.style.animation = ''; }
   const ta = document.getElementById('composeText');
   if (ta) { ta.placeholder = 'O que você quer compartilhar? Cole um link do Instagram ou YouTube para embutir o post.'; ta.maxLength = 500; }
   const bp = document.getElementById('btnPublicarNormal'); if (bp) bp.style.display = '';
