@@ -2542,7 +2542,7 @@ async function _buscarPosts(offset) {
   try { await sb.auth.refreshSession(); } catch(e) {}
   const { data, error } = await sb
     .from('posts')
-    .select('id,autor_id,conteudo,tipo,midia_url,fontes,reacoes,curtidas_count,comentarios_count,criado_em,status')
+    .select('id,autor_id,conteudo,tipo,midia_url,fontes,reacoes,curtidas_count,comentarios_count,complementos_count,criado_em,status,is_ritual,ritual_agente_nome,ritual_agente_emoji,gerado_ia,ia_modelo')
     .neq('status', 'removido')
     .order('criado_em', { ascending: false })
     .range(offset, offset + POSTS_POR_PAGINA - 1);
