@@ -1255,17 +1255,8 @@ html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#005
   </a>
   <div class="search-bar"><input type="text" id="searchInput" placeholder="Buscar no Fizu..." onkeypress="if(event.key==='Enter'){_buscaAba='posts';mostrarAbaBusca(this.value)}" oninput="if(!this.value)carregarPosts()"><span class="search-icon" style="pointer-events:auto;cursor:pointer" onclick="var v=document.getElementById('searchInput').value.trim();if(v){_buscaAba='posts';mostrarAbaBusca(v)}else{document.getElementById('searchInput').focus()}">🔍</span></div>
   <button onclick="abrirMarketplace(document.getElementById('tab-marketplace'))" id="navMktBtn"
-    style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
-           border:1.5px solid #c8960c;
-           background:linear-gradient(135deg,#1a1200,#2d1f00);
-           color:#ffd700;font-size:.78rem;font-weight:800;cursor:pointer;
-           font-family:inherit;white-space:nowrap;flex-shrink:0;
-           animation:mkt-pulse 2.5s ease-in-out infinite;
-           transition:transform .15s"
-    onmouseover="this.style.transform='scale(1.04)'"
-    onmouseout="this.style.transform='scale(1)'">
-    🏪 <span style="background:linear-gradient(90deg,#f0c040,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Marketplace</span>
-  </button>
+    title="Marketplace" class="nav-icon"
+    style="font-size:1.2rem">🏪</button>
   <div class="nav-icons">
     <button class="nav-icon mob-search-btn" title="Buscar" onclick="abrirBuscaMobile()">🔍</button>
     <button id="navCoins" onclick="abrirCarteira()" style="background:none;border:none;cursor:pointer;font-size:.78rem;font-weight:800;color:var(--muted);padding:6px 8px;border-radius:8px;transition:all .2s;white-space:nowrap" title="Fizu Coins" onmouseover="this.style.color='#f5c842'" onmouseout="this.style.color='var(--muted)'">🪙 0</button>
@@ -2909,6 +2900,7 @@ async function abrirPerfilPublico(userId) {
   const diasPerfil = await getNivelUsuario(userId);
 
   feedEl.innerHTML = `
+    <div style="max-width:680px;margin:0 auto">
     <div class="post-card" style="text-align:center;padding:32px 24px 24px">
       ${desativado ? '<div style="display:inline-block;background:rgba(204,51,51,0.12);color:var(--coral);font-size:.72rem;font-weight:800;padding:4px 12px;border-radius:20px;margin-bottom:12px;letter-spacing:.06em">DESATIVADO</div>' : ''}
       ${isAgentePerfil ? `<div style="display:inline-block;background:var(--aqua-dim);color:var(--aqua);font-size:.75rem;font-weight:800;padding:4px 14px;border-radius:20px;margin-bottom:12px;border:1px solid var(--aqua-glow)">🤖 Agente IA do Fizu</div>` : ''}
@@ -2960,7 +2952,8 @@ async function abrirPerfilPublico(userId) {
         </div>
       </div>`;
     }).join('')}
-    ${(posts||[]).length === 0 ? '<div style="text-align:center;padding:48px;color:var(--muted)">Nenhum post ainda.</div>' : ''}`;
+    ${(posts||[]).length === 0 ? '<div style="text-align:center;padding:48px;color:var(--muted)">Nenhum post ainda.</div>' : ''}
+    </div>`;
 }
 
 async function toggleSeguir(userId, jaSegue) {
@@ -5944,8 +5937,8 @@ async function abrirConversa(convId, outroId, outroNome, outroFoto) {
         <div style="font-weight:800;font-size:.93rem">${outroNome}</div>
         <div style="font-size:.72rem;color:var(--aqua)">∞ Mensagens permanentes</div>
       </div>
-      <button onclick="cutucar('${convId}','${outroId}','${escapeHtml(outroNome).replace(/'/g,"\\'")}')" title="Cutucar"
-        style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:1rem">🔔</button>
+      <button onclick="cutucar('${convId}','${outroId}','${escapeHtml(outroNome).replace(/'/g,"\\'")}')" title="Cutucar 👋"
+        style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:1rem">👋</button>
     </div>
     <div class="chat-messages" id="chatMessages">
       <div style="text-align:center;padding:16px;color:var(--muted);font-size:.78rem">⏳ Carregando mensagens...</div>
@@ -7698,7 +7691,7 @@ async function cutucar(convId, outroId, outroNome) {
 
   // Feedback imediato pra quem enviou (confirma que foi)
   if (navigator.vibrate) navigator.vibrate(80);
-  mostrarToast(`🔔 Você cutucou ${outroNome}!`, 'success');
+  mostrarToast(`👋 Você cutucou ${outroNome}!`, 'success');
 
   // Tenta também push notification de verdade, pro caso da pessoa estar com
   // o app fechado. Best-effort: se falhar, a cutucada já está salva no chat
@@ -7877,7 +7870,7 @@ function renderBolha(msg, mine) {
   if (msg.tipo === 'cutucada') {
     return `<div style="display:flex;justify-content:center;margin:10px 0">
       <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-radius:20px;padding:8px 16px;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(239,68,68,.3)">
-        🔔 ${mine ? 'Você cutucou' : 'Cutucou você'} <span style="opacity:.75;font-weight:500">· ${tempo}</span>
+        👋 ${mine ? 'Você cutucou' : 'Cutucou você'} <span style="opacity:.75;font-weight:500">· ${tempo}</span>
       </div>
     </div>`;
   }
@@ -8193,7 +8186,7 @@ async function abrirConversaMobile(convId, outroId, outroNome, outroFoto) {
       </div>
       <div class="chat-fs-actions">
         <button class="chat-fs-act" onclick="abrirModalAcordo('${cid}','${outroId}')" title="Transação Protegida">🤝</button>
-        <button class="chat-fs-act" onclick="cutucar('${cid}','${outroId}','${escapeHtml(outroNome).replace(/'/g,"\\'")}')" title="Cutucar">🔔</button>
+        <button class="chat-fs-act" onclick="cutucar('${cid}','${outroId}','${escapeHtml(outroNome).replace(/'/g,"\\'")}')" title="Cutucar 👋">👋</button>
         <button class="chat-fs-act" onclick="iniciarGravacaoVideo('${cid}','${outroId}')" title="Vídeo">📹</button>
         <button class="chat-fs-act" onclick="abrirPerfilPublico('${outroId}')" title="Perfil">👤</button>
       </div>
@@ -8875,6 +8868,7 @@ async function abrirPerfil(el) {
     : `<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),var(--purple));display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;margin:0 auto 16px;border:3px solid var(--aqua)">${inicial}</div>`;
 
   feedEl.innerHTML = `
+    <div style="max-width:680px;margin:0 auto">
     <div class="post-card" style="text-align:center;padding:32px 24px 24px">
       ${avatarHtml}
       <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:6px">
@@ -9467,8 +9461,8 @@ async function renderRanking() {
         ${top3.length ? top3.map(rowHtml).join('') : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem">Ainda sem dados nesta categoria</div>'}
         ${resto.length ? `
         <div id="rank-mais-${catId}" style="display:none">${restoHtml}</div>
-        <button onclick="toggleVerMaisRank('${catId}')" id="rank-btn-${catId}" style="width:100%;background:none;border:none;border-top:1px solid var(--border);padding:10px;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:inherit;transition:color .2s" onmouseover="this.style.color='var(--aqua)'" onmouseout="this.style.color='var(--muted)'">
-          Ver mais ${resto.length} → 
+        <button onclick="toggleVerMaisRank('${catId}')" id="rank-btn-${catId}" data-count="${resto.length}" style="width:100%;background:none;border:none;border-top:1px solid var(--border);padding:10px;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:inherit;transition:color .2s" onmouseover="this.style.color='var(--aqua)'" onmouseout="this.style.color='var(--muted)'">
+          Ver mais ${resto.length} →
         </button>` : ''}
       </div>`;
   }
@@ -9479,7 +9473,8 @@ async function renderRanking() {
     if (!div || !btn) return;
     const aberto = div.style.display !== 'none';
     div.style.display = aberto ? 'none' : '';
-    btn.textContent = aberto ? `Ver mais →` : 'Ver menos ↑';
+    const cnt = btn.dataset.count || '';
+    btn.textContent = aberto ? `Ver mais ${cnt} →` : 'Ver menos ↑';
   }
 
   // Starfish SVG inline
