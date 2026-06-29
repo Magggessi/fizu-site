@@ -429,9 +429,10 @@ html.dark{
 .notif-item:hover{background:var(--bg2)}
 
 /* COMPOSE MODAL */
-.compose-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.compose-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px;box-sizing:border-box}
 .compose-modal.show{display:flex}
-.compose-panel{background:var(--card);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:680px;box-shadow:0 -8px 40px rgba(0,0,0,0.2);animation:slideUp .3s ease}
+.compose-panel{background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.35);animation:popIn .25s ease}
+@keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
 
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0) }
@@ -455,7 +456,7 @@ html.dark{
 .compose-panel.modo-sereia .compose-textarea{border:1.5px solid transparent!important;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,linear-gradient(120deg,#10b981,#3b9eff,#7c3aed) border-box}
 .sereia-preview-img{width:100%;border-radius:12px;margin-top:6px;border:1px solid var(--border);display:block}
 .compose-char{font-size:.78rem;color:var(--muted)}
-.compose-btns{display:flex;gap:10px;align-items:center}
+.compose-btns{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .btn-publicar{background:var(--aqua);color:#fff;border:none;padding:10px 28px;border-radius:24px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 4px 16px var(--aqua-glow)}
 .btn-publicar:hover{opacity:.88;transform:translateY(-1px)}
 .sereia-hint-compose{display:flex;align-items:flex-start;gap:10px;background:var(--aqua-dim);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:.82rem;color:var(--text2);line-height:1.55}
@@ -677,6 +678,14 @@ html.dark .mem-mini{border-color:rgba(245,200,66,0.15)}
   .compose-box{border-radius:12px!important;padding:12px!important}
   .compose-actions{flex-wrap:wrap!important;gap:6px!important}
   .compose-act{font-size:.75rem!important;padding:4px 7px!important}
+  /* Popup de postagem: centralizar + não estourar no mobile */
+  .compose-modal{padding:10px!important;align-items:center!important;justify-content:center!important}
+  .compose-panel{padding:16px!important;max-height:90vh!important;border-radius:16px!important;margin:auto!important}
+  .compose-bottom{flex-wrap:wrap!important;gap:8px!important;row-gap:10px!important}
+  .compose-btns{flex-wrap:wrap!important;gap:8px!important;justify-content:flex-end!important;width:100%!important}
+  .btn-publicar{padding:9px 18px!important;font-size:.82rem!important}
+  .btn-sereia{padding:7px 11px!important;font-size:.76rem!important}
+  #sereiaPreviewBox .compose-act,#sereiaPreviewBox .btn-publicar{flex:0 0 auto!important}
   html,body{overflow-x:hidden!important;width:100vw!important;max-width:100vw!important}
   *{box-sizing:border-box!important}
   /* Nav mobile */
@@ -1716,9 +1725,13 @@ function toggleModoSereia() {
   document.getElementById('btnModoSereia')?.classList.add('ativo');
   ta.value = '';
   ta.placeholder = '✨ Descreva sua ideia... a SereIA escreve o post e cria uma imagem pra você.';
+  ta.maxLength = 800; // SereIA pode gerar textos maiores
   document.getElementById('composeCharCount').textContent = '0/500';
   document.getElementById('btnPublicarNormal').style.display = 'none';
   document.getElementById('btnGerarSereia').style.display = '';
+  // Esconder Foto/Vídeo no modo SereIA (a imagem é gerada pela IA)
+  const btnsMedia = document.querySelectorAll('.compose-btns .compose-act');
+  btnsMedia.forEach(b => { b.style.display = 'none'; });
   const prev = document.getElementById('sereiaPreviewBox');
   prev.style.display = 'none'; prev.innerHTML = '';
   ta.focus();
@@ -1731,9 +1744,12 @@ function sairModoSereia() {
   panel?.classList.remove('modo-sereia');
   document.getElementById('btnModoSereia')?.classList.remove('ativo');
   const ta = document.getElementById('composeText');
-  if (ta) ta.placeholder = 'O que você quer compartilhar? Cole um link do Instagram ou YouTube para embutir o post.';
+  if (ta) { ta.placeholder = 'O que você quer compartilhar? Cole um link do Instagram ou YouTube para embutir o post.'; ta.maxLength = 500; }
   const bp = document.getElementById('btnPublicarNormal'); if (bp) bp.style.display = '';
   const bg = document.getElementById('btnGerarSereia'); if (bg) { bg.style.display = 'none'; bg.disabled = false; bg.textContent = '✨ Gerar com a SereIA'; }
+  // Restaurar botões Foto/Vídeo
+  const btnsMedia = document.querySelectorAll('.compose-btns .compose-act');
+  btnsMedia.forEach(b => { b.style.display = ''; });
   const prev = document.getElementById('sereiaPreviewBox'); if (prev) { prev.style.display = 'none'; prev.innerHTML = ''; }
 }
 
@@ -1759,14 +1775,28 @@ async function gerarComSereia() {
     ta.value = r.post;
     document.getElementById('composeCharCount').textContent = Math.min(r.post.length, 500) + '/500';
     window.SEREIA.imagemUrl = null;
-    let imgHtml = '';
+    // Texto já aparece; a imagem (GPT) vem em seguida
+    renderSereiaPreview(r.imagem_en
+      ? '<div style="text-align:center;padding:22px;color:var(--muted);font-size:.84rem">🎨 A SereIA está pintando a imagem...</div>'
+      : '');
     if (r.imagem_en) {
-      const seed = Date.now() % 99999;
-      const prompt = encodeURIComponent(`${r.imagem_en}, editorial photography, cinematic, natural light, high detail, no text, no words`);
-      window.SEREIA.imagemUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1200&height=630&model=flux&nologo=true&seed=${seed}`;
-      imgHtml = `<img src="${window.SEREIA.imagemUrl}" class="sereia-preview-img" onerror="window.SEREIA.imagemUrl=null;this.remove()">`;
+      try {
+        const ir = await fetch(`${SUPA_URL}/functions/v1/gerar-imagem-ia`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY },
+          body: JSON.stringify({ prompt: r.imagem_en })
+        });
+        const idata = await ir.json();
+        if (idata?.ok && idata.url) {
+          window.SEREIA.imagemUrl = idata.url;
+          renderSereiaPreview(`<img src="${idata.url}" class="sereia-preview-img" onerror="window.SEREIA.imagemUrl=null;this.remove()">`);
+        } else {
+          renderSereiaPreview('');
+        }
+      } catch (_imgErr) {
+        renderSereiaPreview('');
+      }
     }
-    renderSereiaPreview(imgHtml);
   } catch (e) {
     prev.innerHTML = `<div style="color:var(--coral);font-size:.84rem;padding:10px">⚠️ ${e.message}. Tente de novo.</div>`;
   } finally {
