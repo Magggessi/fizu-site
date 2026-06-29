@@ -15,688 +15,366 @@
 <meta property="og:url" content="https://fizu.com.br">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://fizu.com.br/">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
-// Anti-flash: aplicar tema antes de renderizar
 (function(){
-  const s = localStorage.getItem('fizu-theme');
-  const dark = s ? s === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.classList.add(dark ? 'dark' : 'light');
+  var s=localStorage.getItem('fizu-theme');
+  var dark=s?s==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+  document.documentElement.classList.add(dark?'dark':'light');
 })();
 </script>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,900;1,900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-:root{
-  --bg:#080c14;
-  --card:rgba(13,22,40,0.95);
-  --aqua:#3b9eff;
-  --aqua2:#0055cc;
-  --text:#eef4ff;
-  --muted:#6b8aad;
+/* ── VARIÁVEIS ── */
+html.dark{
+  --bg:#080c14; --card:rgba(13,22,40,0.95); --card2:rgba(20,32,60,0.8);
+  --aqua:#3b9eff; --text:#eef4ff; --muted:#6b8aad;
   --border:rgba(59,158,255,0.15);
-  --gold:#f5c842;
-  --green:#10b981;
-  /* Copa: verde e amarelo Brasil */
-  --br-green:#009c3b;
-  --br-yellow:#ffdf00;
-  --br-blue:#002776;
-  /* Japão */
-  --jp-red:#bc002d;
-  --jp-white:#ffffff;
+  --br-green:#009c3b; --br-yellow:#ffdf00; --br-blue:#002776; --jp-red:#bc002d;
+}
+html.light{
+  --bg:#f0f4fc; --card:rgba(255,255,255,0.97); --card2:rgba(240,245,255,0.9);
+  --aqua:#0055cc; --text:#0d1628; --muted:#5a7090;
+  --border:rgba(0,85,204,0.15);
+  --br-green:#007a2f; --br-yellow:#c9a800; --br-blue:#002776; --jp-red:#bc002d;
 }
 
-html,body{
-  min-height:100vh;
-  background:var(--bg);
-  color:var(--text);
-  font-family:'DM Sans',sans-serif;
-  overflow-x:hidden;
-}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 
-/* ── CAMPO DE COPA AO FUNDO ── */
-.copa-bg{
-  position:fixed;inset:0;z-index:0;
+/* ── FUNDO COPA ── */
+.copa-bg{position:fixed;inset:0;z-index:0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0,156,59,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,39,118,0.25) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(188,0,45,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 50% at 50% 100%, rgba(255,223,0,0.06) 0%, transparent 50%),
-    #080c14;
+    radial-gradient(ellipse 80% 50% at 50% 110%,rgba(0,156,59,.18) 0%,transparent 65%),
+    radial-gradient(ellipse 55% 35% at 15% 85%,rgba(0,39,118,.22) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 35% at 85% 85%,rgba(188,0,45,.1) 0%,transparent 55%),
+    var(--bg);}
+html.light .copa-bg{background:
+  radial-gradient(ellipse 80% 50% at 50% 110%,rgba(0,156,59,.1) 0%,transparent 65%),
+  radial-gradient(ellipse 55% 35% at 15% 85%,rgba(0,39,118,.1) 0%,transparent 55%),
+  var(--bg);}
+.campo-lines{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(0,156,59,.04) 60px),repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(0,156,59,.04) 60px);}
+.campo-circle{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(70vw,480px);height:min(70vw,480px);border-radius:50%;border:1px solid rgba(0,156,59,.07);pointer-events:none;z-index:0;}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;
+  gap:12px;
 }
 
-/* Linhas do campo sutis */
-.campo-lines{
-  position:fixed;inset:0;z-index:0;
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(0,156,59,0.04) 60px),
-    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(0,156,59,0.04) 60px);
-  pointer-events:none;
-}
-
-/* Círculo central do campo */
-.campo-circle{
-  position:fixed;
-  left:50%;top:50%;transform:translate(-50%,-50%);
-  width:min(70vw,500px);height:min(70vw,500px);
-  border-radius:50%;
-  border:1px solid rgba(0,156,59,0.08);
-  pointer-events:none;z-index:0;
-}
-.campo-circle::after{
-  content:'';position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%);
-  width:8px;height:8px;border-radius:50%;
-  background:rgba(0,156,59,0.15);
-}
-
-/* ── PLACAR COPA ── */
+/* Placar integrado no topo — esquerda */
 .placar{
-  position:fixed;top:20px;left:50%;transform:translateX(-50%);
-  z-index:10;
-  display:flex;align-items:center;gap:0;
-  background:rgba(8,12,20,0.85);
-  border:1px solid rgba(59,158,255,0.2);
-  border-radius:16px;
-  padding:8px 20px;
-  backdrop-filter:blur(12px);
-  font-size:.72rem;font-weight:700;letter-spacing:.06em;
-  white-space:nowrap;
-  animation:placar-in .6s cubic-bezier(.34,1.56,.64,1) both;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(8,12,20,.88);border:1px solid rgba(59,158,255,.2);
+  border-radius:14px;padding:7px 14px;
+  backdrop-filter:blur(14px);
+  font-size:.68rem;font-weight:700;letter-spacing:.05em;white-space:nowrap;
+  animation:fade-down .6s cubic-bezier(.34,1.56,.64,1) both;
+  flex-shrink:0;
 }
-@keyframes placar-in{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+html.light .placar{background:rgba(240,244,252,.92);border-color:rgba(0,85,204,.2)}
+@keyframes fade-down{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.placar-time{display:flex;align-items:center;gap:5px}
+.placar-flag{font-size:1rem}
+.placar-nome{color:var(--muted);letter-spacing:.04em;font-size:.64rem}
+.placar-gol{font-size:1.2rem;font-weight:900;color:var(--text);min-width:18px;text-align:center;font-family:'Inter',sans-serif}
+.placar-mid{display:flex;flex-direction:column;align-items:center;gap:1px;margin:0 6px}
+.placar-vivo{display:flex;align-items:center;gap:3px;font-size:.58rem;font-weight:800;color:#bc002d;text-transform:uppercase}
+.dot-vivo{width:4px;height:4px;border-radius:50%;background:#bc002d;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.placar-comp{font-size:.56rem;color:var(--muted);letter-spacing:.04em}
 
-.placar-time{display:flex;align-items:center;gap:6px}
-.placar-flag{font-size:1.1rem}
-.placar-nome{color:var(--muted);letter-spacing:.04em}
-.placar-gol{
-  font-size:1.4rem;font-weight:900;
-  color:var(--text);
-  min-width:22px;text-align:center;
-  font-family:'Fraunces',serif;
+/* Ações direita */
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-entrar{
+  background:linear-gradient(135deg,#3b9eff,#7C3AED);
+  color:#fff;text-decoration:none;border-radius:20px;
+  padding:8px 20px;font-size:.82rem;font-weight:700;
+  font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;
+  box-shadow:0 3px 12px rgba(59,158,255,.3);
 }
-.placar-sep{
-  width:1px;height:28px;
-  background:var(--border);
-  margin:0 16px;
+.btn-entrar:hover{transform:scale(1.04);box-shadow:0 5px 18px rgba(59,158,255,.4)}
+.theme-toggle{
+  background:rgba(13,22,40,.8);border:1px solid rgba(59,158,255,.2);
+  border-radius:50%;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;
 }
-.placar-label{
-  font-size:.62rem;color:var(--muted);
-  display:flex;flex-direction:column;align-items:center;gap:1px;
-  margin:0 16px;
-}
-.placar-label b{color:var(--aqua);font-size:.7rem}
-.placar-ao-vivo{
-  display:inline-flex;align-items:center;gap:4px;
-  font-size:.6rem;font-weight:800;letter-spacing:.08em;
-  color:var(--jp-red);
-  text-transform:uppercase;
-}
-.dot-vivo{
-  width:5px;height:5px;border-radius:50%;
-  background:var(--jp-red);
-  animation:blink 1.2s ease-in-out infinite;
-}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.theme-toggle:hover{border-color:var(--aqua);transform:scale(1.08)}
+html.light .theme-toggle{background:rgba(255,255,255,.85);border-color:rgba(0,85,204,.2)}
 
-/* ── LAYOUT CENTRAL ── */
+/* ── CENTRO ── */
 .centro{
-  position:relative;z-index:1;
-  min-height:100vh;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:80px 20px 120px;
-  gap:0;
+  position:relative;z-index:1;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:80px 20px 60px;gap:0;
 }
 
 /* ── LOGO ── */
 .logo-wrap{
-  display:flex;align-items:center;gap:14px;
-  margin-bottom:36px;
+  display:flex;align-items:center;gap:16px;margin-bottom:40px;
   animation:fade-up .7s .1s cubic-bezier(.22,1,.36,1) both;
 }
-@keyframes fade-up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-
-.logo-fish{
-  width:56px;height:56px;
-  background:linear-gradient(135deg,#3b9eff,#7c3aed);
-  border-radius:18px;
+@keyframes fade-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.fizu-logo-icon{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);
   display:flex;align-items:center;justify-content:center;
-  font-size:2rem;
-  box-shadow:0 0 32px rgba(59,158,255,0.35);
+  box-shadow:0 0 36px rgba(124,58,237,.45),0 4px 18px rgba(59,158,255,.3);
+  flex-shrink:0;
 }
-.logo-txt{
-  font-family:'Inter',sans-serif;
-  font-size:3rem;font-weight:900;
-  letter-spacing:.04em;
-  color:#ffffff;
-  line-height:1;
-}
-html.light .logo-txt{color:#0d1628}
-.logo-sub{
-  font-size:.72rem;color:var(--muted);
-  letter-spacing:.08em;text-transform:uppercase;
-  margin-top:4px;
-}
+.fizu-logo-icon svg{width:42px;height:42px}
+.logo-txts{display:flex;flex-direction:column;gap:4px}
+.logo-nome{font-family:'Inter',sans-serif;font-size:3rem;font-weight:900;letter-spacing:.04em;color:#fff;line-height:1}
+html.light .logo-nome{color:#0d1628}
+.logo-sub{font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
 
-/* ── BARRA PRINCIPAL ── */
-.search-wrap{
-  width:100%;max-width:620px;
-  animation:fade-up .7s .2s cubic-bezier(.22,1,.36,1) both;
-}
+/* ── BARRA BUSCA / POSTAR ── */
+.search-wrap{width:100%;max-width:640px;animation:fade-up .7s .2s cubic-bezier(.22,1,.36,1) both}
 
 .mode-tabs{
   display:flex;gap:0;margin-bottom:10px;
-  background:rgba(13,22,40,0.6);
-  border-radius:12px;padding:4px;
-  border:1px solid var(--border);
-  width:fit-content;
+  background:rgba(13,22,40,.6);border-radius:12px;padding:4px;
+  border:1px solid var(--border);width:fit-content;
 }
+html.light .mode-tabs{background:rgba(255,255,255,.7)}
 .mode-tab{
-  padding:7px 18px;border-radius:9px;
-  border:none;background:none;
-  font-family:'DM Sans',sans-serif;
-  font-size:.8rem;font-weight:600;
-  color:var(--muted);cursor:pointer;
-  transition:all .2s;
+  padding:7px 18px;border-radius:9px;border:none;background:none;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;
+  color:var(--muted);cursor:pointer;transition:all .2s;
   display:flex;align-items:center;gap:5px;
 }
-.mode-tab.active{
-  background:rgba(59,158,255,0.15);
-  color:var(--aqua);
-}
+.mode-tab.active{background:rgba(59,158,255,.15);color:var(--aqua)}
+html.light .mode-tab.active{background:rgba(0,85,204,.1);color:var(--aqua)}
 .mode-tab:hover:not(.active){color:var(--text)}
 
-.barra{
-  position:relative;
-  width:100%;
-}
+.barra{position:relative;width:100%}
 .barra-input{
-  width:100%;
-  background:rgba(13,22,40,0.9);
-  border:1.5px solid rgba(59,158,255,0.25);
-  border-radius:28px;
-  padding:18px 60px 18px 24px;
-  font-size:1rem;
-  color:var(--text);
-  font-family:'DM Sans',sans-serif;
-  outline:none;
-  transition:border-color .2s, box-shadow .2s;
-  backdrop-filter:blur(12px);
+  width:100%;background:rgba(13,22,40,.9);
+  border:1.5px solid rgba(59,158,255,.22);border-radius:28px;
+  padding:18px 60px 18px 24px;font-size:1rem;color:var(--text);
+  font-family:'DM Sans',sans-serif;outline:none;
+  transition:border-color .2s,box-shadow .2s;backdrop-filter:blur(12px);
 }
-.barra-input:focus{
-  border-color:var(--aqua);
-  box-shadow:0 0 0 3px rgba(59,158,255,0.12), 0 0 24px rgba(59,158,255,0.08);
-}
+html.light .barra-input{background:rgba(255,255,255,.95);border-color:rgba(0,85,204,.2);color:var(--text)}
+.barra-input:focus{border-color:var(--aqua);box-shadow:0 0 0 3px rgba(59,158,255,.1)}
 .barra-input::placeholder{color:var(--muted)}
 .barra-btn{
   position:absolute;right:8px;top:50%;transform:translateY(-50%);
-  width:42px;height:42px;border-radius:50%;
-  border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;transition:all .2s;
+  width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:1.05rem;transition:all .2s;
 }
-.barra-btn.buscar{background:rgba(59,158,255,0.2);color:var(--aqua)}
+.barra-btn.buscar{background:rgba(59,158,255,.2);color:var(--aqua)}
 .barra-btn.buscar:hover{background:var(--aqua);color:#fff}
-.barra-btn.sereia{
-  background:linear-gradient(120deg,#10b981,#3b9eff,#7c3aed,#ec4899);
-  background-size:220% 220%;animation:sereia-shine 3s ease infinite;
-  color:#fff;
-}
-@keyframes sereia-shine{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.barra-btn.sereia{background:linear-gradient(120deg,#10b981,#3b9eff,#7c3aed,#ec4899);background-size:220% 220%;animation:sshine 3s ease infinite;color:#fff}
+@keyframes sshine{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
-/* ── SUGESTÕES ── */
+/* Sugestões */
 .sugestoes{
   position:absolute;top:calc(100% + 8px);left:0;right:0;
-  background:rgba(10,16,30,0.97);
-  border:1px solid rgba(59,158,255,0.2);
-  border-radius:16px;
-  padding:8px;
-  backdrop-filter:blur(16px);
-  z-index:50;
-  display:none;
-  max-height:340px;overflow-y:auto;
-  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+  background:rgba(10,16,30,.97);border:1px solid rgba(59,158,255,.2);
+  border-radius:16px;padding:8px;backdrop-filter:blur(16px);
+  z-index:50;display:none;max-height:340px;overflow-y:auto;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
 }
+html.light .sugestoes{background:rgba(255,255,255,.98);border-color:rgba(0,85,204,.15)}
 .sugestoes.show{display:block}
-.sug-item{
-  display:flex;align-items:center;gap:12px;
-  padding:10px 12px;border-radius:10px;cursor:pointer;
-  transition:background .15s;
-  text-decoration:none;color:var(--text);
-}
-.sug-item:hover{background:rgba(59,158,255,0.1)}
-.sug-av{
-  width:36px;height:36px;border-radius:50%;
-  background:linear-gradient(135deg,#3b9eff,#7c3aed);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.9rem;flex-shrink:0;font-weight:700;
-  background-size:cover;background-position:center;
-}
+.sug-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .15s;text-decoration:none;color:var(--text)}
+.sug-item:hover{background:rgba(59,158,255,.1)}
+html.light .sug-item:hover{background:rgba(0,85,204,.06)}
+.sug-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b9eff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;font-weight:700;background-size:cover;background-position:center}
 .sug-info{flex:1;min-width:0}
 .sug-nome{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sug-preview{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.sug-divider{font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;padding:8px 12px 4px;border-top:1px solid var(--border);margin-top:4px}
+.sug-divider{font-size:.64rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;padding:8px 12px 4px;border-top:1px solid var(--border);margin-top:4px}
 .sug-divider:first-child{border-top:none;margin-top:0}
-.sug-loading{padding:20px;text-align:center;color:var(--muted);font-size:.85rem}
-.sug-vazio{padding:20px;text-align:center;color:var(--muted);font-size:.85rem}
 
-/* ── MODO POSTAR (expandido) ── */
+/* Caixa post */
 .post-box{
-  margin-top:12px;
-  background:rgba(10,16,30,0.95);
-  border:1px solid rgba(59,158,255,0.2);
-  border-radius:20px;
-  padding:16px;
-  display:none;
-  backdrop-filter:blur(12px);
+  margin-top:12px;background:var(--card);
+  border:1px solid var(--border);border-radius:20px;padding:16px;
+  display:none;backdrop-filter:blur(12px);
   animation:fade-up .3s cubic-bezier(.22,1,.36,1) both;
 }
 .post-box.show{display:block}
-.post-box.sereia-mode{
-  border-color:transparent;
-  background:linear-gradient(rgba(10,16,30,0.97),rgba(10,16,30,0.97)) padding-box,
-             linear-gradient(120deg,#10b981,#3b9eff,#7c3aed,#ec4899) border-box;
-}
-.post-textarea{
-  width:100%;background:rgba(8,12,20,0.7);
-  border:1px solid rgba(59,158,255,0.15);
-  border-radius:12px;padding:12px 16px;
-  color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.95rem;resize:none;height:90px;outline:none;
-  transition:border-color .2s;
-}
+.post-box.sereia-mode{border-color:transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(120deg,#10b981,#3b9eff,#7c3aed,#ec4899) border-box}
+.post-textarea{width:100%;background:rgba(8,12,20,.6);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;resize:none;height:88px;outline:none;transition:border-color .2s}
+html.light .post-textarea{background:rgba(248,250,255,.8)}
 .post-textarea:focus{border-color:var(--aqua)}
 .post-textarea::placeholder{color:var(--muted)}
-.post-actions-row{
-  display:flex;justify-content:space-between;
-  align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap;
-}
+.post-act-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap}
 .post-chars{font-size:.72rem;color:var(--muted)}
 .post-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn-postar{
-  background:var(--aqua);color:#fff;
-  border:none;border-radius:20px;
-  padding:9px 20px;font-size:.83rem;font-weight:700;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-  transition:all .2s;
-}
-.btn-postar:hover{background:#2d8aef;transform:scale(1.02)}
-.btn-sereia-mini{
-  background:linear-gradient(120deg,#10b981,#3b9eff,#7c3aed,#ec4899);
-  background-size:220% 220%;animation:sereia-shine 3s ease infinite;
-  color:#fff;border:none;border-radius:20px;
-  padding:9px 16px;font-size:.83rem;font-weight:700;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-  display:flex;align-items:center;gap:5px;
-}
-.btn-cancelar{
-  background:none;border:1px solid var(--border);color:var(--muted);
-  border-radius:20px;padding:9px 14px;font-size:.83rem;
-  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;
-}
-.btn-cancelar:hover{border-color:var(--aqua);color:var(--aqua)}
+.btn-pub{background:var(--aqua);color:#fff;border:none;border-radius:20px;padding:9px 20px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-pub:hover{opacity:.9;transform:scale(1.02)}
+.btn-sereia-mini{background:linear-gradient(120deg,#10b981,#3b9eff,#7c3aed,#ec4899);background-size:220% 220%;animation:sshine 3s ease infinite;color:#fff;border:none;border-radius:20px;padding:9px 16px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px}
+.btn-canc{background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:9px 14px;font-size:.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-canc:hover{border-color:var(--aqua);color:var(--aqua)}
+.btn-mkt{background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);color:#f5c842;border-radius:20px;padding:9px 16px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-mkt:hover{background:rgba(245,200,66,.2);border-color:#f5c842}
 
 /* Preview SereIA */
-.sereia-preview{
-  margin-top:10px;border-radius:12px;
-  background:rgba(8,12,20,0.5);
-  border:1px solid rgba(16,185,129,0.2);
-  padding:12px;display:none;
-}
-.sereia-preview.show{display:block}
-.sereia-preview-img{width:100%;border-radius:8px;margin-bottom:8px;display:block}
-.sereia-preview-text{font-size:.88rem;line-height:1.6;color:var(--text);margin-bottom:10px;white-space:pre-wrap}
-.sereia-preview-btns{display:flex;gap:6px;flex-wrap:wrap}
-.btn-pub-sereia{
-  background:linear-gradient(120deg,#10b981,#3b9eff);
-  color:#fff;border:none;border-radius:20px;
-  padding:8px 18px;font-size:.8rem;font-weight:700;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-}
-.btn-alt{
-  background:rgba(59,158,255,0.1);border:1px solid rgba(59,158,255,0.2);
-  color:var(--aqua);border-radius:20px;
-  padding:8px 14px;font-size:.8rem;font-weight:600;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-}
-.btn-desc{
-  background:none;border:1px solid var(--border);color:var(--muted);
-  border-radius:20px;padding:8px 14px;font-size:.8rem;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-}
-
-/* ── LINKS ABAIXO ── */
-.links-wrap{
-  margin-top:32px;
-  display:flex;flex-direction:column;align-items:center;gap:12px;
-  animation:fade-up .7s .4s cubic-bezier(.22,1,.36,1) both;
-}
-.links-row{display:flex;gap:16px;align-items:center}
-.link-btn{
-  padding:10px 22px;border-radius:20px;
-  font-size:.85rem;font-weight:600;
-  text-decoration:none;cursor:pointer;
-  transition:all .2s;border:none;font-family:'DM Sans',sans-serif;
-  display:flex;align-items:center;gap:6px;
-}
-.link-btn.outline{
-  background:rgba(13,22,40,0.7);
-  border:1px solid rgba(59,158,255,0.25);
-  color:var(--text);
-  backdrop-filter:blur(8px);
-}
-.link-btn.outline:hover{border-color:var(--aqua);color:var(--aqua)}
-.link-btn.ghost{
-  background:none;color:var(--muted);font-size:.8rem;
-}
-.link-btn.ghost:hover{color:var(--text)}
-
-.tagline{
-  font-size:.75rem;color:var(--muted);
-  letter-spacing:.04em;text-align:center;
-  margin-top:8px;
-}
-
-/* ── COPA BADGE ── */
-.copa-badge{
-  position:fixed;bottom:24px;right:24px;z-index:10;
-  background:rgba(8,12,20,0.9);
-  border:1px solid rgba(0,156,59,0.4);
-  border-radius:16px;padding:10px 16px;
-  display:flex;align-items:center;gap:10px;
-  backdrop-filter:blur(12px);
-  animation:fade-up .7s .6s cubic-bezier(.22,1,.36,1) both;
-  cursor:default;
-}
-.copa-times{display:flex;align-items:center;gap:8px}
-.copa-flag{font-size:1.4rem}
-.copa-vs{font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
-.copa-info{
-  font-size:.65rem;color:var(--muted);
-  letter-spacing:.05em;text-transform:uppercase;
-}
-.copa-info b{color:var(--green);display:block;font-size:.72rem;margin-bottom:1px}
-
-/* ── O QUE É FIZU (modal) ── */
-.overlay{
-  position:fixed;inset:0;z-index:100;
-  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
-  display:none;align-items:center;justify-content:center;
-  padding:20px;
-}
-.overlay.show{display:flex}
-.sobre-card{
-  background:#0d1628;
-  border:1px solid rgba(59,158,255,0.2);
-  border-radius:24px;padding:36px;
-  max-width:520px;width:100%;
-  animation:fade-up .4s cubic-bezier(.22,1,.36,1) both;
-}
-.sobre-h{
-  font-family:'Fraunces',serif;
-  font-size:1.8rem;font-weight:900;
-  color:var(--text);margin-bottom:6px;
-}
-.sobre-sub{color:var(--muted);font-size:.9rem;margin-bottom:24px}
-.sobre-itens{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
-.sobre-item{display:flex;gap:12px;align-items:flex-start}
-.sobre-ico{font-size:1.4rem;flex-shrink:0;margin-top:1px}
-.sobre-item-txt{font-size:.88rem;line-height:1.6;color:var(--text2,#c8d8f0)}
-.sobre-item-txt strong{color:var(--aqua)}
-.sobre-btns{display:flex;gap:10px;flex-wrap:wrap}
-.sobre-btns .btn-postar{flex:1;text-align:center;padding:12px}
-.sobre-fechar{
-  background:none;border:1px solid var(--border);color:var(--muted);
-  border-radius:12px;padding:12px 20px;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:.85rem;transition:all .2s;
-}
-.sobre-fechar:hover{color:var(--text);border-color:var(--aqua)}
-
-/* ── TOAST ── */
-.toast-idx{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  z-index:200;
-  background:#0d1628;border:1px solid var(--aqua);
-  border-radius:12px;padding:12px 20px;
-  font-size:.85rem;color:var(--text);
-  white-space:nowrap;
-  animation:toast-in .3s cubic-bezier(.34,1.56,.64,1) both;
-  display:none;
-}
-.toast-idx.show{display:block}
-@keyframes toast-in{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-
-/* ── TOGGLE DARK/LIGHT ── */
-.theme-toggle{
-  position:fixed;top:20px;right:20px;z-index:20;
-  background:rgba(13,22,40,0.8);
-  border:1px solid rgba(59,158,255,0.2);
-  border-radius:50%;width:40px;height:40px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1rem;cursor:pointer;
-  backdrop-filter:blur(8px);
-  transition:all .2s;
-}
-.theme-toggle:hover{border-color:var(--aqua);transform:scale(1.08)}
-
-/* ── MODO CLARO ── */
-html.light{
-  --bg:#f0f4fc;
-  --card:rgba(255,255,255,0.95);
-  --aqua:#0055cc;
-  --aqua2:#003d99;
-  --text:#0d1628;
-  --muted:#5a7090;
-  --border:rgba(0,85,204,0.15);
-  --gold:#b87800;
-  --green:#059669;
-  --br-green:#009c3b;
-  --br-yellow:#ffdf00;
-  --br-blue:#002776;
-  --jp-red:#bc002d;
-}
-html.light body{background:var(--bg)}
-html.light .copa-bg{
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0,156,59,0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,39,118,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(188,0,45,0.08) 0%, transparent 60%),
-    #f0f4fc;
-}
-html.light .campo-lines{
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(0,156,59,0.06) 60px),
-    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(0,156,59,0.06) 60px);
-}
-html.light .campo-circle{border-color:rgba(0,156,59,0.12)}
-html.light .placar{background:rgba(240,244,252,0.92);border-color:rgba(0,85,204,0.2)}
-html.light .placar-gol{color:var(--text)}
-html.light .logo-txt{background:linear-gradient(135deg,#0d1628 0%,#0055cc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-html.light .logo-sub{color:var(--muted)}
-html.light .barra-input{background:rgba(255,255,255,0.95);border-color:rgba(0,85,204,0.2);color:var(--text)}
-html.light .barra-input:focus{border-color:var(--aqua);box-shadow:0 0 0 3px rgba(0,85,204,0.1)}
-html.light .mode-tabs{background:rgba(255,255,255,0.7);border-color:rgba(0,85,204,0.15)}
-html.light .mode-tab.active{background:rgba(0,85,204,0.1);color:var(--aqua)}
-html.light .post-box{background:rgba(255,255,255,0.95);border-color:rgba(0,85,204,0.15)}
-html.light .post-textarea{background:#f8faff;border-color:rgba(0,85,204,0.15);color:var(--text)}
-html.light .sugestoes{background:rgba(255,255,255,0.98);border-color:rgba(0,85,204,0.15)}
-html.light .sug-item:hover{background:rgba(0,85,204,0.06)}
-html.light .sug-divider{color:var(--muted)}
-html.light .link-btn.outline{background:rgba(255,255,255,0.8);border-color:rgba(0,85,204,0.2);color:var(--text)}
-html.light .copa-badge{background:rgba(240,244,252,0.9);border-color:rgba(0,156,59,0.3)}
-html.light .sobre-card{background:#ffffff;border-color:rgba(0,85,204,0.15)}
-html.light .theme-toggle{background:rgba(255,255,255,0.85);border-color:rgba(0,85,204,0.2)}
-html.light .sereia-preview{background:rgba(248,250,255,0.9);border-color:rgba(0,85,204,0.15)}
-html.light .toast-idx{background:#ffffff;border-color:var(--aqua);color:var(--text)}
-
-/* ── TOPO AÇÕES ── */
-.topo-acoes{
-  position:fixed;top:16px;right:16px;z-index:20;
-  display:flex;align-items:center;gap:8px;
-}
-.btn-entrar-topo{
-  background:linear-gradient(135deg,#3b9eff,#7C3AED);
-  color:#fff;text-decoration:none;
-  border-radius:20px;padding:8px 18px;
-  font-size:.82rem;font-weight:700;
-  font-family:"DM Sans",sans-serif;
-  transition:all .2s;white-space:nowrap;
-  box-shadow:0 4px 14px rgba(59,158,255,0.3);
-}
-.btn-entrar-topo:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(59,158,255,0.4)}
-.theme-toggle{
-  background:rgba(13,22,40,0.8);
-  border:1px solid rgba(59,158,255,0.2);
-  border-radius:50%;width:38px;height:38px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.95rem;cursor:pointer;
-  backdrop-filter:blur(8px);transition:all .2s;
-}
-.theme-toggle:hover{border-color:var(--aqua);transform:scale(1.08)}
-html.light .btn-entrar-topo{box-shadow:0 4px 14px rgba(0,85,204,0.25)}
-html.light .theme-toggle{background:rgba(255,255,255,0.85);border-color:rgba(0,85,204,0.2)}
+.sereia-prev{margin-top:10px;border-radius:12px;background:rgba(8,12,20,.5);border:1px solid rgba(16,185,129,.2);padding:12px;display:none}
+.sereia-prev.show{display:block}
+.sereia-prev img{width:100%;border-radius:8px;margin-bottom:8px;display:block}
+.sereia-prev-txt{font-size:.88rem;line-height:1.6;color:var(--text);margin-bottom:10px;white-space:pre-wrap}
+.sereia-prev-btns{display:flex;gap:6px;flex-wrap:wrap}
+.btn-pub-s{background:linear-gradient(120deg,#10b981,#3b9eff);color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-alt{background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.2);color:var(--aqua);border-radius:20px;padding:8px 14px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-desc{background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:8px 14px;font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif}
 
 /* ── CHUTE DO PLACAR ── */
 .chute-wrap{
-  position:fixed;top:76px;left:50%;transform:translateX(-50%);
-  z-index:15;
-  animation:placar-in .5s .3s cubic-bezier(.34,1.56,.64,1) both;
+  width:100%;max-width:640px;margin-top:12px;
+  animation:fade-up .7s .35s cubic-bezier(.22,1,.36,1) both;
 }
 .chute-card{
-  background:rgba(8,12,20,0.92);
-  border:1px solid rgba(255,223,0,0.3);
-  border-radius:20px;padding:14px 20px;
-  backdrop-filter:blur(16px);
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  position:relative;
+  background:rgba(8,12,20,.88);border:1px solid rgba(255,223,0,.25);
+  border-radius:16px;padding:12px 18px;backdrop-filter:blur(14px);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative;
 }
-.chute-label{font-size:.72rem;font-weight:700;color:var(--br-yellow);letter-spacing:.05em;white-space:nowrap}
-.chute-inputs{display:flex;align-items:center;gap:8px}
-.chute-time-wrap{display:flex;align-items:center;gap:6px}
-.chute-flag{font-size:1.3rem}
-.chute-input{
-  width:44px;height:40px;
-  background:rgba(255,223,0,0.08);
-  border:1.5px solid rgba(255,223,0,0.3);
-  border-radius:10px;
-  color:var(--text);font-family:"DM Sans",sans-serif;
-  font-size:1.3rem;font-weight:900;text-align:center;
-  outline:none;transition:border-color .2s;
-}
+html.light .chute-card{background:rgba(240,244,252,.95)}
+.chute-label{font-size:.7rem;font-weight:700;color:var(--br-yellow);letter-spacing:.05em;white-space:nowrap;flex-shrink:0}
+html.light .chute-label{color:#8a6500}
+.chute-inputs{display:flex;align-items:center;gap:6px}
+.chute-flag{font-size:1.1rem}
+.chute-input{width:40px;height:36px;background:rgba(255,223,0,.08);border:1.5px solid rgba(255,223,0,.25);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:900;text-align:center;outline:none;transition:border-color .2s}
+html.light .chute-input{background:rgba(0,120,60,.06);border-color:rgba(0,120,60,.25)}
 .chute-input:focus{border-color:var(--br-yellow)}
-.chute-x{font-size:.8rem;font-weight:700;color:var(--muted)}
-.chute-btn{
-  background:linear-gradient(135deg,var(--br-green),var(--br-blue));
-  color:#fff;border:none;border-radius:14px;
-  padding:8px 16px;font-size:.78rem;font-weight:700;
-  cursor:pointer;font-family:"DM Sans",sans-serif;
-  white-space:nowrap;transition:all .2s;
-}
+.chute-x{font-size:.75rem;font-weight:700;color:var(--muted)}
+.chute-btn{background:linear-gradient(135deg,var(--br-green),#004499);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-size:.76rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s;margin-left:auto}
 .chute-btn:hover{transform:scale(1.03)}
-.chute-fechar{
-  position:absolute;top:-8px;right:-8px;
-  width:22px;height:22px;border-radius:50%;
-  background:rgba(255,255,255,0.1);border:none;
-  color:var(--muted);cursor:pointer;font-size:.75rem;
-  display:flex;align-items:center;justify-content:center;
+.chute-fechar{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:rgba(100,120,160,.3);border:none;color:var(--muted);cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center}
+
+/* ── LINKS ── */
+.links-wrap{
+  margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  animation:fade-up .7s .4s cubic-bezier(.22,1,.36,1) both;
 }
-html.light .chute-card{background:rgba(240,244,252,0.95)}
-html.light .chute-input{background:rgba(0,156,59,0.06);border-color:rgba(0,156,59,0.3);color:var(--text)}
+.links-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center}
+.link-btn{padding:10px 20px;border-radius:20px;font-size:.84rem;font-weight:600;text-decoration:none;cursor:pointer;transition:all .2s;border:none;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px}
+.link-btn.outline{background:rgba(13,22,40,.7);border:1px solid rgba(59,158,255,.22);color:var(--text);backdrop-filter:blur(8px)}
+html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0,85,204,.2)}
+.link-btn.outline:hover{border-color:var(--aqua);color:var(--aqua)}
+.tagline{font-size:.74rem;color:var(--muted);letter-spacing:.03em;text-align:center}
+
+/* ── COPA BADGE (canto inferior direito) ── */
+.copa-badge{
+  position:fixed;bottom:20px;right:20px;z-index:10;
+  background:rgba(8,12,20,.92);border:1px solid rgba(0,156,59,.35);
+  border-radius:14px;padding:9px 14px;
+  display:flex;align-items:center;gap:10px;
+  backdrop-filter:blur(12px);
+  animation:fade-up .7s .6s cubic-bezier(.22,1,.36,1) both;
+}
+html.light .copa-badge{background:rgba(240,244,252,.95)}
+.copa-times{display:flex;align-items:center;gap:7px}
+.copa-flag{font-size:1.25rem}
+.copa-vs{font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.copa-info b{color:#10b981;display:block;font-size:.7rem;font-weight:700;margin-bottom:1px}
+.copa-info span{font-size:.6rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+
+/* ── MODAL SOBRE ── */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.show{display:flex}
+.sobre-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:500px;width:100%;animation:fade-up .4s cubic-bezier(.22,1,.36,1) both}
+.sobre-h{font-family:'Inter',sans-serif;font-size:1.6rem;font-weight:900;color:var(--text);margin-bottom:4px}
+.sobre-sub{color:var(--muted);font-size:.88rem;margin-bottom:20px}
+.sobre-itens{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.sobre-item{display:flex;gap:12px;align-items:flex-start}
+.sobre-ico{font-size:1.3rem;flex-shrink:0;margin-top:1px}
+.sobre-item-txt{font-size:.86rem;line-height:1.6;color:var(--muted)}
+.sobre-item-txt strong{color:var(--aqua)}
+.sobre-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn-entrar-s{background:linear-gradient(135deg,#3b9eff,#7C3AED);color:#fff;text-decoration:none;border-radius:12px;padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex:1;transition:all .2s}
+.btn-fechar{background:none;border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:12px 20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;transition:all .2s}
+.btn-fechar:hover{color:var(--text);border-color:var(--aqua)}
 
 /* ── RODAPÉ ── */
-.footer-idx{
-  position:relative;z-index:1;
-  border-top:1px solid var(--border);
-  padding:24px 32px;
-  margin-top:40px;
-}
-.footer-inner{
-  max-width:800px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:16px;
-}
-.footer-brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.footer-copy{font-size:.72rem;color:var(--muted)}
-.footer-links{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
-.footer-link{color:var(--muted);text-decoration:none;font-size:.78rem;transition:color .2s}
+.footer-idx{position:relative;z-index:1;border-top:1px solid var(--border);padding:20px 28px;margin-top:32px}
+.footer-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.footer-brand{display:flex;align-items:center;gap:8px}
+.footer-logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.footer-logo svg{width:16px;height:16px}
+.footer-nome{font-family:'Inter',sans-serif;font-weight:900;font-size:.88rem;letter-spacing:.05em}
+.footer-copy{font-size:.7rem;color:var(--muted)}
+.footer-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.footer-link{color:var(--muted);text-decoration:none;font-size:.76rem;transition:color .2s}
 .footer-link:hover{color:var(--aqua)}
-html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
 
-/* MOBILE */
+/* ── TOAST ── */
+.toast-idx{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);z-index:200;background:var(--card);border:1px solid var(--aqua);border-radius:12px;padding:11px 20px;font-size:.84rem;color:var(--text);white-space:nowrap;display:none;animation:fade-up .3s cubic-bezier(.34,1.56,.64,1)}
+.toast-idx.show{display:block}
+
+/* ── MOBILE ── */
 @media(max-width:600px){
-  .logo-txt{font-size:2.4rem}
-  .logo-fish{width:46px;height:46px;font-size:1.6rem}
-  .placar{font-size:.65rem;padding:7px 14px}
-  .placar-label{margin:0 10px}
-  .placar-sep{margin:0 10px}
-  .copa-badge{bottom:16px;right:16px;padding:8px 12px}
-  .centro{padding:100px 16px 100px}
+  .placar{padding:6px 10px;font-size:.6rem}
+  .placar-flag{font-size:.9rem}
+  .placar-gol{font-size:1.1rem}
+  .placar-mid{margin:0 4px}
+  .topbar{padding:8px 12px}
+  .btn-entrar{padding:7px 14px;font-size:.76rem}
+  .theme-toggle{width:32px;height:32px;font-size:.82rem}
+  .centro{padding:72px 14px 50px}
+  .fizu-logo-icon{width:52px;height:52px;border-radius:14px}
+  .fizu-logo-icon svg{width:34px;height:34px}
+  .logo-nome{font-size:2.4rem}
+  .barra-input{font-size:.92rem;padding:16px 54px 16px 16px}
   .search-wrap{max-width:100%}
-  .barra-input{font-size:.95rem;padding:16px 56px 16px 18px}
-  .links-row{flex-direction:column;gap:10px}
-  .topo-acoes{top:12px;right:12px;gap:6px}
-  .btn-entrar-topo{padding:7px 14px;font-size:.76rem}
-  .theme-toggle{width:34px;height:34px;font-size:.85rem}
-  .chute-card{padding:10px 14px;gap:10px}
-  .chute-label{font-size:.66rem}
-  .footer-inner{flex-direction:column;align-items:flex-start}
-  .footer-links{gap:12px}
+  .links-row{gap:8px}
+  .copa-badge{bottom:14px;right:14px;padding:8px 12px}
+  .chute-card{padding:10px 12px;gap:8px}
+  .chute-btn{padding:7px 12px;font-size:.72rem}
+  .footer-inner{flex-direction:column;align-items:flex-start;gap:10px}
+  .footer-links{gap:10px}
 }
 </style>
 </head>
 <body>
 
-<!-- Fundo copa -->
 <div class="copa-bg"></div>
 <div class="campo-lines"></div>
 <div class="campo-circle"></div>
 
-<!-- Placar topo -->
-<div class="placar">
-  <div class="placar-time">
-    <span class="placar-flag">🇧🇷</span>
-    <span class="placar-nome">BRA</span>
-  </div>
-  <span class="placar-gol" id="golBra">–</span>
-  <div class="placar-label">
-    <span class="placar-ao-vivo"><span class="dot-vivo"></span> AO VIVO</span>
-    <b>Copa 2026</b>
-  </div>
-  <span class="placar-gol" id="golJpn">–</span>
-  <div class="placar-time">
-    <span class="placar-nome">JPN</span>
-    <span class="placar-flag">🇯🇵</span>
-  </div>
-</div>
-
-<!-- Chute do placar -->
-<div class="chute-wrap" id="chuteWrap">
-  <div class="chute-card">
-    <div class="chute-label">⚽ Seu chute no placar</div>
-    <div class="chute-inputs">
-      <div class="chute-time-wrap">
-        <span class="chute-flag">🇧🇷</span>
-        <input class="chute-input" id="chuteBra" type="number" min="0" max="20" value="2" placeholder="0">
-      </div>
-      <span class="chute-x">×</span>
-      <div class="chute-time-wrap">
-        <input class="chute-input" id="chuteJpn" type="number" min="0" max="20" value="0" placeholder="0">
-        <span class="chute-flag">🇯🇵</span>
-      </div>
+<!-- TOPBAR: placar à esquerda, ações à direita -->
+<div class="topbar">
+  <!-- Placar Copa -->
+  <div class="placar">
+    <div class="placar-time">
+      <span class="placar-flag">🇧🇷</span>
+      <span class="placar-nome">BRA</span>
     </div>
-    <button class="chute-btn" onclick="postarChute()">Postar meu chute no Fizu</button>
-    <button class="chute-fechar" onclick="document.getElementById('chuteWrap').style.display='none'">✕</button>
+    <span class="placar-gol" id="golBra">–</span>
+    <div class="placar-mid">
+      <div class="placar-vivo"><span class="dot-vivo"></span>AO VIVO</div>
+      <div class="placar-comp">Copa 2026</div>
+    </div>
+    <span class="placar-gol" id="golJpn">–</span>
+    <div class="placar-time">
+      <span class="placar-nome">JPN</span>
+      <span class="placar-flag">🇯🇵</span>
+    </div>
+  </div>
+
+  <!-- Ações direita -->
+  <div class="topbar-right">
+    <a href="/feed#" class="btn-entrar">Entrar →</a>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
+      <span id="themeIcon">☀️</span>
+    </button>
   </div>
 </div>
 
-<!-- Centro -->
+<!-- MAIN -->
 <main class="centro">
 
   <!-- Logo -->
   <div class="logo-wrap">
-    <div class="fizu-logo-icon" style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(124,58,237,0.45),0 4px 20px rgba(59,158,255,0.3);flex-shrink:0">
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:42px;height:42px">
+    <div class="fizu-logo-icon">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g transform="rotate(-12 50 50)">
           <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
           <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
@@ -704,57 +382,64 @@ html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
         </g>
       </svg>
     </div>
-    <div>
-      <div class="logo-txt">FIZU</div>
+    <div class="logo-txts">
+      <div class="logo-nome">FIZU</div>
       <div class="logo-sub">O que você diz, permanece</div>
     </div>
   </div>
 
-  <!-- Barra -->
+  <!-- Barra principal -->
   <div class="search-wrap">
     <div class="mode-tabs">
       <button class="mode-tab active" id="tabBuscar" onclick="setMode('buscar')">🔍 Buscar</button>
       <button class="mode-tab" id="tabPostar" onclick="setMode('postar')">✏️ Postar</button>
+      <a class="mode-tab" href="/feed#marketplace" style="text-decoration:none">🏪 Anunciar grátis</a>
     </div>
 
     <div class="barra">
-      <input
-        class="barra-input"
-        id="barraInput"
-        placeholder="O que está acontecendo no Fizu..."
-        autocomplete="off"
-        oninput="onBarraInput()"
-        onkeydown="onBarraKey(event)"
-        onfocus="onBarraFocus()"
-      >
-      <button class="barra-btn buscar" id="barraBtnBuscar" onclick="executarBusca()" title="Buscar">🔍</button>
-      <button class="barra-btn sereia" id="barraBtnSereia" style="display:none" onclick="ativarSereia()" title="Postar com a SereIA">🧜‍♀️</button>
-
-      <!-- Sugestões em tempo real -->
+      <input class="barra-input" id="barraInput" placeholder="O que está acontecendo no Fizu..."
+        autocomplete="off" oninput="onBarraInput()" onkeydown="onBarraKey(event)" onfocus="onBarraFocus()">
+      <button class="barra-btn buscar" id="btnBuscar" onclick="executarBusca()" title="Buscar">🔍</button>
+      <button class="barra-btn sereia" id="btnSereia" style="display:none" onclick="ativarSereia()" title="Criar com a SereIA">🧜‍♀️</button>
       <div class="sugestoes" id="sugestoes"></div>
     </div>
 
     <!-- Caixa de postagem -->
     <div class="post-box" id="postBox">
       <textarea class="post-textarea" id="postTexto" placeholder="O que você quer compartilhar?" maxlength="500" oninput="onPostInput()"></textarea>
-      <div class="post-actions-row">
+      <div class="post-act-row">
         <span class="post-chars" id="postChars">0/500</span>
         <div class="post-btns">
           <button class="btn-sereia-mini" onclick="gerarSereia()">🧜‍♀️ Criar com a SereIA</button>
-          <button class="btn-postar" onclick="publicarIndex()">Publicar ∞</button>
-          <button class="btn-cancelar" onclick="setMode('buscar')">Cancelar</button>
+          <button class="btn-pub" onclick="publicarIndex()">Publicar ∞</button>
+          <button class="btn-canc" onclick="setMode('buscar')">✕</button>
         </div>
       </div>
-      <!-- Preview SereIA -->
-      <div class="sereia-preview" id="sereiaPreview">
-        <div id="sereiaLoading" style="text-align:center;padding:16px;color:#6b8aad;font-size:.85rem;display:none">🧜‍♀️ A SereIA está criando...</div>
-        <img id="sereiaImg" class="sereia-preview-img" style="display:none" alt="">
-        <div id="sereiaTexto" class="sereia-preview-text"></div>
-        <div class="sereia-preview-btns" id="sereiaPreviewBtns" style="display:none">
-          <button class="btn-pub-sereia" onclick="publicarSereia()">Publicar ∞</button>
+      <div class="sereia-prev" id="sereiaPrev">
+        <div id="sereiaLoad" style="text-align:center;padding:14px;color:var(--muted);font-size:.84rem;display:none">🧜‍♀️ Criando...</div>
+        <img id="sereiaImg" style="display:none;width:100%;border-radius:8px;margin-bottom:8px" alt="">
+        <div id="sereiaTxt" class="sereia-prev-txt"></div>
+        <div class="sereia-prev-btns" id="sereiaBtns" style="display:none">
+          <button class="btn-pub-s" onclick="publicarSereia()">Publicar ∞</button>
           <button class="btn-alt" onclick="gerarSereia()">✨ Outra versão</button>
           <button class="btn-desc" onclick="descartarSereia()">Descartar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Chute do placar -->
+    <div class="chute-wrap" id="chuteWrap">
+      <div class="chute-card">
+        <div class="chute-label">⚽ Seu chute BRA × JPN</div>
+        <div class="chute-inputs">
+          <span class="chute-flag">🇧🇷</span>
+          <input class="chute-input" id="chuteBra" type="number" min="0" max="20" value="2">
+          <span class="chute-x">×</span>
+          <input class="chute-input" id="chuteJpn" type="number" min="0" max="20" value="0">
+          <span class="chute-flag">🇯🇵</span>
+        </div>
+        <button class="chute-btn" onclick="postarChute()">Postar no Fizu</button>
+        <button class="chute-fechar" onclick="document.getElementById('chuteWrap').style.display='none'" title="Fechar">✕</button>
       </div>
     </div>
   </div>
@@ -770,19 +455,9 @@ html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
 
 </main>
 
-<!-- Toggle dark/light -->
-<div class="topo-acoes">
-  <a href="/feed#" class="btn-entrar-topo">Entrar →</a>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
-    <span id="themeIcon">☀️</span>
-  </button>
-</div>
-
-<!-- Badge Copa -->
+<!-- Badge copa -->
 <div class="copa-badge">
-  <div>
-    <div class="copa-info"><b>Copa do Mundo 2026</b>GRUPO C</div>
-  </div>
+  <div class="copa-info"><b>Copa do Mundo 2026</b><span>Grupo C</span></div>
   <div class="copa-times">
     <span class="copa-flag">🇧🇷</span>
     <span class="copa-vs">VS</span>
@@ -796,26 +471,15 @@ html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
     <div class="sobre-h">O que é o Fizu?</div>
     <div class="sobre-sub">A rede social onde o que você diz não desaparece.</div>
     <div class="sobre-itens">
-      <div class="sobre-item">
-        <span class="sobre-ico">⚓</span>
-        <div class="sobre-item-txt"><strong>Posts eternos.</strong> Aqui não tem delete. O que você publica fica — como um registro real de quem você é.</div>
-      </div>
-      <div class="sobre-item">
-        <span class="sobre-ico">🧜‍♀️</span>
-        <div class="sobre-item-txt"><strong>SereIA integrada.</strong> A IA do Fizu escreve com você, cria imagens, e aprende seu estilo. Co-criação real.</div>
-      </div>
-      <div class="sobre-item">
-        <span class="sobre-ico">🤖</span>
-        <div class="sobre-item-txt"><strong>6 agentes vivos.</strong> Zari, Apolus, Anthos, SereIA, Okto e Maya postam, comentam e respondem quando você os menciona.</div>
-      </div>
-      <div class="sobre-item">
-        <span class="sobre-ico">🛡️</span>
-        <div class="sobre-item-txt"><strong>Acordos com validade.</strong> Sele combinados no chat — rastreáveis, permanentes, confiáveis.</div>
-      </div>
+      <div class="sobre-item"><span class="sobre-ico">⚓</span><div class="sobre-item-txt"><strong>Posts eternos.</strong> Aqui não tem delete. O que você publica fica — registro real de quem você é.</div></div>
+      <div class="sobre-item"><span class="sobre-ico">🧜‍♀️</span><div class="sobre-item-txt"><strong>SereIA integrada.</strong> A IA do Fizu escreve com você, cria imagens e aprende seu estilo.</div></div>
+      <div class="sobre-item"><span class="sobre-ico">🤖</span><div class="sobre-item-txt"><strong>6 agentes vivos.</strong> Zari, Apolus, Anthos, SereIA, Okto e Maya postam e respondem quando mencionados.</div></div>
+      <div class="sobre-item"><span class="sobre-ico">🏪</span><div class="sobre-item-txt"><strong>Marketplace gratuito.</strong> Anuncie produtos, serviços e imóveis. Acordos registrados para sempre.</div></div>
     </div>
     <div class="sobre-btns">
-      <a class="btn-postar" href="/feed#" style="text-decoration:none;display:flex;align-items:center;justify-content:center">Entrar no Fizu →</a>
-      <button class="sobre-fechar" onclick="fecharSobre()">Fechar</button>
+      <a class="btn-entrar-s" href="/feed#">Entrar no Fizu →</a>
+      <a class="btn-entrar-s" href="/sobre.html" style="background:rgba(59,158,255,.15);color:var(--aqua)">Ver mais detalhes</a>
+      <button class="btn-fechar" onclick="fecharSobre()">Fechar</button>
     </div>
   </div>
 </div>
@@ -824,8 +488,8 @@ html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
 <footer class="footer-idx">
   <div class="footer-inner">
     <div class="footer-brand">
-      <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 100 100" fill="none" style="width:18px;height:18px">
+      <div class="footer-logo">
+        <svg viewBox="0 0 100 100" fill="none">
           <g transform="rotate(-12 50 50)">
             <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
             <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
@@ -833,343 +497,183 @@ html.light .footer-idx{border-color:rgba(0,85,204,0.12)}
           </g>
         </svg>
       </div>
-      <span style="font-family:'Inter',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:.05em">FIZU</span>
+      <span class="footer-nome">FIZU</span>
       <span class="footer-copy">© 2026 Fizu. Construído sobre transparência e confiança.</span>
     </div>
     <div class="footer-links">
-      <a href="sobre.html" class="footer-link">🐟 Entender o Fizu</a>
-      <a href="termos.html" class="footer-link">Termos de Uso</a>
-      <a href="privacidade.html" class="footer-link">Privacidade</a>
-      <a href="contato.html" class="footer-link">Contato</a>
+      <a href="/sobre.html" class="footer-link">🐟 Entender o Fizu</a>
+      <a href="/termos.html" class="footer-link">Termos</a>
+      <a href="/privacidade.html" class="footer-link">Privacidade</a>
+      <a href="/contato.html" class="footer-link">Contato</a>
       <a href="/feed#" class="footer-link">Entrar</a>
     </div>
   </div>
 </footer>
 
-<!-- Toast -->
 <div class="toast-idx" id="toast"></div>
 
 <script>
-const SUPA_URL = 'https://tnwildfshzrvktrlfjhz.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRud2lsZGZzaHpydmt0cmxmamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNDg3NTgsImV4cCI6MjA2MzYyNDc1OH0.RElnQiJ1F9RhBIkWE8HbcvEe3u06SKbfAtLqGSCT4yk';
+const SUPA_URL='https://tnwildfshzrvktrlfjhz.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRud2lsZGZzaHpydmt0cmxmamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNDg3NTgsImV4cCI6MjA2MzYyNDc1OH0.RElnQiJ1F9RhBIkWE8HbcvEe3u06SKbfAtLqGSCT4yk';
+let modo='buscar', sereiaPost='', sereiaImg='', busTimer=null;
 
-let modo = 'buscar';
-let sereiaPost = '';
-let sereiaImgUrl = '';
-let buscaTimeout = null;
-
-function setMode(m) {
-  modo = m;
-  const inputEl = document.getElementById('barraInput');
-  const postBox = document.getElementById('postBox');
-  const btnBuscar = document.getElementById('barraBtnBuscar');
-  const btnSereia = document.getElementById('barraBtnSereia');
-  const tabB = document.getElementById('tabBuscar');
-  const tabP = document.getElementById('tabPostar');
-  const sugs = document.getElementById('sugestoes');
-
-  if (m === 'buscar') {
-    tabB.classList.add('active'); tabP.classList.remove('active');
-    postBox.classList.remove('show');
-    btnBuscar.style.display = '';
-    btnSereia.style.display = 'none';
-    inputEl.placeholder = 'O que está acontecendo no Fizu...';
-    inputEl.focus();
-  } else {
-    tabP.classList.add('active'); tabB.classList.remove('active');
-    postBox.classList.add('show');
-    btnBuscar.style.display = 'none';
-    btnSereia.style.display = '';
-    sugs.classList.remove('show');
-    inputEl.placeholder = 'Sobre o que você quer postar?';
-    inputEl.value = '';
-    inputEl.focus();
-  }
+// TEMA
+function initTheme(){
+  const isDark=document.documentElement.classList.contains('dark');
+  document.getElementById('themeIcon').textContent=isDark?'☀️':'🌙';
 }
-
-function onBarraInput() {
-  const v = document.getElementById('barraInput').value.trim();
-  if (modo === 'buscar') {
-    clearTimeout(buscaTimeout);
-    if (v.length < 2) { fecharSugestoes(); return; }
-    buscaTimeout = setTimeout(() => buscarTempoReal(v), 320);
-  }
+function toggleTheme(){
+  const isDark=document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark',!isDark);
+  document.documentElement.classList.toggle('light',isDark);
+  localStorage.setItem('fizu-theme',isDark?'light':'dark');
+  document.getElementById('themeIcon').textContent=isDark?'🌙':'☀️';
 }
-
-function onBarraFocus() {
-  const v = document.getElementById('barraInput').value.trim();
-  if (modo === 'buscar' && v.length >= 2) buscarTempoReal(v);
-}
-
-function onBarraKey(e) {
-  if (e.key === 'Enter') {
-    if (modo === 'buscar') executarBusca();
-  }
-  if (e.key === 'Escape') fecharSugestoes();
-}
-
-function fecharSugestoes() {
-  document.getElementById('sugestoes').classList.remove('show');
-}
-
-async function buscarTempoReal(q) {
-  const el = document.getElementById('sugestoes');
-  el.innerHTML = '<div class="sug-loading">🔍 Buscando...</div>';
-  el.classList.add('show');
-
-  try {
-    const enc = encodeURIComponent(q);
-    const [postsRes, usuariosRes] = await Promise.all([
-      fetch(`${SUPA_URL}/rest/v1/posts?or=(conteudo.ilike.*${enc}*)&select=id,conteudo,autor_id,curtidas_count,comentarios_count,midia_url&order=curtidas_count.desc&limit=4`, {
-        headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` }
-      }),
-      fetch(`${SUPA_URL}/rest/v1/perfis?or=(nome.ilike.*${enc}*,username.ilike.*${enc}*)&select=id,nome,foto_url,username,biografia&limit=3`, {
-        headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` }
-      })
-    ]);
-
-    const posts = await postsRes.json();
-    const usuarios = await usuariosRes.json();
-
-    let html = '';
-
-    if (Array.isArray(usuarios) && usuarios.length) {
-      html += '<div class="sug-divider">👤 Pessoas</div>';
-      for (const u of usuarios) {
-        const foto = u.foto_url ? `style="background-image:url(${u.foto_url});background-size:cover;background-position:center"` : '';
-        const inicial = (u.nome||'U').charAt(0).toUpperCase();
-        html += `<a class="sug-item" href="/feed#perfil-${u.id}">
-          <div class="sug-av" ${foto}>${u.foto_url?'':inicial}</div>
-          <div class="sug-info">
-            <div class="sug-nome">${esc(u.nome||'')}${u.username?` <span style="color:var(--muted);font-size:.72rem">@${esc(u.username)}</span>`:''}</div>
-            <div class="sug-preview">${esc((u.biografia||'').substring(0,60))}</div>
-          </div>
-        </a>`;
-      }
-    }
-
-    if (Array.isArray(posts) && posts.length) {
-      html += '<div class="sug-divider">📌 Posts</div>';
-      for (const p of posts) {
-        const preview = (p.conteudo||'').substring(0,80).replace(/\n/g,' ');
-        html += `<a class="sug-item" href="/feed#post-${p.id}">
-          <div class="sug-av" style="background:linear-gradient(135deg,#3b9eff22,#7c3aed22);border:1px solid var(--border)">📌</div>
-          <div class="sug-info">
-            <div class="sug-nome">${esc(preview)}</div>
-            <div class="sug-preview">❤️ ${p.curtidas_count||0} · 💬 ${p.comentarios_count||0}</div>
-          </div>
-        </a>`;
-      }
-    }
-
-    if (!html) {
-      html = `<div class="sug-vazio">Nenhum resultado para "<strong>${esc(q)}</strong>"</div>`;
-    }
-
-    // Link para busca completa no feed
-    html += `<div class="sug-divider" style="border-top:1px solid var(--border);padding-top:8px">
-      <a class="sug-item" href="/feed#busca=${encodeURIComponent(q)}" style="display:flex;gap:10px;align-items:center;color:var(--aqua);font-size:.82rem;font-weight:600">
-        <div class="sug-av" style="background:rgba(59,158,255,0.1)">🔍</div>
-        <div>Ver todos os resultados para "<strong>${esc(q)}</strong>"</div>
-      </a>
-    </div>`;
-
-    el.innerHTML = html;
-    el.classList.add('show');
-  } catch(e) {
-    el.innerHTML = '<div class="sug-vazio">Erro ao buscar. Tente novamente.</div>';
-  }
-}
-
-function executarBusca() {
-  const q = document.getElementById('barraInput').value.trim();
-  if (!q) return;
-  window.location.href = `/feed#busca=${encodeURIComponent(q)}`;
-}
-
-function onPostInput() {
-  const v = document.getElementById('postTexto').value;
-  document.getElementById('postChars').textContent = `${Math.min(v.length,500)}/500`;
-}
-
-function ativarSereia() {
-  document.getElementById('postBox').classList.add('show');
-  document.getElementById('postBox').classList.add('sereia-mode');
-  document.getElementById('postTexto').placeholder = '✨ Descreva sua ideia... a SereIA cria o post e a imagem pra você.';
-  document.getElementById('postTexto').focus();
-}
-
-async function gerarSereia() {
-  const ideia = document.getElementById('postTexto').value.trim() || document.getElementById('barraInput').value.trim();
-  if (ideia.length < 2) { mostrarToast('Descreva sua ideia pra SereIA ✨'); return; }
-
-  const preview = document.getElementById('sereiaPreview');
-  const loading = document.getElementById('sereiaLoading');
-  const img = document.getElementById('sereiaImg');
-  const texto = document.getElementById('sereiaTexto');
-  const btns = document.getElementById('sereiaPreviewBtns');
-
-  preview.classList.add('show');
-  loading.style.display = 'block';
-  img.style.display = 'none';
-  texto.textContent = '';
-  btns.style.display = 'none';
-
-  try {
-    const res = await fetch(`${SUPA_URL}/functions/v1/sereia-compose`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
-      body: JSON.stringify({ ideia })
-    });
-    const r = await res.json();
-    if (!r.ok) throw new Error(r.error);
-
-    sereiaPost = r.post;
-
-    loading.style.display = 'none';
-    texto.textContent = r.post;
-
-    if (r.imagem_en) {
-      const irRes = await fetch(`${SUPA_URL}/functions/v1/gerar-imagem-ia`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
-        body: JSON.stringify({ prompt: r.imagem_en })
-      });
-      const ir = await irRes.json();
-      if (ir.ok && ir.url) {
-        sereiaImgUrl = ir.url;
-        img.src = ir.url;
-        img.style.display = 'block';
-      }
-    }
-
-    btns.style.display = 'flex';
-  } catch(e) {
-    loading.style.display = 'none';
-    texto.textContent = '⚠️ ' + (e.message||'Erro ao criar. Tente de novo.');
-    btns.style.display = 'none';
-  }
-}
-
-function descartarSereia() {
-  sereiaPost = '';
-  sereiaImgUrl = '';
-  document.getElementById('sereiaPreview').classList.remove('show');
-  document.getElementById('postTexto').value = '';
-  document.getElementById('postTexto').placeholder = 'O que você quer compartilhar?';
-}
-
-async function publicarIndex() {
-  const texto = document.getElementById('postTexto').value.trim();
-  if (!texto) { mostrarToast('Escreva algo para publicar'); return; }
-  window.location.href = `/feed#novo-post=${encodeURIComponent(texto)}`;
-}
-
-async function publicarSereia() {
-  if (!sereiaPost) return;
-  const params = new URLSearchParams({ texto: sereiaPost, ...(sereiaImgUrl ? { midia: sereiaImgUrl } : {}), sereia: '1' });
-  window.location.href = `/feed#sereia-post=${encodeURIComponent(sereiaPost)}${sereiaImgUrl ? '&midia=' + encodeURIComponent(sereiaImgUrl) : ''}`;
-}
-
-function abrirSobre() { document.getElementById('overlay').classList.add('show'); }
-function fecharSobre() { document.getElementById('overlay').classList.remove('show'); }
-
-function mostrarToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Fechar sugestões ao clicar fora
-document.addEventListener('click', e => {
-  if (!e.target.closest('.barra')) fecharSugestoes();
-});
-
-// Placar ao vivo (simulado enquanto o jogo não tem API)
-// Se quiser dados reais, basta trocar por fetch de API de esportes
-const placarData = { bra: null, jpn: null };
-function atualizarPlacar(bra, jpn) {
-  document.getElementById('golBra').textContent = bra !== null ? bra : '–';
-  document.getElementById('golJpn').textContent = jpn !== null ? jpn : '–';
-}
-// Tenta buscar placar real
-async function buscarPlacar() {
-  try {
-    const r = await fetch('https://api.football-data.org/v4/matches?competitions=WC&status=LIVE', {
-      headers: { 'X-Auth-Token': '' }
-    });
-    // Sem token: mantém –
-  } catch {}
-}
-buscarPlacar();
-
-// ── TEMA dark/light ──
-function initTheme() {
-  const saved = localStorage.getItem('fizu-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const isDark = saved ? saved === 'dark' : prefersDark;
-  document.documentElement.classList.toggle('dark', isDark);
-  document.documentElement.classList.toggle('light', !isDark);
-  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const isDark = document.documentElement.classList.contains('dark');
-  document.documentElement.classList.toggle('dark', !isDark);
-  document.documentElement.classList.toggle('light', isDark);
-  localStorage.setItem('fizu-theme', isDark ? 'light' : 'dark');
-  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
-}
-
 initTheme();
 
-// ── CHUTE DO PLACAR ──
-const JOGO_HOJE = { casa: 'Brasil', casa_flag: '🇧🇷', fora: 'Japão', fora_flag: '🇯🇵', competicao: 'Copa do Mundo 2026' };
-
-async function postarChute() {
-  const bra = document.getElementById('chuteBra').value || '0';
-  const jpn = document.getElementById('chuteJpn').value || '0';
-  const texto = `⚽ Meu chute no placar:\n${JOGO_HOJE.casa_flag} ${JOGO_HOJE.casa} ${bra} × ${jpn} ${JOGO_HOJE.fora} ${JOGO_HOJE.fora_flag}\n\n${JOGO_HOJE.competicao} — e você, qual é seu chute?`;
-  // Verifica se está logado
-  const session = await verificarSessao();
-  if (!session) {
-    window.location.href = '/feed#login?next=chute-' + encodeURIComponent(bra+'-'+jpn);
-    return;
+// MODO
+function setMode(m){
+  modo=m;
+  const inp=document.getElementById('barraInput');
+  const pb=document.getElementById('postBox');
+  const bb=document.getElementById('btnBuscar');
+  const bs=document.getElementById('btnSereia');
+  const sugs=document.getElementById('sugestoes');
+  document.getElementById('tabBuscar').classList.toggle('active',m==='buscar');
+  document.getElementById('tabPostar').classList.toggle('active',m==='postar');
+  if(m==='buscar'){
+    pb.classList.remove('show'); bb.style.display=''; bs.style.display='none';
+    inp.placeholder='O que está acontecendo no Fizu...'; inp.focus();
+  } else {
+    pb.classList.add('show'); bb.style.display='none'; bs.style.display='';
+    sugs.classList.remove('show');
+    inp.placeholder='Sobre o que você quer postar?'; inp.value=''; inp.focus();
   }
-  window.location.href = `/feed#novo-post=${encodeURIComponent(texto)}`;
 }
 
-async function verificarSessao() {
-  try {
-    const r = await fetch(`${SUPA_URL}/auth/v1/user`, {
-      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token') ? JSON.parse(localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token')).access_token : ''}` }
-    });
-    if (r.ok) { const d = await r.json(); return d.id ? d : null; }
-    return null;
-  } catch { return null; }
-}
-
-// Gate de login: postar exige sessão
-async function publicarIndex() {
-  const texto = document.getElementById('postTexto').value.trim();
-  if (!texto) { mostrarToast('Escreva algo para publicar'); return; }
-  const session = await verificarSessao();
-  if (!session) {
-    window.location.href = `/feed#login?next=post&texto=${encodeURIComponent(texto)}`;
-    return;
+// BUSCA
+function onBarraInput(){
+  const v=document.getElementById('barraInput').value.trim();
+  if(modo==='buscar'){
+    clearTimeout(busTimer);
+    if(v.length<2){fecharSugs();return;}
+    busTimer=setTimeout(()=>buscarRT(v),320);
   }
-  window.location.href = `/feed#novo-post=${encodeURIComponent(texto)}`;
 }
+function onBarraFocus(){const v=document.getElementById('barraInput').value.trim();if(modo==='buscar'&&v.length>=2)buscarRT(v);}
+function onBarraKey(e){if(e.key==='Enter'){if(modo==='buscar')executarBusca();}if(e.key==='Escape')fecharSugs();}
+function fecharSugs(){document.getElementById('sugestoes').classList.remove('show');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function buscarRT(q){
+  const el=document.getElementById('sugestoes');
+  el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.84rem">🔍 Buscando...</div>';
+  el.classList.add('show');
+  try{
+    const enc=encodeURIComponent(q);
+    const [pr,ur]=await Promise.all([
+      fetch(`${SUPA_URL}/rest/v1/posts?or=(conteudo.ilike.*${enc}*)&select=id,conteudo,curtidas_count,comentarios_count&order=curtidas_count.desc&limit=4`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}),
+      fetch(`${SUPA_URL}/rest/v1/perfis?or=(nome.ilike.*${enc}*,username.ilike.*${enc}*)&select=id,nome,foto_url,username,biografia&limit=3`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}})
+    ]);
+    const posts=await pr.json(), users=await ur.json();
+    let html='';
+    if(Array.isArray(users)&&users.length){
+      html+='<div class="sug-divider">👤 Pessoas</div>';
+      for(const u of users){
+        const foto=u.foto_url?`style="background-image:url(${u.foto_url});background-size:cover;background-position:center"`:'';
+        html+=`<a class="sug-item" href="/feed#perfil-${u.id}">
+          <div class="sug-av" ${foto}>${u.foto_url?'':(u.nome||'U').charAt(0).toUpperCase()}</div>
+          <div class="sug-info"><div class="sug-nome">${esc(u.nome||'')}${u.username?` <span style="color:var(--muted);font-size:.7rem">@${esc(u.username)}</span>`:''}</div>
+          <div class="sug-preview">${esc((u.biografia||'').substring(0,55))}</div></div></a>`;
+      }
+    }
+    if(Array.isArray(posts)&&posts.length){
+      html+='<div class="sug-divider">📌 Posts</div>';
+      for(const p of posts){
+        html+=`<a class="sug-item" href="/feed#post-${p.id}">
+          <div class="sug-av" style="background:linear-gradient(135deg,#3b9eff22,#7c3aed22);border:1px solid var(--border)">📌</div>
+          <div class="sug-info"><div class="sug-nome">${esc((p.conteudo||'').substring(0,70).replace(/\n/g,' '))}</div>
+          <div class="sug-preview">❤️ ${p.curtidas_count||0} · 💬 ${p.comentarios_count||0}</div></div></a>`;
+      }
+    }
+    if(!html)html=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.84rem">Nenhum resultado para "<strong>${esc(q)}</strong>"</div>`;
+    html+=`<div class="sug-divider"><a class="sug-item" href="/feed#busca=${encodeURIComponent(q)}" style="color:var(--aqua);font-size:.82rem;font-weight:600">
+      <div class="sug-av" style="background:rgba(59,158,255,.1)">🔍</div>
+      <div>Ver todos os resultados para "<strong>${esc(q)}</strong>"</div></a></div>`;
+    el.innerHTML=html;el.classList.add('show');
+  }catch(e){el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Erro ao buscar.</div>';}
+}
+function executarBusca(){const q=document.getElementById('barraInput').value.trim();if(q)window.location.href=`/feed#busca=${encodeURIComponent(q)}`;}
+document.addEventListener('click',e=>{if(!e.target.closest('.barra'))fecharSugs();});
+
+// POST
+function onPostInput(){const v=document.getElementById('postTexto').value;document.getElementById('postChars').textContent=`${Math.min(v.length,500)}/500`;}
+function ativarSereia(){document.getElementById('postBox').classList.add('sereia-mode');document.getElementById('postTexto').focus();}
+
+// SESSÃO
+async function verificarSessao(){
+  try{
+    const tk=JSON.parse(localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token')||'{}');
+    const r=await fetch(`${SUPA_URL}/auth/v1/user`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${tk.access_token||''}`}});
+    if(r.ok){const d=await r.json();return d.id?d:null;}return null;
+  }catch{return null;}
+}
+async function publicarIndex(){
+  const t=document.getElementById('postTexto').value.trim();
+  if(!t){toast('Escreva algo para publicar');return;}
+  const s=await verificarSessao();
+  if(!s){window.location.href=`/feed#login?texto=${encodeURIComponent(t)}`;return;}
+  window.location.href=`/feed#novo-post=${encodeURIComponent(t)}`;
+}
+
+// SEREIA
+async function gerarSereia(){
+  const ideia=document.getElementById('postTexto').value.trim()||document.getElementById('barraInput').value.trim();
+  if(ideia.length<2){toast('Descreva sua ideia pra SereIA ✨');return;}
+  const prev=document.getElementById('sereiaPrev');
+  const load=document.getElementById('sereiaLoad');
+  const img=document.getElementById('sereiaImg');
+  const txt=document.getElementById('sereiaTxt');
+  const btns=document.getElementById('sereiaBtns');
+  prev.classList.add('show');load.style.display='block';img.style.display='none';txt.textContent='';btns.style.display='none';
+  try{
+    const r=await (await fetch(`${SUPA_URL}/functions/v1/sereia-compose`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`},body:JSON.stringify({ideia})})).json();
+    if(!r.ok)throw new Error(r.error);
+    sereiaPost=r.post; load.style.display='none'; txt.textContent=r.post;
+    if(r.imagem_en){
+      const ir=await (await fetch(`${SUPA_URL}/functions/v1/gerar-imagem-ia`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`},body:JSON.stringify({prompt:r.imagem_en})})).json();
+      if(ir.ok&&ir.url){sereiaImg=ir.url;img.src=ir.url;img.style.display='block';}
+    }
+    btns.style.display='flex';
+  }catch(e){load.style.display='none';txt.textContent='⚠️ '+(e.message||'Erro. Tente de novo.');}
+}
+function descartarSereia(){sereiaPost='';sereiaImg='';document.getElementById('sereiaPrev').classList.remove('show');document.getElementById('postTexto').value='';}
+async function publicarSereia(){
+  if(!sereiaPost)return;
+  const s=await verificarSessao();
+  if(!s){window.location.href=`/feed#login?sereia=1`;return;}
+  window.location.href=`/feed#sereia-post=${encodeURIComponent(sereiaPost)}${sereiaImg?'&midia='+encodeURIComponent(sereiaImg):''}`;
+}
+
+// CHUTE
+async function postarChute(){
+  const bra=document.getElementById('chuteBra').value||'0';
+  const jpn=document.getElementById('chuteJpn').value||'0';
+  const t=`⚽ Meu chute: 🇧🇷 Brasil ${bra} × ${jpn} Japão 🇯🇵\n\nCopa do Mundo 2026 — e o seu?`;
+  const s=await verificarSessao();
+  if(!s){window.location.href=`/feed#login?texto=${encodeURIComponent(t)}`;return;}
+  window.location.href=`/feed#novo-post=${encodeURIComponent(t)}`;
+}
+
+// SOBRE
+function abrirSobre(){document.getElementById('overlay').classList.add('show');}
+function fecharSobre(){document.getElementById('overlay').classList.remove('show');}
+
+// TOAST
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
 // SW
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
 </body>
 </html>
