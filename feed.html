@@ -1754,20 +1754,52 @@ async function gerarComSereia() {
   const prev = document.getElementById('sereiaPreviewBox');
   bg.disabled = true; bg.textContent = '✨ Criando...';
   prev.style.display = 'block';
-  prev.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">🧜‍♀️ A SereIA está criando seu post...</div>';
+  prev.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">🧜‍♀️ A SereIA está conhecendo você melhor...</div>';
   try {
     const { data: { session } } = await sb.auth.getSession();
     const token = session?.access_token || SUPA_KEY;
+
+    // Coletar histórico do usuário para personalização
+    let historico = null;
+    if (usuarioAtual) {
+      try {
+        const [
+          { data: meusPosts },
+          { data: meusComents },
+          { data: minhasCurtidas },
+          { data: meuPerfil }
+        ] = await Promise.all([
+          sb.from('posts').select('conteudo, curtidas_count, comentarios_count, criado_em').eq('autor_id', usuarioAtual.id).order('curtidas_count', { ascending: false }).limit(10),
+          sb.from('comentarios').select('conteudo').eq('autor_id', usuarioAtual.id).order('criado_em', { ascending: false }).limit(10),
+          sb.from('curtidas').select('post_id').eq('usuario_id', usuarioAtual.id).limit(20),
+          sb.from('perfis').select('nome, biografia, foto_url').eq('id', usuarioAtual.id).single()
+        ]);
+        historico = {
+          nome: meuPerfil?.nome || perfilAtual?.nome || '',
+          bio: meuPerfil?.biografia || '',
+          foto_url: meuPerfil?.foto_url || perfilAtual?.foto_url || '',
+          posts: (meusPosts || []).map(p => p.conteudo?.substring(0, 120)),
+          comentarios: (meusComents || []).map(c => c.conteudo?.substring(0, 80)),
+          curtidas_count: (minhasCurtidas || []).length,
+        };
+      } catch (_hErr) { /* histórico opcional */ }
+    }
+
+    const loadingMsg = historico?.posts?.length > 0
+      ? '🧜‍♀️ A SereIA está lendo seu histórico e criando algo só seu...'
+      : '🧜‍♀️ A SereIA está criando seu post...';
+    prev.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">${loadingMsg}</div>`;
     const resp = await fetch(`${SUPA_URL}/functions/v1/sereia-compose`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY },
-      body: JSON.stringify({ ideia })
+      body: JSON.stringify({ ideia, historico })
     });
     const r = await resp.json();
     if (!r.ok) throw new Error(r.error || 'Falha ao gerar');
     ta.value = r.post;
     document.getElementById('composeCharCount').textContent = Math.min(r.post.length, 500) + '/500';
     window.SEREIA.imagemUrl = null;
+    window.SEREIA.personalizado = r.personalizado || false;
     // Texto já aparece; a imagem (GPT) vem em seguida
     renderSereiaPreview(r.imagem_en
       ? '<div style="text-align:center;padding:22px;color:var(--muted);font-size:.84rem">🎨 A SereIA está pintando a imagem...</div>'
@@ -1777,7 +1809,7 @@ async function gerarComSereia() {
         const ir = await fetch(`${SUPA_URL}/functions/v1/gerar-imagem-ia`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY },
-          body: JSON.stringify({ prompt: r.imagem_en })
+          body: JSON.stringify({ prompt: r.imagem_en, foto_url: r.usa_rosto ? r.foto_url : null })
         });
         const idata = await ir.json();
         if (idata?.ok && idata.url) {
@@ -1801,7 +1833,7 @@ function renderSereiaPreview(imgHtml) {
   const prev = document.getElementById('sereiaPreviewBox');
   prev.style.display = 'block';
   prev.innerHTML = `
-    <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">🧜‍♀️ Prévia da SereIA — edite o texto à vontade antes de publicar</div>
+    <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">🧜‍♀️ Prévia da SereIA${window.SEREIA.personalizado ? ' · <span style="color:var(--aqua)">✦ Personalizado pro seu perfil</span>' : ''} — edite o texto à vontade</div>
     ${imgHtml}
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
       <button class="btn-publicar" onclick="sereiaPublicar()">Publicar ∞</button>
