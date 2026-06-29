@@ -3467,6 +3467,11 @@ async function abrirMensagemPrivada(userId, nome) {
 
 async function inicializarOGDinamico() {
   const hash = window.location.hash;
+  // Tratar #login (vindo da homepage quando não logado)
+  if (hash.startsWith('#login') || hash === '#login') {
+    setTimeout(() => pedirLogin('default'), 500);
+    return;
+  }
   if (!hash.startsWith('#post-')) return;
   const postId = hash.replace('#post-', '').trim();
   if (!postId) return;

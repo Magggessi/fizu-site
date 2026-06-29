@@ -430,7 +430,10 @@ html.light .copa-badge{background:rgba(240,244,252,.95)}
     <!-- Chute do placar -->
     <div class="chute-wrap" id="chuteWrap">
       <div class="chute-card">
-        <div class="chute-label">⚽ Seu chute BRA × JPN</div>
+        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+          <div class="chute-label">⚽ Seu palpite BRA × JPN</div>
+          <div style="font-size:.62rem;color:#f5c842;font-weight:700;letter-spacing:.03em">🪙 Acertou? Ganhe 1.000 FizuCoins!</div>
+        </div>
         <div class="chute-inputs">
           <span class="chute-flag">🇧🇷</span>
           <input class="chute-input" id="chuteBra" type="number" min="0" max="20" value="2">
@@ -438,7 +441,7 @@ html.light .copa-badge{background:rgba(240,244,252,.95)}
           <input class="chute-input" id="chuteJpn" type="number" min="0" max="20" value="0">
           <span class="chute-flag">🇯🇵</span>
         </div>
-        <button class="chute-btn" onclick="postarChute()">Postar no Fizu</button>
+        <button class="chute-btn" onclick="postarChute()">Registrar palpite</button>
         <button class="chute-fechar" onclick="document.getElementById('chuteWrap').style.display='none'" title="Fechar">✕</button>
       </div>
     </div>
@@ -657,12 +660,63 @@ async function publicarSereia(){
 
 // CHUTE
 async function postarChute(){
-  const bra=document.getElementById('chuteBra').value||'0';
-  const jpn=document.getElementById('chuteJpn').value||'0';
-  const t=`⚽ Meu chute: 🇧🇷 Brasil ${bra} × ${jpn} Japão 🇯🇵\n\nCopa do Mundo 2026 — e o seu?`;
-  const s=await verificarSessao();
-  if(!s){window.location.href=`/feed#login?texto=${encodeURIComponent(t)}`;return;}
-  window.location.href=`/feed#novo-post=${encodeURIComponent(t)}`;
+  const bra = parseInt(document.getElementById('chuteBra').value) || 0;
+  const jpn = parseInt(document.getElementById('chuteJpn').value) || 0;
+
+  // Verificar sessão
+  const tk = JSON.parse(localStorage.getItem('sb-tnwildfshzrvktrlfjhz-auth-token') || '{}');
+  const token = tk?.access_token;
+  if (!token) {
+    // Salva palpite para após login
+    sessionStorage.setItem('palpite_pendente', JSON.stringify({bra, jpn}));
+    toast('Faça login para registrar seu palpite!');
+    setTimeout(() => window.location.href = '/feed#', 1200);
+    return;
+  }
+
+  const btn = document.querySelector('.chute-btn');
+  const orig = btn.textContent;
+  btn.textContent = '⚡ Registrando...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${SUPA_URL}/functions/v1/copa-palpite`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ gols_casa: bra, gols_fora: jpn })
+    });
+    const r = await res.json();
+
+    if (r.ok) {
+      // Mostrar sucesso no card do chute
+      document.querySelector('.chute-card').innerHTML = `
+        <div style="text-align:center;padding:8px 0;width:100%">
+          <div style="font-size:1.1rem;margin-bottom:4px">⚽ Palpite registrado!</div>
+          <div style="font-size:1.3rem;font-weight:900;margin:6px 0">🇧🇷 ${bra} × ${jpn} 🇯🇵</div>
+          <div style="font-size:.72rem;color:#f5c842;font-weight:700">+10 FizuCoins agora · +1.000 se acertar 🪙</div>
+          <a href="/feed#post-${r.post_id}" style="display:inline-block;margin-top:8px;font-size:.76rem;color:var(--aqua);text-decoration:none">Ver no feed →</a>
+        </div>`;
+    } else if (res.status === 409) {
+      // Já votou
+      document.querySelector('.chute-card').innerHTML = `
+        <div style="text-align:center;padding:8px 0;width:100%">
+          <div style="font-size:.85rem;font-weight:700;margin-bottom:4px">Você já registrou seu palpite!</div>
+          <div style="font-size:.75rem;color:var(--muted)">${r.error}</div>
+        </div>`;
+    } else {
+      toast(r.error || 'Erro ao registrar. Tente de novo.');
+      btn.textContent = orig;
+      btn.disabled = false;
+    }
+  } catch(e) {
+    toast('Erro de conexão. Tente de novo.');
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
 }
 
 // SOBRE
@@ -671,6 +725,20 @@ function fecharSobre(){document.getElementById('overlay').classList.remove('show
 
 // TOAST
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// PALPITE PENDENTE após login
+window.addEventListener('load', async () => {
+  const pendente = sessionStorage.getItem('palpite_pendente');
+  if (!pendente) return;
+  const s = await verificarSessao();
+  if (!s) return;
+  sessionStorage.removeItem('palpite_pendente');
+  const {bra, jpn} = JSON.parse(pendente);
+  document.getElementById('chuteBra').value = bra;
+  document.getElementById('chuteJpn').value = jpn;
+  toast('Você voltou! Registrando seu palpite...');
+  setTimeout(() => postarChute(), 800);
+});
 
 // SW
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
