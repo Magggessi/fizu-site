@@ -6422,18 +6422,32 @@ async function _mencaoOnInput(e) {
 
   if (query.length < 1) { _fecharMencaoDropdown(); return; }
 
-  // Busca usuários
+  // Busca usuários + agentes
   try {
+    // Agentes IA que batem com a query
+    const agentesMatch = Object.values(AGENTES).filter(a =>
+      a.nome.toLowerCase().startsWith(query.toLowerCase()) ||
+      a.nome.toLowerCase().includes(query.toLowerCase())
+    ).map(a => ({
+      id: a.id,
+      nome: a.nome,
+      foto_url: a.foto_url || null,
+      username: a.nome.toLowerCase(),
+      biografia: a.bio,
+      _isAgent: true,
+      _emoji: a.emoji
+    }));
+
     const [{ data: porNome }, { data: porUsername }] = await Promise.all([
       sb.from('perfis').select('id, nome, foto_url, biografia, username').ilike('nome', `%${query}%`).neq('id', usuarioAtual?.id || '').limit(4),
       sb.from('perfis').select('id, nome, foto_url, biografia, username').ilike('username', `%${query}%`).neq('id', usuarioAtual?.id || '').limit(4),
     ]);
-    // Merge sem duplicatas
+    // Merge sem duplicatas — agentes primeiro
     const seen = new Set();
-    const data = [...(porUsername||[]), ...(porNome||[])].filter(p => {
+    const data = [...agentesMatch, ...(porUsername||[]), ...(porNome||[])].filter(p => {
       if (seen.has(p.id)) return false;
       seen.add(p.id); return true;
-    }).slice(0, 6);
+    }).slice(0, 7);
 
     _mencaoResults = data || [];
     if (!_mencaoResults.length) { _fecharMencaoDropdown(); return; }
@@ -6455,10 +6469,11 @@ function _renderMencaoDropdown(ta) {
     const fotoHtml = p.foto_url
       ? `<img src="${p.foto_url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%">`
       : ini;
+    const agentBadge = p._isAgent ? `<span style="font-size:.65rem;background:var(--aqua-dim);color:var(--aqua);padding:1px 5px;border-radius:6px;margin-left:4px">🤖 IA</span>` : '';
     return `<div class="mencao-item${i === _mencaoSelectedIdx ? ' selected' : ''}" data-idx="${i}" onmousedown="event.preventDefault()" onclick="_selecionarMencao(${i})">
-      <div class="mencao-av">${fotoHtml}</div>
+      <div class="mencao-av">${p._isAgent && p._emoji ? `<span style="font-size:1.1rem">${p._emoji}</span>` : fotoHtml}</div>
       <div>
-        <div class="mencao-nome">${escapeHtml(p.nome)}${p.username ? ` <span style="font-size:.7rem;color:var(--muted)">@${p.username}</span>` : ''}</div>
+        <div class="mencao-nome">${escapeHtml(p.nome)}${agentBadge}${p.username && !p._isAgent ? ` <span style="font-size:.7rem;color:var(--muted)">@${p.username}</span>` : ''}</div>
         ${p.biografia ? `<div class="mencao-bio">${escapeHtml(p.biografia.substring(0,40))}</div>` : ''}
       </div>
     </div>`;
@@ -6550,6 +6565,57 @@ async function notificarMencoes(texto, postId, tipo = 'post') {
   }
 }
 
+
+// ══════════════════════════════════════════
+// 🤖 @ MENÇÃO A AGENTES — resposta automática
+// ══════════════════════════════════════════
+
+// Mapa de nomes de agente para chave
+const AGENTES_HANDLE_MAP = {
+  'zari': 'zari', 'apolus': 'apolus', 'anthos': 'anthos',
+  'sereia': 'sereia', 'sereIA': 'sereia', 'okto': 'okto', 'maya': 'maya',
+  'SereIA': 'sereia',
+};
+
+async function _verificarMencaoAgente(texto, postId, comentarioId) {
+  if (!texto || !postId) return;
+  // Detectar @NomeAgente no texto
+  const handles = (texto.match(/@(\w{2,30})/g) || []).map(m => m.slice(1).toLowerCase());
+  const agentesMencionados = handles
+    .map(h => {
+      const key = Object.keys(AGENTES).find(k => k.toLowerCase() === h || AGENTES[k].nome.toLowerCase() === h);
+      return key ? AGENTES[key] : null;
+    })
+    .filter(Boolean);
+
+  if (!agentesMencionados.length) return;
+
+  // Para cada agente mencionado, pede resposta via edge function
+  for (const agente of agentesMencionados.slice(0, 2)) { // max 2 agentes por menção
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token || SUPA_KEY;
+      // Busca o post original para contexto
+      const { data: postData } = await sb.from('posts').select('conteudo').eq('id', postId).single();
+      const contexto = postData?.conteudo || '';
+      // Chama edge function para resposta do agente
+      fetch(`${SUPA_URL}/functions/v1/agente-resposta-mencao`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY },
+        body: JSON.stringify({
+          agenteId: agente.id,
+          agenteName: agente.nome,
+          agenteEmoji: agente.emoji,
+          agenteBio: agente.bio,
+          postId,
+          comentarioId: comentarioId || null,
+          textoMencao: texto,
+          postContexto: contexto,
+        })
+      }).catch(() => {}); // fire and forget
+    } catch(e) { console.log('Menção agente:', e); }
+  }
+}
 
 function linkify(texto) {
   if (!texto) return '';
@@ -9859,6 +9925,9 @@ async function enviarComplementoPost(postId) {
 
   input.value = '';
   mostrarToast('✏️ Complemento publicado!');
+  // Atualiza o contador visual imediatamente no card
+  const compCountEl = document.getElementById(`comp-count-${postId}`);
+  if (compCountEl) compCountEl.textContent = `· ${novosComplementos.length}`;
   await renderComplementosPost(postId);
 }
 
@@ -10874,6 +10943,10 @@ async function enviarComentario(postId) {
 
   input.disabled = false;
   if (error) { console.error('Erro comentário:', error); input.value = texto; return; }
+
+  // Notifica menções + verifica se mencionou agente
+  notificarMencoes(texto, postId, 'comentario');
+  _verificarMencaoAgente(texto, postId, null);
 
   const countEl = document.querySelector(`#post-${postId} .coment-count`);
   if (countEl) {
