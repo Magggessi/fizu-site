@@ -5036,13 +5036,21 @@ function iniciarRealtime() {
     }, async (payload) => {
       const postId = payload.new?.post_id;
       if (!postId) return;
-      // Atualiza contagem visual do post no feed
-      const countEl = document.querySelector(`#post-${postId} .coment-count`);
-      if (countEl) countEl.textContent = String(parseInt(countEl.textContent||'0') + 1);
-      // Recarrega comentários se o painel estiver aberto (independente de ter cards ou não)
+      // Atualiza contagem no botão de comentar
+      const btnComent = document.querySelector(`#post-${postId} .coment-count`);
+      if (btnComent) btnComent.textContent = String(parseInt(btnComent.textContent||'0') + 1);
+      // Se o painel de comentários estiver aberto (classe .open), recarrega imediatamente
       const commentsEl = document.getElementById('comments-' + postId);
-      if (commentsEl && commentsEl.style.display !== 'none') {
+      if (commentsEl && commentsEl.classList.contains('open')) {
         await carregarComentarios(postId);
+      } else {
+        // Painel fechado: pisca o botão 💬 para chamar atenção
+        const btnC = document.querySelector(`#post-${postId} .post-action[onclick*="toggleComentarios"]`);
+        if (btnC) {
+          btnC.style.transition = 'color .3s';
+          btnC.style.color = 'var(--aqua)';
+          setTimeout(() => { btnC.style.color = ''; }, 2000);
+        }
       }
     })
     .subscribe();
