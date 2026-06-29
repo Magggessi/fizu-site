@@ -2544,7 +2544,9 @@ function _renderPost(post, perfisMap) {
         <div class="post-name">${nomeHtml}</div>
         <div class="post-time">${tempo}</div>
       </div>
-      <div class="eternal-pill">⚓ eterno</div>
+      ${post.is_ritual && post.ritual_agente_nome
+        ? `<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);border-radius:20px;padding:3px 9px;font-size:.68rem;font-weight:700;color:var(--aqua)">${post.ritual_agente_emoji||'🌊'} Ritual · ${post.ritual_agente_nome}</div>`
+        : '<div class="eternal-pill">⚓ eterno</div>'}
     </div>
     <div class="post-body">${linkify(post.conteudo)}</div>
     ${renderMidia(post)}
@@ -3275,7 +3277,7 @@ async function renderizarPosts(posts, feedEl) {
         <button class="post-action ${curtido?'liked':''}" onclick="curtir('${post.id}',this)">${curtido?'❤️':'♡'} <span class="curtidas-count">${post.curtidas_count||0}</span></button>
         <button class="post-action" onclick="toggleComentarios('${post.id}',this)">💬 <span class="coment-count">${post.comentarios_count||0}</span></button>
         <button onclick="compartilharPost('${post.id}','${escapeHtml(post.conteudo).substring(0,60).replace(/'/g,"\'")}...')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px">↗ Compartilhar</button>
-        <button class="post-action ${salvosIds.has(post.id)?'active':''}" onclick="toggleSalvo('${post.id}',this)" title="Salvar" style="margin-left:auto">${salvosIds.has(post.id)?'✅':'🔖'}</button>
+        <button class="post-action ${salvosIds.has(post.id)?'active':''}" onclick="toggleSalvo('${post.id}',this)" title="Salvar" style="margin-left:auto">${salvosIds.has(post.id)?'🔖 Salvo':'🔖'}</button>
       </div>
       <div class="comments-section" id="comments-${post.id}">
         <div class="comments-loading">Nenhum comentário ainda.</div>
@@ -9935,6 +9937,9 @@ async function enviarComplementoPost(postId) {
   // Atualiza o contador visual imediatamente no card
   const compCountEl = document.getElementById(`comp-count-${postId}`);
   if (compCountEl) compCountEl.textContent = `· ${novosComplementos.length}`;
+  // Resetar loaded para forçar reload no próximo toggle
+  const secEl = document.getElementById(`complemento-section-${postId}`);
+  if (secEl) delete secEl.dataset.loaded;
   await renderComplementosPost(postId);
 }
 
@@ -11242,7 +11247,11 @@ async function carregarRitualDiario() {
 
     const cardHtml = resposta
       ? `<div class="ritual-card" id="ritual-card">
-          <div class="ritual-badge">🌊 RITUAL DIÁRIO · JÁ RESPONDIDO</div>
+          <div class="ritual-badge">${ritual.agente_emoji||'🌊'} RITUAL DIÁRIO · JÁ RESPONDIDO</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${ritual.agente_emoji||'🌊'}</div>
+            <div><div style="font-size:.82rem;font-weight:700;color:var(--aqua)">${ritual.agente_nome||'Fizu'}</div><div style="font-size:.7rem;color:var(--muted)">perguntou hoje</div></div>
+          </div>
           <div class="ritual-pergunta">${ritual.pergunta}</div>
           <div class="ritual-respondido-label">✅ Sua resposta de hoje</div>
           <div class="ritual-respondido">"${escapeHtml(resposta.conteudo)}"</div>
@@ -11252,7 +11261,11 @@ async function carregarRitualDiario() {
           </div>
         </div>`
       : `<div class="ritual-card" id="ritual-card">
-          <div class="ritual-badge">🌊 RITUAL DIÁRIO</div>
+          <div class="ritual-badge">${ritual.agente_emoji||'🌊'} RITUAL DIÁRIO</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${ritual.agente_emoji||'🌊'}</div>
+            <div><div style="font-size:.82rem;font-weight:700;color:var(--aqua)">${ritual.agente_nome||'Fizu'}</div><div style="font-size:.7rem;color:var(--muted)">quer saber o que você pensa</div></div>
+          </div>
           <div class="ritual-pergunta">${ritual.pergunta}</div>
           <textarea class="ritual-textarea" id="ritual-resposta" placeholder="Escreva sua resposta... ela ficará aqui para sempre." maxlength="500" oninput="document.getElementById('ritual-chars').textContent=this.value.length+'/500'"></textarea>
           <div class="ritual-footer">
@@ -11265,6 +11278,8 @@ async function carregarRitualDiario() {
           </div>
         </div>`;
 
+    // Guardar ritual para publicarRitual acessar
+    window.RITUAL_HOJE = ritual;
     // Inserir no topo do feed
     feedEl.insertAdjacentHTML('afterbegin', cardHtml);
   } catch(e) {
@@ -11272,7 +11287,7 @@ async function carregarRitualDiario() {
   }
 }
 
-async function publicarRitual(ritualId, pergunta) {
+async function publicarRitual(ritualId, pergunta, ritual) {
   const textarea = document.getElementById('ritual-resposta');
   const texto = textarea?.value?.trim();
   if (!texto || texto.length < 5) {
@@ -11289,6 +11304,9 @@ async function publicarRitual(ritualId, pergunta) {
     autor_id: usuarioAtual.id,
     conteudo,
     is_ritual: true,
+    ritual_id: ritualId,
+    ritual_agente_nome: (ritual||window.RITUAL_HOJE)?.agente_nome || null,
+    ritual_agente_emoji: (ritual||window.RITUAL_HOJE)?.agente_emoji || null,
     curtidas_count: 0,
     comentarios_count: 0,
   }).select('id, conteudo, curtidas_count, criado_em').single();
