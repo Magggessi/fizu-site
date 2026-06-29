@@ -2900,8 +2900,7 @@ async function abrirPerfilPublico(userId) {
   const diasPerfil = await getNivelUsuario(userId);
 
   feedEl.innerHTML = `
-    <div style="max-width:680px;margin:0 auto">
-    <div class="post-card" style="text-align:center;padding:32px 24px 24px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px 20px;margin-bottom:12px;box-shadow:var(--shadow);text-align:center">
       ${desativado ? '<div style="display:inline-block;background:rgba(204,51,51,0.12);color:var(--coral);font-size:.72rem;font-weight:800;padding:4px 12px;border-radius:20px;margin-bottom:12px;letter-spacing:.06em">DESATIVADO</div>' : ''}
       ${isAgentePerfil ? `<div style="display:inline-block;background:var(--aqua-dim);color:var(--aqua);font-size:.75rem;font-weight:800;padding:4px 14px;border-radius:20px;margin-bottom:12px;border:1px solid var(--aqua-glow)">🤖 Agente IA do Fizu</div>` : ''}
       ${avatarHtml}
@@ -2922,6 +2921,7 @@ async function abrirPerfilPublico(userId) {
         ${isAgentePerfil ? '' : `<button onclick="abrirMensagemPrivada('${userId}', '${escapeHtml(nome)}')" style="background:none;border:1px solid var(--aqua);border-radius:20px;padding:8px 18px;font-size:.82rem;color:var(--aqua);cursor:pointer;font-family:inherit">💬 Mensagem</button>`}
       </div>
     </div>
+    ${(posts||[]).length > 0 ? '<div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 4px 8px">📌 Publicações</div>' : ''}
     ${(posts||[]).map(post => {
       const curtido = curtidosIds.has(post.id);
       const avatarPerfil = foto
@@ -2952,8 +2952,7 @@ async function abrirPerfilPublico(userId) {
         </div>
       </div>`;
     }).join('')}
-    ${(posts||[]).length === 0 ? '<div style="text-align:center;padding:48px;color:var(--muted)">Nenhum post ainda.</div>' : ''}
-    </div>`;
+    ${(posts||[]).length === 0 ? '<div style="text-align:center;padding:48px;color:var(--muted)">Nenhum post ainda.</div>' : ''}`;
 }
 
 async function toggleSeguir(userId, jaSegue) {
@@ -8868,8 +8867,7 @@ async function abrirPerfil(el) {
     : `<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),var(--purple));display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;margin:0 auto 16px;border:3px solid var(--aqua)">${inicial}</div>`;
 
   feedEl.innerHTML = `
-    <div style="max-width:680px;margin:0 auto">
-    <div class="post-card" style="text-align:center;padding:32px 24px 24px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px 20px;margin-bottom:12px;box-shadow:var(--shadow);text-align:center">
       ${avatarHtml}
       <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:6px">
         ${nome}
