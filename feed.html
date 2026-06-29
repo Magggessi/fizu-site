@@ -9876,17 +9876,16 @@ async function renderComplementosPost(postId) {
             </div>
           </div>`;}).join('')}
       
-      <!-- Input para novo complemento -->
       <div style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
         ${meuAvatarHtml}
-        <div style="flex:1">
-          <textarea id="comp-input-${postId}" placeholder="Adicione um complemento ao seu post..." 
-            style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.83rem;color:var(--text);outline:none;font-family:inherit;resize:none;height:64px;transition:border-color .2s"
+        <div style="flex:1;min-width:0">
+          <textarea id="comp-input-${postId}" placeholder="Adicione um complemento ao seu post..."
+            style="width:100%;box-sizing:border-box;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.83rem;color:var(--text);outline:none;font-family:inherit;resize:none;height:64px;transition:border-color .2s;display:block"
             onfocus="this.style.borderColor='var(--aqua)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-          <div style="display:flex;justify-content:flex-end;margin-top:6px">
-            <button onclick="enviarComplementoPost('${postId}')" 
-              style="background:var(--aqua);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">
-              Publicar complemento ✏️
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button onclick="enviarComplementoPost('${postId}')"
+              style="background:var(--aqua);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;-webkit-tap-highlight-color:transparent">
+              Publicar ✏️
             </button>
           </div>
         </div>
