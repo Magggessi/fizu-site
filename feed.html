@@ -2900,7 +2900,7 @@ async function abrirPerfilPublico(userId) {
   const diasPerfil = await getNivelUsuario(userId);
 
   feedEl.innerHTML = `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px 20px;margin-bottom:12px;box-shadow:var(--shadow);text-align:center">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px 20px;margin-bottom:0;box-shadow:var(--shadow);text-align:center">
       ${desativado ? '<div style="display:inline-block;background:rgba(204,51,51,0.12);color:var(--coral);font-size:.72rem;font-weight:800;padding:4px 12px;border-radius:20px;margin-bottom:12px;letter-spacing:.06em">DESATIVADO</div>' : ''}
       ${isAgentePerfil ? `<div style="display:inline-block;background:var(--aqua-dim);color:var(--aqua);font-size:.75rem;font-weight:800;padding:4px 14px;border-radius:20px;margin-bottom:12px;border:1px solid var(--aqua-glow)">🤖 Agente IA do Fizu</div>` : ''}
       ${avatarHtml}
@@ -8933,7 +8933,7 @@ async function abrirPerfil(el) {
     : `<div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),var(--purple));display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;margin:0 auto 16px;border:3px solid var(--aqua)">${inicial}</div>`;
 
   feedEl.innerHTML = `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px 20px;margin-bottom:12px;box-shadow:var(--shadow);text-align:center">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px 20px;margin-bottom:0;box-shadow:var(--shadow);text-align:center">
       ${avatarHtml}
       <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:6px">
         ${nome}
@@ -8966,8 +8966,8 @@ async function abrirPerfil(el) {
         <button onclick="editarPerfil()" style="background:var(--aqua);border:none;border-radius:20px;padding:8px 20px;font-size:.83rem;color:#fff;cursor:pointer;font-family:inherit;font-weight:700">✏️ Editar perfil</button>
       </div>
     </div>
-    <div style="padding:12px 0 4px;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Seus posts eternos ⚓</div>
-    ${(meusPosts||[]).length === 0 ? `<div class="post-card" style="text-align:center;padding:32px;color:var(--muted)">
+    <div style="padding:20px 4px 8px;font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;border-top:none">📌 Seus posts eternos ⚓</div>
+    ${(meusPosts||[]).length === 0 ? `<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;color:var(--muted)">
       Você ainda não publicou nada. <br><br>
       <button onclick="voltarFeed();openCompose()" style="background:var(--aqua);color:#fff;border:none;border-radius:20px;padding:10px 24px;font-size:.85rem;font-weight:700;cursor:pointer">Publicar agora</button>
     </div>` : (meusPosts||[]).map(post => {
@@ -8988,6 +8988,14 @@ async function abrirPerfil(el) {
         ${renderMidia(post)}
         ${renderFontes(post)}
         <div class="post-actions">
+          <button class="post-action ${curtido?'liked':''}" onclick="curtir('${post.id}',this)">${curtido?'❤️':'♡'} <span class="curtidas-count">${post.curtidas_count||0}</span></button>
+          <button class="post-action" onclick="toggleComentarios('${post.id}',this)">💬 <span class="coment-count">${post.comentarios_count||0}</span></button>
+          <button class="post-action" onclick="compartilharPost('${post.id}','')">↗ Compartilhar</button>
+          <button onclick="toggleComplementoPost('${post.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px;transition:all .2s;display:flex;align-items:center;gap:4px" title="Complementar">
+            ✏️ Complementar <span id="comp-count-${post.id}" style="font-size:.7rem">${post.complementos_count>0?'· '+post.complementos_count:''}</span>
+          </button>
+        </div>
+        <div id="complemento-section-${post.id}" style="display:none"></div>
         <div class="comments-section" id="comments-${post.id}">
           <div class="comments-loading">Nenhum comentário ainda. Seja o primeiro! 🐟</div>
           <div class="comment-input-row">
