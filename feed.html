@@ -3474,6 +3474,39 @@ async function inicializarOGDinamico() {
     setTimeout(() => pedirLogin('default'), 500);
     return;
   }
+  // Tratar #copa-palpite (palpite vindo da homepage)
+  if (hash === '#copa-palpite') {
+    setTimeout(async () => {
+      if (!usuarioAtual) { pedirLogin('postar'); return; }
+      const raw = sessionStorage.getItem('copa_palpite');
+      if (!raw) return;
+      sessionStorage.removeItem('copa_palpite');
+      try {
+        const { bra, jpn, texto } = JSON.parse(raw);
+        const { data: exist } = await sb.from('copa_palpites')
+          .select('id').eq('usuario_id', usuarioAtual.id).eq('jogo_id', 'BRA-JPN-20260629').maybeSingle();
+        if (exist) { mostrarToast('Voce ja registrou seu palpite!', 'info'); return; }
+        const { data: post, error } = await sb.from('posts').insert({
+          autor_id: usuarioAtual.id, conteudo: texto, tipo: 'texto', criado_em: new Date().toISOString()
+        }).select('id').single();
+        if (error) { mostrarToast('Erro ao registrar palpite: ' + error.message, 'error'); return; }
+        await sb.from('copa_palpites').insert({
+          usuario_id: usuarioAtual.id, jogo_id: 'BRA-JPN-20260629',
+          gols_casa: bra, gols_fora: jpn, post_id: post?.id
+        }).catch(() => {});
+        await sb.from('coin_transacoes').insert({
+          usuario_id: usuarioAtual.id, tipo: 'palpite_copa', valor: 10,
+          descricao: 'Palpite BRA ' + bra + ' x ' + jpn + ' JPN'
+        }).catch(() => {});
+        const { data: perf } = await sb.from('perfis').select('coins').eq('id', usuarioAtual.id).single();
+        await sb.from('perfis').update({ coins: (perf?.coins || 0) + 10 }).eq('id', usuarioAtual.id).catch(() => {});
+        mostrarToast('+10 FizuCoins! Palpite registrado. Acerte e ganhe 1.000!', 'success');
+        if (typeof carregarPosts === 'function') carregarPosts();
+        window.location.hash = '';
+      } catch(e) { mostrarToast('Erro no palpite: ' + e.message, 'error'); }
+    }, 900);
+    return;
+  }
   if (!hash.startsWith('#post-')) return;
   const postId = hash.replace('#post-', '').trim();
   if (!postId) return;

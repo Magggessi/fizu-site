@@ -515,16 +515,6 @@ html.light .copa-badge{background:rgba(240,244,252,.95)}
 
 </main>
 
-<!-- Badge copa -->
-<div class="copa-badge">
-  <div class="copa-info"><b>Copa do Mundo 2026</b><span>Grupo C</span></div>
-  <div class="copa-times">
-    <span class="copa-flag">🇧🇷</span>
-    <span class="copa-vs">VS</span>
-    <span class="copa-flag">🇯🇵</span>
-  </div>
-</div>
-
 <!-- Modal sobre -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)fecharSobre()">
   <div class="sobre-card">
@@ -732,66 +722,13 @@ async function publicarSereia(){
 async function postarChute(){
   const bra = parseInt(document.getElementById('chuteBra').value) || 0;
   const jpn = parseInt(document.getElementById('chuteJpn').value) || 0;
-
-  // Buscar token robusto
-  let token = null;
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&k.includes('auth-token')){
-      try{const v=JSON.parse(localStorage.getItem(k)||'{}');if(v.access_token){token=v.access_token;break;}}catch{}
-    }
-  }
-  if (!token) {
-    sessionStorage.setItem('palpite_pendente', JSON.stringify({bra, jpn}));
-    toast('Faça login para registrar seu palpite! 🔒');
-    setTimeout(() => window.location.href = '/feed#', 1400);
-    return;
-  }
-
   const btn = document.getElementById('chuteBtn');
-  const orig = btn?.textContent || 'Registrar palpite →';
-  if(btn){btn.textContent='⚡ Enviando...';btn.disabled=true;btn.style.opacity='.7';}
-  // Feedback imediato no card
-  const premio = document.querySelector('.chute-premio');
-  if(premio) premio.textContent = '⏳ Registrando seu palpite...';
-
-  try {
-    const res = await fetch(`${SUPA_URL}/functions/v1/copa-palpite`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPA_KEY,
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ gols_casa: bra, gols_fora: jpn, _token: token })
-    });
-    const r = await res.json();
-
-    if (r.ok) {
-      document.getElementById('chuteCard').innerHTML = `
-        <div style="text-align:center;padding:10px 4px;width:100%">
-          <div style="font-size:1.6rem;margin-bottom:2px;animation:moeda-float 1s ease-in-out infinite">🪙</div>
-          <div style="font-size:1rem;font-weight:800;margin-bottom:4px">⚽ Palpite registrado!</div>
-          <div style="font-size:1.4rem;font-weight:900;color:#f5c842;margin:6px 0">🇧🇷 ${bra} × ${jpn} 🇯🇵</div>
-          <div style="font-size:.72rem;color:#f5c842;font-weight:700;margin-bottom:8px">+10 FizuCoins na conta · +1.000 se acertar o placar exato! 🏆</div>
-          ${r.post_id ? '<a href="/feed#post-'+r.post_id+'" style="display:inline-block;background:rgba(59,158,255,.12);border:1px solid rgba(59,158,255,.3);border-radius:20px;padding:6px 16px;font-size:.76rem;font-weight:600;color:#3b9eff;text-decoration:none">Ver post no feed →</a>' : ''}
-        </div>`;
-    } else if (res.status === 409) {
-      document.getElementById('chuteCard').innerHTML = `
-        <div style="text-align:center;padding:10px 4px;width:100%">
-          <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">✅ Palpite já registrado!</div>
-          <div style="font-size:.8rem;color:#6b8aad;margin-bottom:8px">${r.error}</div>
-          <a href="/feed#" style="font-size:.76rem;color:#3b9eff;text-decoration:none">Ver no feed →</a>
-        </div>`;
-    } else {
-      toast(r.error || 'Erro ao registrar. Tente de novo.');
-      if(btn){btn.textContent=orig;btn.disabled=false;}
-    }
-  } catch(e) {
-    toast('Erro de conexão. Tente de novo.');
-    if(btn){btn.textContent=orig;btn.disabled=false;}
-  }
+  if(btn){btn.textContent='Abrindo o Fizu...';btn.disabled=true;}
+  const texto = 'Meu palpite Copa do Mundo 2026: Brasil ' + bra + ' x ' + jpn + ' Japao. Se acertar o placar exato ganho 1.000 FizuCoins no Fizu! Qual e o seu palpite? Registre em fizu.com.br';
+  sessionStorage.setItem('copa_palpite', JSON.stringify({bra, jpn, texto}));
+  window.location.href = '/feed#copa-palpite';
 }
+
 
 // SOBRE
 function abrirSobre(){document.getElementById('overlay').classList.add('show');}
