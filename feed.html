@@ -4383,7 +4383,7 @@ function cofreParseJSON(text, rede, fname = '') {
       if (Array.isArray(posts)) {
         posts.forEach(p => {
           const caption = p?.title || p?.media?.[0]?.title || '';
-          const ts = p?.creation_timestamp || p?.taken_at_timestamp;
+          const ts = p?.creation_timestamp || p?.taken_at_timestamp || p?.media?.[0]?.creation_timestamp;
           if (!caption && !ts) return;
           results.push({
             rede: 'instagram',
@@ -4440,7 +4440,7 @@ function cofreParseJSON(text, rede, fname = '') {
       if (igPosts && Array.isArray(igPosts)) {
         igPosts.forEach(p => {
           const caption = p?.title || p?.media?.[0]?.title || p?.string_map_data?.Caption?.value || '';
-          const ts = p?.creation_timestamp || p?.taken_at_timestamp;
+          const ts = p?.creation_timestamp || p?.taken_at_timestamp || p?.media?.[0]?.creation_timestamp;
           if (!caption && !ts) return;
           results.push({
             rede: rede === 'meta' ? 'instagram' : rede,
