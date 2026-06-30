@@ -107,7 +107,7 @@ html.light .logo-txts .nome{color:#0d1628}
 
 /* ── BARRA ── */
 .search-wrap{
-  width:100%;max-width:640px;
+  width:100%;max-width:640px;position:relative;z-index:10;
   animation:fade-up .7s .2s cubic-bezier(.22,1,.36,1) both;
 }
 .mode-tabs{
@@ -219,6 +219,7 @@ html.light .post-ta{background:rgba(248,250,255,.8)}
 /* ── LINKS ── */
 .links-wrap{
   margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  position:relative;z-index:1;
   animation:fade-up .7s .4s cubic-bezier(.22,1,.36,1) both;
 }
 .links-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center}
@@ -460,17 +461,32 @@ function onKey(e){if(e.key==='Enter')buscar();if(e.key==='Escape')fecharSugs();}
 function fecharSugs(){document.getElementById('sugs').classList.remove('show');}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-async function buscarRT(q){
+async function buscarRT(qRaw){
   const el=document.getElementById('sugs');
   el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.84rem">🔍 Buscando...</div>';
   el.classList.add('show');
   try{
+    // Remove @ e # do início para buscar o termo puro (usuário pode digitar @nome ou #hashtag)
+    const q = qRaw.replace(/^[@#]+/, '').trim();
+    if (!q) { el.classList.remove('show'); return; }
     const enc=encodeURIComponent(q);
-    const [pr,ur]=await Promise.all([
-      fetch(`${SUPA_URL}/rest/v1/posts?or=(conteudo.ilike.*${enc}*)&select=id,conteudo,curtidas_count,comentarios_count&order=curtidas_count.desc&limit=4`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}),
-      fetch(`${SUPA_URL}/rest/v1/perfis?or=(nome.ilike.*${enc}*,username.ilike.*${enc}*)&select=id,nome,foto_url,username,biografia&limit=3`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}})
-    ]);
-    const posts=await pr.json(),users=await ur.json();
+    const ehMencao = qRaw.trim().startsWith('@');
+
+    // Buscar em paralelo: posts (conteudo), perfis (nome/username/bio), marketplace (anuncios)
+    const reqs = [
+      fetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${enc}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}),
+      fetch(`${SUPA_URL}/rest/v1/perfis?or=(nome.ilike.*${enc}*,username.ilike.*${enc}*,biografia.ilike.*${enc}*)&select=id,nome,foto_url,username,biografia&limit=4`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}),
+    ];
+    // Marketplace só busca se não for menção (@)
+    if (!ehMencao) {
+      reqs.push(fetch(`${SUPA_URL}/rest/v1/marketplace_listings?or=(titulo.ilike.*${enc}*,descricao.ilike.*${enc}*)&select=id,titulo,preco,imagens&limit=3`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}).catch(()=>({json:async()=>[]})));
+    }
+
+    const results = await Promise.all(reqs);
+    const posts = await results[0].json();
+    const users = await results[1].json();
+    const listings = results[2] ? await results[2].json() : [];
+
     let html='';
     if(Array.isArray(users)&&users.length){
       html+='<div class="sug-div">👤 Pessoas</div>';
@@ -485,10 +501,18 @@ async function buscarRT(q){
         html+=`<a class="sug-item" href="/feed#post-${p.id}"><div class="sug-av" style="background:linear-gradient(135deg,#3b9eff22,#7c3aed22);border:1px solid var(--border)">📌</div><div class="sug-info"><div class="sug-nome">${esc((p.conteudo||'').substring(0,70).replace(/\n/g,' '))}</div><div class="sug-preview">❤️ ${p.curtidas_count||0} · 💬 ${p.comentarios_count||0}</div></div></a>`;
       }
     }
-    if(!html)html=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.84rem">Nenhum resultado para "<strong>${esc(q)}</strong>"</div>`;
-    html+=`<div class="sug-div"><a class="sug-item" href="/feed#busca=${encodeURIComponent(q)}" style="color:var(--aqua);font-size:.82rem;font-weight:600"><div class="sug-av" style="background:rgba(59,158,255,.1)">🔍</div><div>Ver todos os resultados para "<strong>${esc(q)}</strong>"</div></a></div>`;
+    if(Array.isArray(listings)&&listings.length){
+      html+='<div class="sug-div">🏪 Marketplace</div>';
+      for(const l of listings){
+        const img=Array.isArray(l.imagens)&&l.imagens[0]?`style="background-image:url(${l.imagens[0]});background-size:cover;background-position:center"`:'';
+        const preco=l.preco?`R$ ${Number(l.preco).toLocaleString('pt-BR')}`:'Consulte';
+        html+=`<a class="sug-item" href="/feed#marketplace"><div class="sug-av" ${img}>${img?'':'🏪'}</div><div class="sug-info"><div class="sug-nome">${esc(l.titulo||'')}</div><div class="sug-preview">${preco}</div></div></a>`;
+      }
+    }
+    if(!html)html=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.84rem">Nenhum resultado para "<strong>${esc(qRaw)}</strong>"</div>`;
+    html+=`<div class="sug-div"><a class="sug-item" href="/feed#busca=${encodeURIComponent(q)}" style="color:var(--aqua);font-size:.82rem;font-weight:600"><div class="sug-av" style="background:rgba(59,158,255,.1)">🔍</div><div>Ver todos os resultados para "<strong>${esc(qRaw)}</strong>"</div></a></div>`;
     el.innerHTML=html;el.classList.add('show');
-  }catch{el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Erro ao buscar.</div>';}
+  }catch(e){el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Erro ao buscar.</div>';console.error(e);}
 }
 function buscar(){const q=document.getElementById('barraInput').value.trim();if(q)window.location.href=`/feed#busca=${encodeURIComponent(q)}`;}
 document.addEventListener('click',e=>{if(!e.target.closest('.barra'))fecharSugs();});

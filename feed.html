@@ -3474,6 +3474,30 @@ async function inicializarOGDinamico() {
     setTimeout(() => pedirLogin('default'), 500);
     return;
   }
+  // Tratar #busca= (vindo da homepage com termo de pesquisa)
+  if (hash.startsWith('#busca=')) {
+    const termo = decodeURIComponent(hash.replace('#busca=', ''));
+    setTimeout(() => {
+      const inp = document.getElementById('searchInput');
+      if (inp) inp.value = termo;
+      mostrarAbaBusca(termo);
+    }, 400);
+    return;
+  }
+  // Tratar #perfil-ID (vindo da homepage)
+  if (hash.startsWith('#perfil-')) {
+    const userId = hash.replace('#perfil-', '').trim();
+    if (userId) setTimeout(() => abrirPerfilPublico(userId), 400);
+    return;
+  }
+  // Tratar #marketplace (vindo da homepage - Anunciar grátis)
+  if (hash === '#marketplace') {
+    setTimeout(() => {
+      const el = document.getElementById('tab-marketplace');
+      if (typeof abrirMarketplace === 'function') abrirMarketplace(el);
+    }, 400);
+    return;
+  }
   // Tratar #copa-palpite (palpite vindo da homepage)
   if (hash === '#copa-palpite') {
     setTimeout(async () => {
@@ -7749,18 +7773,22 @@ function _execBuscaMobile() {
   mostrarAbaBusca(v);
 }
 
-function mostrarAbaBusca(query) {
+function mostrarAbaBusca(queryRaw) {
+  const query = (queryRaw || '').replace(/^[@#]+/, '').trim();
   const feedEl = document.getElementById('feedPostsReais');
+  const qSafe = query.replace(/'/g,"\\'");
   feedEl.innerHTML = `
   <div style="margin-bottom:12px">
     <div class="search-results-tabs">
-      <button class="search-tab ${_buscaAba==='posts'?'active':''}" id="stab-posts" onclick="trocarAbaBusca('posts','${query.replace(/'/g,"\'")}')">📝 Posts</button>
-      <button class="search-tab ${_buscaAba==='usuarios'?'active':''}" id="stab-usuarios" onclick="trocarAbaBusca('usuarios','${query.replace(/'/g,"\'")}')">👤 Usuários</button>
+      <button class="search-tab ${_buscaAba==='posts'?'active':''}" id="stab-posts" onclick="trocarAbaBusca('posts','${qSafe}')">📝 Posts</button>
+      <button class="search-tab ${_buscaAba==='usuarios'?'active':''}" id="stab-usuarios" onclick="trocarAbaBusca('usuarios','${qSafe}')">👤 Usuários</button>
+      <button class="search-tab ${_buscaAba==='marketplace'?'active':''}" id="stab-marketplace" onclick="trocarAbaBusca('marketplace','${qSafe}')">🏪 Marketplace</button>
     </div>
     <div id="search-results-content"><div style="text-align:center;padding:24px;color:var(--muted)">Buscando...</div></div>
   </div>`;
 
   if (_buscaAba === 'usuarios') buscarUsuariosInline(query);
+  else if (_buscaAba === 'marketplace') buscarMarketplaceInline(query);
   else buscarPostsInline(query);
 }
 
@@ -7771,7 +7799,35 @@ function trocarAbaBusca(aba, query) {
   const el = document.getElementById('search-results-content');
   if (el) el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">Buscando...</div>';
   if (aba === 'usuarios') buscarUsuariosInline(query);
+  else if (aba === 'marketplace') buscarMarketplaceInline(query);
   else buscarPostsInline(query);
+}
+
+async function buscarMarketplaceInline(query) {
+  const el = document.getElementById('search-results-content');
+  if (!el) return;
+  try {
+    const { data: listings } = await sb.from('marketplace_listings')
+      .select('id,titulo,descricao,preco,imagens,condicao,categoria')
+      .or(`titulo.ilike.%${query}%,descricao.ilike.%${query}%`)
+      .limit(20);
+    if (!listings?.length) {
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:2rem;margin-bottom:8px">🏪</div><div>Nenhum anúncio encontrado para "<strong>${escapeHtml(query)}</strong>"</div></div>`;
+      return;
+    }
+    el.innerHTML = `<div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">${listings.length} anúncio(s) encontrado(s)</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">` +
+      listings.map(l => {
+        const img = Array.isArray(l.imagens) && l.imagens[0] ? l.imagens[0] : null;
+        const preco = l.preco ? `R$ ${Number(l.preco).toLocaleString('pt-BR')}` : 'Consulte';
+        return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer" onclick="abrirMarketplace(document.getElementById('tab-marketplace'))">
+          <div style="height:110px;background:${img ? `url(${img}) center/cover` : 'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:1.6rem">${img?'':'🏪'}</div>
+          <div style="padding:10px"><div style="font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.titulo||'')}</div><div style="font-size:.78rem;color:var(--gold);font-weight:700;margin-top:2px">${preco}</div></div>
+        </div>`;
+      }).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">Erro ao buscar marketplace.</div>`;
+  }
 }
 
 async function buscarPostsInline(query) {
@@ -7834,11 +7890,16 @@ async function buscarUsuariosInline(query) {
       .ilike('username', `%${query}%`).limit(10),
   ]);
 
+  // Agentes IA que batem com a busca também aparecem
+  const qLower = query.toLowerCase();
+  const agentesMatch = Object.values(AGENTES)
+    .filter(a => a.nome.toLowerCase().includes(qLower) || (a.bio||'').toLowerCase().includes(qLower))
+    .map(a => ({ id: a.id, nome: a.nome, foto_url: a.foto_url, username: a.nome.toLowerCase(), biografia: a.bio, _isAgent: true, _emoji: a.emoji }));
+
   const seen = new Set();
-  const agentIds = Object.values(AGENTES).map(a => a.id);
-  const usuarios = [...(porUsername||[]), ...(porNome||[])]
-    .filter(u => { if (seen.has(u.id) || agentIds.includes(u.id)) return false; seen.add(u.id); return true; })
-    .slice(0, 10);
+  const usuarios = [...agentesMatch, ...(porUsername||[]), ...(porNome||[])]
+    .filter(u => { if (seen.has(u.id)) return false; seen.add(u.id); return true; })
+    .slice(0, 12);
 
   if (!usuarios.length) {
     el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:2rem;margin-bottom:8px">👤</div><div>Nenhum usuário encontrado para "<strong>${escapeHtml(query)}</strong>"</div></div>`;
