@@ -2600,6 +2600,52 @@ async function carregarPosts() {
   setTimeout(processarTikTokEmbeds, 400);
   setTimeout(carregarNiveisPosts, 500); // lazy load dos badges de nível
   setTimeout(inicializarOGDinamico, 400); // OG tags para deep link de post
+  setTimeout(inserirParaVoce, 600); // recomendação baseada em interesses aprendidos
+}
+
+// ── "Para você" — usa temas aprendidos pelos agentes sobre o usuário para destacar posts relevantes ──
+async function inserirParaVoce() {
+  if (!usuarioAtual) return;
+  if (document.getElementById('para-voce-card')) return; // já inserido
+  const feedEl = document.getElementById('feedPostsReais');
+  if (!feedEl || !feedEl.firstChild) return;
+
+  try {
+    // Junta os temas que qualquer agente já aprendeu sobre esse usuário
+    const { data: perfis } = await sb.from('agente_perfil_usuario')
+      .select('temas_interesse, total_interacoes')
+      .eq('usuario_id', usuarioAtual.id)
+      .order('total_interacoes', { ascending: false });
+
+    if (!perfis?.length) return;
+    const todosTemas = [...new Set(perfis.flatMap(p => p.temas_interesse || []))];
+    if (todosTemas.length < 2) return; // pouco dado ainda, não força recomendação
+
+    // Busca posts recentes que mencionam esses temas (fora dos já visíveis no topo do feed)
+    const orConditions = todosTemas.slice(0, 4).map(t => `conteudo.ilike.%${t}%`).join(',');
+    const { data: relevantes } = await sb.from('posts')
+      .select('id,autor_id,conteudo,tipo,midia_url,curtidas_count,comentarios_count,criado_em,gerado_ia')
+      .or(orConditions)
+      .order('curtidas_count', { ascending: false })
+      .limit(3);
+
+    if (!relevantes?.length) return;
+
+    const perfisMap = await _buscarPerfisMap(relevantes);
+    const cardsHtml = relevantes.map(post => _renderPost(post, perfisMap)).join('');
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'para-voce-card';
+    wrapper.style.cssText = 'margin-bottom:16px';
+    wrapper.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;padding:0 4px 10px;font-size:.78rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.04em">
+        ✨ Para você <span style="font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0">· baseado no que você costuma perguntar</span>
+      </div>
+      ${cardsHtml}
+      <div style="height:1px;background:var(--border);margin:16px 0"></div>`;
+
+    feedEl.insertBefore(wrapper, feedEl.firstChild);
+  } catch(e) { /* silencioso — feature opcional */ }
 }
 
 // Busca posts com paginação
