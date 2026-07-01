@@ -7896,6 +7896,36 @@ function mostrarAbaBusca(queryRaw) {
   else buscarPostsInline(query);
 
   carregarContextoWikipedia(query);
+  carregarContextoNoticias(query);
+}
+
+// Card de notícias em tempo real — Google News RSS via edge function
+async function carregarContextoNoticias(query) {
+  const el = document.getElementById('wiki-context-card');
+  if (!el || !query || query.length < 3) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token || SUPA_KEY;
+    const r = await fetch(`${SUPA_URL}/functions/v1/buscar-noticias?q=${encodeURIComponent(query)}`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY }
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.ok || !d.noticias?.length) return;
+
+    const noticiasHtml = d.noticias.slice(0, 3).map(n => `
+      <a href="${n.url}" target="_blank" rel="noopener" style="display:block;padding:10px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit">
+        <div style="font-size:.84rem;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:2px">${escapeHtml(n.titulo)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${escapeHtml(n.fonte)}</div>
+      </a>`).join('');
+
+    const noticiasCard = document.createElement('div');
+    noticiasCard.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px';
+    noticiasCard.innerHTML = `
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">📰 Notícias agora</div>
+      ${noticiasHtml}`;
+    el.appendChild(noticiasCard);
+  } catch(e) { /* silencioso — contexto é opcional */ }
 }
 
 // Card de contexto enciclopédico — Wikipedia (grátis, sem key)

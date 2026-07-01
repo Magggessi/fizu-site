@@ -516,12 +516,24 @@ async function buscarRT(qRaw){
     } catch { return null; }
   }
 
-  const [posts, usersPorNome, usersPorUsername, listings, wiki] = await Promise.all([
+  // Notícias: Google News RSS via edge function (grátis, sem key)
+  async function buscarNoticias(termo) {
+    if (ehMencao || termo.length < 3) return [];
+    try {
+      const r = await fetch(`${SUPA_URL}/functions/v1/buscar-noticias?q=${encodeURIComponent(termo)}`, {headers:H});
+      if (!r.ok) return [];
+      const d = await r.json();
+      return d.ok ? (d.noticias || []) : [];
+    } catch { return []; }
+  }
+
+  const [posts, usersPorNome, usersPorUsername, listings, wiki, noticias] = await Promise.all([
     safeFetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${t}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`),
     safeFetch(`${SUPA_URL}/rest/v1/perfis?nome=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=4`),
     safeFetch(`${SUPA_URL}/rest/v1/perfis?username=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=4`),
     ehMencao ? Promise.resolve([]) : safeFetch(`${SUPA_URL}/rest/v1/marketplace_listings?titulo=ilike.*${t}*&select=id,titulo,preco&status=eq.ativo&limit=3`),
     buscarWikipedia(termoBusca),
+    buscarNoticias(termoBusca),
   ]);
 
   const seenU = new Set();
@@ -531,6 +543,12 @@ async function buscarRT(qRaw){
   }).slice(0, 4);
 
   let html='';
+  if(noticias.length){
+    html+='<div class="sug-div">📰 Notícias agora</div>';
+    for(const n of noticias.slice(0,3)){
+      html+=`<a class="sug-item" href="${n.url}" target="_blank" rel="noopener"><div class="sug-av" style="background:rgba(239,68,68,.12)">📰</div><div class="sug-info"><div class="sug-nome">${esc(n.titulo.substring(0,80))}</div><div class="sug-preview">${esc(n.fonte)}</div></div></a>`;
+    }
+  }
   if(wiki){
     html+='<div class="sug-div">📖 Wikipédia</div>';
     const wimg = wiki.imagem ? `style="background-image:url(${wiki.imagem});background-size:cover;background-position:center"` : '';
