@@ -7732,8 +7732,11 @@ function focarBusca() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-async function buscarTexto(query) {
-  if (!query?.trim()) { carregarPosts(); return; }
+async function buscarTexto(queryRaw) {
+  if (!queryRaw?.trim()) { carregarPosts(); return; }
+  // Limpar @ e # do início
+  const query = queryRaw.replace(/^[@#]+/, '').trim();
+  if (!query) { carregarPosts(); return; }
   if (_buscaAba === 'usuarios') {
     await buscarUsuarios(query);
   } else {
@@ -7830,9 +7833,11 @@ async function buscarMarketplaceInline(query) {
   }
 }
 
-async function buscarPostsInline(query) {
+async function buscarPostsInline(queryRaw) {
   const el = document.getElementById('search-results-content');
   if (!el) return;
+  const query = (queryRaw||'').replace(/^[@#]+/, '').trim();
+  if (!query) return;
 
   const { data: posts } = await sb.from('posts')
     .select('id,autor_id,conteudo,curtidas_count,comentarios_count,criado_em,midia_url,tipo')
@@ -7879,9 +7884,11 @@ async function buscarPostsInline(query) {
     }).join('');
 }
 
-async function buscarUsuariosInline(query) {
+async function buscarUsuariosInline(queryRaw) {
   const el = document.getElementById('search-results-content');
   if (!el) return;
+  const query = (queryRaw||'').replace(/^[@#]+/, '').trim();
+  if (!query) return;
 
   const [{ data: porNome }, { data: porUsername }] = await Promise.all([
     sb.from('perfis').select('id,nome,foto_url,username,biografia,seguidores_count,criado_em')

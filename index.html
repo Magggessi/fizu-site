@@ -466,26 +466,53 @@ async function buscarRT(qRaw){
   el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.84rem">🔍 Buscando...</div>';
   el.classList.add('show');
   try{
-    // Remove @ e # do início para buscar o termo puro (usuário pode digitar @nome ou #hashtag)
+    // Remove @ e # do início
     const q = qRaw.replace(/^[@#]+/, '').trim();
     if (!q) { el.classList.remove('show'); return; }
-    const enc=encodeURIComponent(q);
     const ehMencao = qRaw.trim().startsWith('@');
 
-    // Buscar em paralelo: posts (conteudo), perfis (nome/username/bio), marketplace (anuncios)
+    // Para frases longas (>30 chars), extrai a palavra mais relevante
+    // Ignora stopwords comuns do português
+    const stopwords = new Set(['que','está','esta','agora','no','na','de','do','da','em','um','uma','o','a','os','as','é','não','por','para','com','mas','se','como','mais','bem','já','quando','onde','porque','sobre','até','após','desde','entre']);
+    let termoBusca = q;
+    if (q.length > 25) {
+      const palavras = q.toLowerCase().split(/\s+/).filter(p => p.length > 3 && !stopwords.has(p));
+      if (palavras.length > 0) {
+        // Usa a palavra mais longa (geralmente mais específica)
+        termoBusca = palavras.sort((a,b) => b.length - a.length)[0];
+      }
+    }
+
+    // ⚠️ Supabase REST ilike: NÃO encodar o *, só encodar o termo
+    const t = encodeURIComponent(termoBusca);
+    const H = {apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`};
+
     const reqs = [
-      fetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${enc}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}),
-      fetch(`${SUPA_URL}/rest/v1/perfis?or=(nome.ilike.*${enc}*,username.ilike.*${enc}*,biografia.ilike.*${enc}*)&select=id,nome,foto_url,username,biografia&limit=4`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}),
+      // Posts: busca por conteúdo
+      fetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${t}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`, {headers:H}),
+      // Perfis por nome
+      fetch(`${SUPA_URL}/rest/v1/perfis?nome=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=3`, {headers:H}),
+      // Perfis por username  
+      fetch(`${SUPA_URL}/rest/v1/perfis?username=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=3`, {headers:H}),
     ];
-    // Marketplace só busca se não for menção (@)
     if (!ehMencao) {
-      reqs.push(fetch(`${SUPA_URL}/rest/v1/marketplace_listings?or=(titulo.ilike.*${enc}*,descricao.ilike.*${enc}*)&select=id,titulo,preco,imagens&limit=3`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`}}).catch(()=>({json:async()=>[]})));
+      reqs.push(
+        fetch(`${SUPA_URL}/rest/v1/marketplace_listings?titulo=ilike.*${t}*&select=id,titulo,preco,imagens&limit=3`, {headers:H}).catch(()=>null)
+      );
     }
 
     const results = await Promise.all(reqs);
-    const posts = await results[0].json();
-    const users = await results[1].json();
-    const listings = results[2] ? await results[2].json() : [];
+    const posts = results[0].ok ? await results[0].json() : [];
+    const usersPorNome = results[1].ok ? await results[1].json() : [];
+    const usersPorUsername = results[2].ok ? await results[2].json() : [];
+    const listings = results[3] ? (results[3].ok ? await results[3].json() : []) : [];
+
+    // Merge usuarios sem duplicatas
+    const seenU = new Set();
+    const users = [...usersPorUsername, ...usersPorNome].filter(u => {
+      if (!u?.id || seenU.has(u.id)) return false;
+      seenU.add(u.id); return true;
+    }).slice(0, 4);
 
     let html='';
     if(Array.isArray(users)&&users.length){
