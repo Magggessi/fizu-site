@@ -7782,6 +7782,7 @@ function mostrarAbaBusca(queryRaw) {
   const qSafe = query.replace(/'/g,"\\'");
   feedEl.innerHTML = `
   <div style="margin-bottom:12px">
+    <div id="wiki-context-card"></div>
     <div class="search-results-tabs">
       <button class="search-tab ${_buscaAba==='posts'?'active':''}" id="stab-posts" onclick="trocarAbaBusca('posts','${qSafe}')">📝 Posts</button>
       <button class="search-tab ${_buscaAba==='usuarios'?'active':''}" id="stab-usuarios" onclick="trocarAbaBusca('usuarios','${qSafe}')">👤 Usuários</button>
@@ -7793,6 +7794,32 @@ function mostrarAbaBusca(queryRaw) {
   if (_buscaAba === 'usuarios') buscarUsuariosInline(query);
   else if (_buscaAba === 'marketplace') buscarMarketplaceInline(query);
   else buscarPostsInline(query);
+
+  carregarContextoWikipedia(query);
+}
+
+// Card de contexto enciclopédico — Wikipedia (grátis, sem key)
+async function carregarContextoWikipedia(query) {
+  const el = document.getElementById('wiki-context-card');
+  if (!el || !query || query.length < 3) return;
+  try {
+    const url = `https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.type === 'disambiguation' || !d.extract) return;
+    const img = d.thumbnail?.source;
+    const pageUrl = d.content_urls?.desktop?.page || '#';
+    el.innerHTML = `
+      <a href="${pageUrl}" target="_blank" rel="noopener" style="display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;text-decoration:none;color:inherit;align-items:flex-start">
+        ${img ? `<img src="${img}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.remove()">` : `<div style="width:64px;height:64px;border-radius:10px;background:var(--aqua-dim);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">📖</div>`}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">📖 Wikipédia</div>
+          <div style="font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:3px">${escapeHtml(d.title)}</div>
+          <div style="font-size:.8rem;color:var(--text2,#c8d8f0);line-height:1.5">${escapeHtml(d.extract.substring(0,180))}${d.extract.length>180?'…':''}</div>
+        </div>
+      </a>`;
+  } catch(e) { /* silencioso — contexto é opcional */ }
 }
 
 function trocarAbaBusca(aba, query) {

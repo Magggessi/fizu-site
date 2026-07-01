@@ -489,11 +489,25 @@ async function buscarRT(qRaw){
     } catch(e) { console.error('Busca erro:', url, e); return []; }
   }
 
-  const [posts, usersPorNome, usersPorUsername, listings] = await Promise.all([
+  // Wikipedia: busca resumo enciclopédico do termo (grátis, sem key)
+  async function buscarWikipedia(termo) {
+    if (ehMencao || termo.length < 3) return null;
+    try {
+      const url = `https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(termo)}`;
+      const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!r.ok) return null;
+      const d = await r.json();
+      if (d.type === 'disambiguation' || !d.extract) return null;
+      return { titulo: d.title, resumo: d.extract, imagem: d.thumbnail?.source || null, url: d.content_urls?.desktop?.page || null };
+    } catch { return null; }
+  }
+
+  const [posts, usersPorNome, usersPorUsername, listings, wiki] = await Promise.all([
     safeFetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${t}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`),
     safeFetch(`${SUPA_URL}/rest/v1/perfis?nome=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=4`),
     safeFetch(`${SUPA_URL}/rest/v1/perfis?username=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=4`),
     ehMencao ? Promise.resolve([]) : safeFetch(`${SUPA_URL}/rest/v1/marketplace_listings?titulo=ilike.*${t}*&select=id,titulo,preco&status=eq.ativo&limit=3`),
+    buscarWikipedia(termoBusca),
   ]);
 
   const seenU = new Set();
@@ -503,6 +517,11 @@ async function buscarRT(qRaw){
   }).slice(0, 4);
 
   let html='';
+  if(wiki){
+    html+='<div class="sug-div">📖 Wikipédia</div>';
+    const wimg = wiki.imagem ? `style="background-image:url(${wiki.imagem});background-size:cover;background-position:center"` : '';
+    html+=`<a class="sug-item" href="${wiki.url||'#'}" target="_blank" rel="noopener"><div class="sug-av" ${wimg}>${wiki.imagem?'':'📖'}</div><div class="sug-info"><div class="sug-nome">${esc(wiki.titulo)}</div><div class="sug-preview">${esc(wiki.resumo.substring(0,90))}${wiki.resumo.length>90?'…':''}</div></div></a>`;
+  }
   if(users.length){
     html+='<div class="sug-div">👤 Pessoas</div>';
     for(const u of users){
