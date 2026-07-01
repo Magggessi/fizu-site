@@ -3055,6 +3055,7 @@ async function abrirPerfilPublico(userId) {
         ${isAgentePerfil ? '' : `<button onclick="abrirMensagemPrivada('${userId}', '${escapeHtml(nome)}')" style="background:none;border:1px solid var(--aqua);border-radius:20px;padding:8px 18px;font-size:.82rem;color:var(--aqua);cursor:pointer;font-family:inherit">💬 Mensagem</button>`}
       </div>
     </div>
+    <div id="memoria-agente-card"></div>
     ${(posts||[]).length > 0 ? '<div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:16px 4px 8px">📌 Publicações</div>' : ''}
     ${(posts||[]).map(post => {
       const curtido = curtidosIds.has(post.id);
@@ -3088,6 +3089,52 @@ async function abrirPerfilPublico(userId) {
       </div>`;
     }).join('')}
     ${(posts||[]).length === 0 ? '<div style="text-align:center;padding:48px;color:var(--muted)">Nenhum post ainda.</div>' : ''}`;
+
+  // Se for perfil de agente e o usuário logado já interagiu, mostra o que o agente sabe
+  if (agenteInfo && usuarioAtual) {
+    carregarMemoriaAgente(agenteInfo.id, agenteInfo.nome, agenteInfo.emoji);
+  }
+}
+
+// Mostra transparentemente o que um agente já aprendeu sobre o usuário logado
+async function carregarMemoriaAgente(agenteId, agenteNome, agenteEmoji) {
+  const el = document.getElementById('memoria-agente-card');
+  if (!el || !usuarioAtual) return;
+  try {
+    const { data: memoria } = await sb.from('agente_perfil_usuario')
+      .select('resumo_personalidade, temas_interesse, total_interacoes, ultima_interacao_em')
+      .eq('usuario_id', usuarioAtual.id)
+      .eq('agente_id', agenteId)
+      .maybeSingle();
+
+    if (!memoria || memoria.total_interacoes < 1) return;
+
+    const temas = (memoria.temas_interesse || []).slice(0, 5);
+    el.innerHTML = `
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,.06),var(--card));border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:16px;margin:12px 0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:1.1rem">🧠</span>
+          <span style="font-size:.78rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.04em">O que ${escapeHtml(agenteNome)} aprendeu sobre você</span>
+        </div>
+        ${memoria.resumo_personalidade ? `<div style="font-size:.86rem;color:var(--text);line-height:1.5;margin-bottom:10px">"${escapeHtml(memoria.resumo_personalidade)}"</div>` : ''}
+        ${temas.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${temas.map(t => `<span style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#10b981;font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:20px">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px;flex-wrap:wrap">
+          <div style="font-size:.68rem;color:var(--muted)">${memoria.total_interacoes} interaç${memoria.total_interacoes===1?'ão':'ões'} · visível só para você</div>
+          <button onclick="apagarMemoriaAgente('${agenteId}','${escapeHtml(agenteNome)}')" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:.68rem;padding:4px 10px;border-radius:12px;cursor:pointer;font-family:inherit">🗑️ Esquecer</button>
+        </div>
+      </div>`;
+  } catch(e) { /* silencioso */ }
+}
+
+async function apagarMemoriaAgente(agenteId, agenteNome) {
+  if (!usuarioAtual) return;
+  if (!confirm(`${agenteNome} vai esquecer tudo que aprendeu sobre você. Continuar?`)) return;
+  try {
+    await sb.from('agente_perfil_usuario').delete().eq('usuario_id', usuarioAtual.id).eq('agente_id', agenteId);
+    const el = document.getElementById('memoria-agente-card');
+    if (el) el.innerHTML = '';
+    mostrarToast(`${agenteNome} esqueceu o que sabia sobre você`, 'success');
+  } catch(e) { mostrarToast('Erro ao apagar memória', 'error'); }
 }
 
 async function toggleSeguir(userId, jaSegue) {
