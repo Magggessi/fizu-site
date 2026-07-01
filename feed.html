@@ -848,6 +848,9 @@ html:not(.dark) .nivel-arquivo{ background:linear-gradient(135deg,#f5eeff,#e8d8f
 .modal-overlay.show{display:flex}
 .modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;max-width:480px;width:90%;box-shadow:var(--shadow-lg);animation:fadeUp .3s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes agentePopIn{from{opacity:0;transform:translateY(30px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes agentePopOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(20px) scale(.92)}}
+@media(max-width:600px){.agente-popup-flutuante{right:12px!important;left:12px!important;max-width:none!important;bottom:80px!important}}
 .modal h3{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;margin-bottom:8px}
 .modal p{color:var(--muted);font-size:.88rem;line-height:1.65;margin-bottom:20px}
 .modal-input{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);outline:none;margin-bottom:12px;transition:border-color .2s}
@@ -2279,6 +2282,62 @@ document.addEventListener('click', (e) => {
   if (modal && e.target === modal) fecharModalLogin();
 });
 
+// ── Agente aparece espontaneamente: saudação, parabéns, ajuda ──
+async function tentarSaudacaoAgente() {
+  if (!usuarioAtual) return;
+  // Não mostrar se já tem algum modal/overlay aberto
+  if (document.querySelector('.agente-popup-flutuante')) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return;
+    const resp = await fetch(`${SUPA_URL}/functions/v1/agente-saudacao`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY }
+    });
+    const r = await resp.json();
+    if (!r.ok || !r.mostrar) return;
+    mostrarPopupAgente(r.agente, r.mensagem, r.tipo);
+  } catch(e) { /* silencioso — feature não-crítica */ }
+}
+
+function mostrarPopupAgente(agente, mensagem, tipo) {
+  // Remove popup anterior se existir
+  document.querySelector('.agente-popup-flutuante')?.remove();
+
+  const iconesTipo = { saudacao: '👋', parabens: '🎉', streak: '🔥', ajuda: '💡' };
+  const icone = iconesTipo[tipo] || '✨';
+
+  const pop = document.createElement('div');
+  pop.className = 'agente-popup-flutuante';
+  pop.style.cssText = `
+    position:fixed;bottom:24px;right:24px;z-index:9990;
+    max-width:340px;background:var(--card);border:1.5px solid var(--aqua);
+    border-radius:18px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.4);
+    display:flex;gap:12px;align-items:flex-start;
+    animation:agentePopIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    cursor:pointer;
+  `;
+  pop.innerHTML = `
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--aqua),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 0 16px rgba(59,158,255,.4)">${agente.emoji}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:.72rem;font-weight:700;color:var(--aqua);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${icone} ${agente.nome}</div>
+      <div style="font-size:.86rem;color:var(--text);line-height:1.45">${escapeHtml(mensagem)}</div>
+    </div>
+    <button onclick="event.stopPropagation();this.closest('.agente-popup-flutuante').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px;flex-shrink:0">✕</button>
+  `;
+  pop.onclick = () => { abrirPerfilPublico(agente.id); pop.remove(); };
+  document.body.appendChild(pop);
+
+  // Auto-remove depois de 12s se não interagir
+  setTimeout(() => {
+    if (document.body.contains(pop)) {
+      pop.style.animation = 'agentePopOut .3s ease both';
+      setTimeout(() => pop.remove(), 300);
+    }
+  }, 12000);
+}
+
 // ── Inicializa sessão ──
 async function iniciarSessao() {
   // Renovar token PRIMEIRO — antes de qualquer query
@@ -2357,6 +2416,13 @@ async function iniciarSessao() {
   const nome = perfilAtual?.nome || usuarioAtual.user_metadata?.full_name || "Usuário";
   const inicial = nome.charAt(0).toUpperCase();
   const fotoUrl = limparUrl(perfilAtual?.foto_url || usuarioAtual.user_metadata?.avatar_url);
+
+  // Atualiza último acesso (para o agente saber se o usuário sumiu por um tempo)
+  const acessoAnterior = perfilAtual?.ultimo_acesso;
+  sb.from('perfis').update({ ultimo_acesso: new Date().toISOString() }).eq('id', usuarioAtual.id).then(() => {});
+
+  // Agente aparece espontaneamente — saudação, parabéns, ajuda (delay pra não ser intrusivo)
+  setTimeout(() => tentarSaudacaoAgente(), 3500);
 
   // Compose avatar
   const composeAv = document.querySelector('.compose-av');
