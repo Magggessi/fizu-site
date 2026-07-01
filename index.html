@@ -35,7 +35,7 @@ html.light{
   --aqua:#0055cc;--text:#0d1628;--muted:#5a7090;
   --border:rgba(0,85,204,.15);--card-solid:#ffffff;
 }
-html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;overscroll-behavior-y:contain}
 
 /* ── FUNDO ── */
 .bg-grad{
@@ -465,82 +465,69 @@ async function buscarRT(qRaw){
   const el=document.getElementById('sugs');
   el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.84rem">🔍 Buscando...</div>';
   el.classList.add('show');
-  try{
-    // Remove @ e # do início
-    const q = qRaw.replace(/^[@#]+/, '').trim();
-    if (!q) { el.classList.remove('show'); return; }
-    const ehMencao = qRaw.trim().startsWith('@');
 
-    // Para frases longas (>30 chars), extrai a palavra mais relevante
-    // Ignora stopwords comuns do português
-    const stopwords = new Set(['que','está','esta','agora','no','na','de','do','da','em','um','uma','o','a','os','as','é','não','por','para','com','mas','se','como','mais','bem','já','quando','onde','porque','sobre','até','após','desde','entre']);
-    let termoBusca = q;
-    if (q.length > 25) {
-      const palavras = q.toLowerCase().split(/\s+/).filter(p => p.length > 3 && !stopwords.has(p));
-      if (palavras.length > 0) {
-        // Usa a palavra mais longa (geralmente mais específica)
-        termoBusca = palavras.sort((a,b) => b.length - a.length)[0];
-      }
+  const q = qRaw.replace(/^[@#]+/, '').trim();
+  if (!q) { el.classList.remove('show'); return; }
+  const ehMencao = qRaw.trim().startsWith('@');
+
+  const stopwords = new Set(['que','está','esta','agora','no','na','de','do','da','em','um','uma','o','a','os','as','é','não','por','para','com','mas','se','como','mais','bem','já','quando','onde','porque','sobre','até','após','desde','entre','você','voce']);
+  let termoBusca = q;
+  if (q.length > 25) {
+    const palavras = q.toLowerCase().split(/\s+/).filter(p => p.length > 3 && !stopwords.has(p));
+    if (palavras.length > 0) termoBusca = palavras.sort((a,b) => b.length - a.length)[0];
+  }
+
+  const t = encodeURIComponent(termoBusca);
+  const H = {apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`};
+
+  // Cada busca isolada com seu próprio try/catch — uma falha não derruba as outras
+  async function safeFetch(url) {
+    try {
+      const r = await fetch(url, {headers:H});
+      if (!r.ok) { console.warn('Busca falhou:', url, r.status, await r.text()); return []; }
+      return await r.json();
+    } catch(e) { console.error('Busca erro:', url, e); return []; }
+  }
+
+  const [posts, usersPorNome, usersPorUsername, listings] = await Promise.all([
+    safeFetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${t}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`),
+    safeFetch(`${SUPA_URL}/rest/v1/perfis?nome=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=4`),
+    safeFetch(`${SUPA_URL}/rest/v1/perfis?username=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=4`),
+    ehMencao ? Promise.resolve([]) : safeFetch(`${SUPA_URL}/rest/v1/marketplace_listings?titulo=ilike.*${t}*&select=id,titulo,preco&status=eq.ativo&limit=3`),
+  ]);
+
+  const seenU = new Set();
+  const users = [...usersPorUsername, ...usersPorNome].filter(u => {
+    if (!u?.id || seenU.has(u.id)) return false;
+    seenU.add(u.id); return true;
+  }).slice(0, 4);
+
+  let html='';
+  if(users.length){
+    html+='<div class="sug-div">👤 Pessoas</div>';
+    for(const u of users){
+      const foto=u.foto_url?`style="background-image:url(${u.foto_url});background-size:cover;background-position:center"`:'';
+      html+=`<a class="sug-item" href="/feed#perfil-${u.id}"><div class="sug-av" ${foto}>${u.foto_url?'':(u.nome||'U').charAt(0).toUpperCase()}</div><div class="sug-info"><div class="sug-nome">${esc(u.nome||'')}${u.username?` <span style="color:var(--muted);font-size:.7rem">@${esc(u.username)}</span>`:''}</div><div class="sug-preview">${esc((u.biografia||'').substring(0,55))}</div></div></a>`;
     }
-
-    // ⚠️ Supabase REST ilike: NÃO encodar o *, só encodar o termo
-    const t = encodeURIComponent(termoBusca);
-    const H = {apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`};
-
-    const reqs = [
-      // Posts: busca por conteúdo
-      fetch(`${SUPA_URL}/rest/v1/posts?conteudo=ilike.*${t}*&select=id,conteudo,curtidas_count,comentarios_count,autor_id&order=curtidas_count.desc&limit=5`, {headers:H}),
-      // Perfis por nome
-      fetch(`${SUPA_URL}/rest/v1/perfis?nome=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=3`, {headers:H}),
-      // Perfis por username  
-      fetch(`${SUPA_URL}/rest/v1/perfis?username=ilike.*${t}*&select=id,nome,foto_url,username,biografia&limit=3`, {headers:H}),
-    ];
-    if (!ehMencao) {
-      reqs.push(
-        fetch(`${SUPA_URL}/rest/v1/marketplace_listings?titulo=ilike.*${t}*&select=id,titulo,preco,imagens&limit=3`, {headers:H}).catch(()=>null)
-      );
+  }
+  if(posts.length){
+    html+='<div class="sug-div">📌 Posts</div>';
+    for(const p of posts){
+      html+=`<a class="sug-item" href="/feed#post-${p.id}"><div class="sug-av" style="background:linear-gradient(135deg,#3b9eff22,#7c3aed22);border:1px solid var(--border)">📌</div><div class="sug-info"><div class="sug-nome">${esc((p.conteudo||'').substring(0,70).replace(/\n/g,' '))}</div><div class="sug-preview">❤️ ${p.curtidas_count||0} · 💬 ${p.comentarios_count||0}</div></div></a>`;
     }
-
-    const results = await Promise.all(reqs);
-    const posts = results[0].ok ? await results[0].json() : [];
-    const usersPorNome = results[1].ok ? await results[1].json() : [];
-    const usersPorUsername = results[2].ok ? await results[2].json() : [];
-    const listings = results[3] ? (results[3].ok ? await results[3].json() : []) : [];
-
-    // Merge usuarios sem duplicatas
-    const seenU = new Set();
-    const users = [...usersPorUsername, ...usersPorNome].filter(u => {
-      if (!u?.id || seenU.has(u.id)) return false;
-      seenU.add(u.id); return true;
-    }).slice(0, 4);
-
-    let html='';
-    if(Array.isArray(users)&&users.length){
-      html+='<div class="sug-div">👤 Pessoas</div>';
-      for(const u of users){
-        const foto=u.foto_url?`style="background-image:url(${u.foto_url});background-size:cover;background-position:center"`:'';
-        html+=`<a class="sug-item" href="/feed#perfil-${u.id}"><div class="sug-av" ${foto}>${u.foto_url?'':(u.nome||'U').charAt(0).toUpperCase()}</div><div class="sug-info"><div class="sug-nome">${esc(u.nome||'')}${u.username?` <span style="color:var(--muted);font-size:.7rem">@${esc(u.username)}</span>`:''}</div><div class="sug-preview">${esc((u.biografia||'').substring(0,55))}</div></div></a>`;
-      }
+  }
+  if(listings.length){
+    html+='<div class="sug-div">🏪 Marketplace</div>';
+    for(const l of listings){
+      const preco = l.preco ? `R$ ${Number(l.preco).toLocaleString('pt-BR')}` : 'Consulte';
+      html+=`<a class="sug-item" href="/feed#marketplace"><div class="sug-av" style="background:rgba(245,200,66,.12)">🏪</div><div class="sug-info"><div class="sug-nome">${esc(l.titulo||'')}</div><div class="sug-preview">${preco}</div></div></a>`;
     }
-    if(Array.isArray(posts)&&posts.length){
-      html+='<div class="sug-div">📌 Posts</div>';
-      for(const p of posts){
-        html+=`<a class="sug-item" href="/feed#post-${p.id}"><div class="sug-av" style="background:linear-gradient(135deg,#3b9eff22,#7c3aed22);border:1px solid var(--border)">📌</div><div class="sug-info"><div class="sug-nome">${esc((p.conteudo||'').substring(0,70).replace(/\n/g,' '))}</div><div class="sug-preview">❤️ ${p.curtidas_count||0} · 💬 ${p.comentarios_count||0}</div></div></a>`;
-      }
-    }
-    if(Array.isArray(listings)&&listings.length){
-      html+='<div class="sug-div">🏪 Marketplace</div>';
-      for(const l of listings){
-        const img=Array.isArray(l.imagens)&&l.imagens[0]?`style="background-image:url(${l.imagens[0]});background-size:cover;background-position:center"`:'';
-        const preco=l.preco?`R$ ${Number(l.preco).toLocaleString('pt-BR')}`:'Consulte';
-        html+=`<a class="sug-item" href="/feed#marketplace"><div class="sug-av" ${img}>${img?'':'🏪'}</div><div class="sug-info"><div class="sug-nome">${esc(l.titulo||'')}</div><div class="sug-preview">${preco}</div></div></a>`;
-      }
-    }
-    if(!html)html=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.84rem">Nenhum resultado para "<strong>${esc(qRaw)}</strong>"</div>`;
-    html+=`<div class="sug-div"><a class="sug-item" href="/feed#busca=${encodeURIComponent(q)}" style="color:var(--aqua);font-size:.82rem;font-weight:600"><div class="sug-av" style="background:rgba(59,158,255,.1)">🔍</div><div>Ver todos os resultados para "<strong>${esc(qRaw)}</strong>"</div></a></div>`;
-    el.innerHTML=html;el.classList.add('show');
-  }catch(e){el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">Erro ao buscar.</div>';console.error(e);}
+  }
+  if(!html)html=`<div style="padding:18px;text-align:center;color:var(--muted);font-size:.84rem">Nenhum resultado para "<strong>${esc(qRaw)}</strong>"</div>`;
+  html+=`<div class="sug-div"><a class="sug-item" href="/feed#busca=${encodeURIComponent(q)}" style="color:var(--aqua);font-size:.82rem;font-weight:600"><div class="sug-av" style="background:rgba(59,158,255,.1)">🔍</div><div>Ver todos os resultados para "<strong>${esc(qRaw)}</strong>"</div></a></div>`;
+  el.innerHTML=html;el.classList.add('show');
 }
+
 function buscar(){const q=document.getElementById('barraInput').value.trim();if(q)window.location.href=`/feed#busca=${encodeURIComponent(q)}`;}
 document.addEventListener('click',e=>{if(!e.target.closest('.barra'))fecharSugs();});
 
