@@ -414,6 +414,19 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
 
 <div class="toast-idx" id="toast"></div>
 
+<!-- DEBUG TEMPORÁRIO — remover depois de confirmar o bug -->
+<button onclick="mostrarDebugBusca()" style="position:fixed;bottom:70px;left:12px;z-index:9999;background:#ff3860;color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🐛 Debug Busca</button>
+<div id="debugPanel" style="display:none;position:fixed;inset:20px;z-index:10000;background:#0a0e18;border:2px solid #ff3860;border-radius:16px;padding:16px;overflow-y:auto;font-family:monospace;font-size:.72rem;color:#0f0;white-space:pre-wrap;word-break:break-all"></div>
+<script>
+function mostrarDebugBusca(){
+  const p = document.getElementById('debugPanel');
+  const d = window._debugBusca || [];
+  p.innerHTML = '<button onclick="document.getElementById(\'debugPanel\').style.display=\'none\'" style="position:sticky;top:0;background:#ff3860;color:#fff;border:none;border-radius:8px;padding:8px 16px;margin-bottom:12px;cursor:pointer">✕ Fechar</button><br>' +
+    (d.length ? d.map(x => JSON.stringify(x, null, 2)).join('\n\n---\n\n') : 'Nenhuma busca registrada ainda. Digite algo na barra de busca primeiro.');
+  p.style.display = 'block';
+}
+</script>
+
 <script>
 const SUPA_URL='https://tnwildfshzrvktrlfjhz.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRud2lsZGZzaHpydmt0cmxmamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNDg3NTgsImV4cCI6MjA2MzYyNDc1OH0.RElnQiJ1F9RhBIkWE8HbcvEe3u06SKbfAtLqGSCT4yk';
@@ -481,12 +494,24 @@ async function buscarRT(qRaw){
   const H = {apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`};
 
   // Cada busca isolada com seu próprio try/catch — uma falha não derruba as outras
+  window._debugBusca = window._debugBusca || [];
   async function safeFetch(url) {
     try {
       const r = await fetch(url, {headers:H});
-      if (!r.ok) { console.warn('Busca falhou:', url, r.status, await r.text()); return []; }
-      return await r.json();
-    } catch(e) { console.error('Busca erro:', url, e); return []; }
+      if (!r.ok) {
+        const txt = await r.text();
+        window._debugBusca.push({url, status:r.status, erro:txt});
+        console.warn('Busca falhou:', url, r.status, txt);
+        return [];
+      }
+      const data = await r.json();
+      window._debugBusca.push({url, status:r.status, count: Array.isArray(data)?data.length:'n/a'});
+      return data;
+    } catch(e) {
+      window._debugBusca.push({url, erro: String(e)});
+      console.error('Busca erro:', url, e);
+      return [];
+    }
   }
 
   // Wikipedia: busca resumo enciclopédico do termo (grátis, sem key)
