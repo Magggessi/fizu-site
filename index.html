@@ -589,7 +589,8 @@ function ativarSereia(){document.getElementById('postBox').classList.add('sereia
 async function publicarIdx(){
   const t=document.getElementById('postTa').value.trim();
   if(!t){showToast('Escreva algo para publicar');return;}
-  window.location.href=`/feed#`;
+  sessionStorage.setItem('sereia_post',JSON.stringify({texto:t,midia:''}));
+  window.location.href='/feed#sereia-post';
 }
 
 // SEREIA
