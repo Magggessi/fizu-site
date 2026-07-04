@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d10">
+<title>Painel de Leads — Fizu</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --bg:#0d0d10; --card:#16161c; --card2:#1d1d25; --borda:#2a2a35;
+    --ouro:#d4a017; --ouro-claro:#f0c04a; --ouro-escuro:#8a6a10;
+    --texto:#f2f0ea; --texto2:#9b98a5; --verde:#10b981; --vermelho:#ef4444;
+    --azul:#3b9eff; --roxo:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--texto);font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding-bottom:60px}
+
+  header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(13,13,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--borda)}
+  .btn-voltar{width:38px;height:38px;border-radius:50%;border:1px solid var(--borda);background:var(--card);color:var(--texto);font-size:18px;cursor:pointer;flex-shrink:0}
+  header h1{font-size:16px;font-weight:700}
+  header h1 small{display:block;font-size:11px;font-weight:500;color:var(--texto2)}
+
+  main{max-width:720px;margin:0 auto;padding:16px}
+
+  /* Pipeline de status */
+  .pipeline{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;margin-bottom:14px}
+  .pipeline::-webkit-scrollbar{display:none}
+  .pipe-chip{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1px solid var(--borda);background:var(--card);color:var(--texto2);font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+  .pipe-chip.ativo{border-color:var(--ouro-escuro);color:var(--ouro-claro);background:rgba(212,160,23,.08)}
+  .pipe-chip b{font-size:12px;background:var(--card2);border-radius:10px;padding:1px 8px}
+  .pipe-chip.ativo b{background:rgba(212,160,23,.18);color:var(--ouro-claro)}
+
+  /* Card de lead */
+  .lead{background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:16px;margin-bottom:12px}
+  .lead-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .lead-cat{width:42px;height:42px;border-radius:12px;background:rgba(212,160,23,.1);border:1px solid var(--ouro-escuro);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .lead-quem{flex:1;min-width:0}
+  .lead-quem .nome{font-weight:700;font-size:15px}
+  .lead-quem .quando{font-size:12px;color:var(--texto2)}
+  .status-pill{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:5px 11px;border-radius:20px;flex-shrink:0}
+  .st-novo{background:rgba(59,158,255,.12);color:var(--azul);border:1px solid rgba(59,158,255,.35)}
+  .st-atribuido{background:rgba(167,139,250,.12);color:var(--roxo);border:1px solid rgba(167,139,250,.35)}
+  .st-contatado{background:rgba(212,160,23,.12);color:var(--ouro-claro);border:1px solid var(--ouro-escuro)}
+  .st-convertido{background:rgba(16,185,129,.12);color:var(--verde);border:1px solid rgba(16,185,129,.35)}
+  .st-perdido{background:rgba(239,68,68,.1);color:var(--vermelho);border:1px solid rgba(239,68,68,.3)}
+
+  .criterios{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .crit{font-size:12.5px;background:var(--card2);border:1px solid var(--borda);border-radius:16px;padding:4px 11px;color:var(--texto2)}
+  .crit b{color:var(--texto)}
+
+  .resumo{font-size:13px;color:var(--texto2);background:var(--card2);border-left:3px solid var(--ouro-escuro);border-radius:0 10px 10px 0;padding:9px 12px;margin-bottom:12px;font-style:italic}
+
+  .lead-acoes{display:flex;gap:8px;flex-wrap:wrap}
+  .lead-acoes select{flex:1;min-width:140px;background:var(--bg);border:1px solid var(--borda);border-radius:10px;color:var(--texto);padding:9px 10px;font-size:13px;font-family:inherit}
+  .lead-acoes select:focus{outline:none;border-color:var(--ouro-escuro)}
+  .btn-chat{background:var(--card2);border:1px solid var(--ouro-escuro);color:var(--ouro-claro);border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+
+  .estado{text-align:center;padding:70px 24px;color:var(--texto2);display:none}
+  .estado.open{display:block}
+  .estado .icone{font-size:44px;margin-bottom:12px}
+  .spinner{width:32px;height:32px;border:3px solid var(--borda);border-top-color:var(--ouro);border-radius:50%;margin:0 auto 14px;animation:gira .8s linear infinite}
+  @keyframes gira{to{transform:rotate(360deg)}}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:50;background:var(--card2);border:1px solid var(--ouro-escuro);color:var(--texto);padding:11px 18px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+  .toast.open{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="btn-voltar" onclick="location.href='feed.html'" aria-label="Voltar">←</button>
+  <h1>🐟 Leads do Marlin <small>painel do broker — RE/MAX Influencer × Fizu</small></h1>
+</header>
+
+<main>
+  <div class="pipeline" id="pipeline"></div>
+
+  <div class="estado open" id="estadoCarregando">
+    <div class="spinner"></div>
+    <p>Carregando leads…</p>
+  </div>
+
+  <div class="estado" id="estadoLogin">
+    <div class="icone">🔒</div>
+    <p>Entre no Fizu primeiro para acessar o painel.<br><a href="feed.html" style="color:var(--ouro-claro)">Ir para o Fizu</a></p>
+  </div>
+
+  <div class="estado" id="estadoVazio">
+    <div class="icone">🐟</div>
+    <p><b>Nenhum lead por aqui ainda.</b><br>Quando o Marlin qualificar alguém no Marketplace,<br>o lead aparece aqui em tempo real.</p>
+  </div>
+
+  <div id="listaLeads"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   FIZU — Painel de Leads (Marlin → corretor)
+   Regras da casa: duas queries (nunca FK join), try/catch,
+   visibilidade via classList.
+   ============================================================ */
+const SUPABASE_URL = 'https://tnwildfshzrvktrlfjhz.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { autoRefreshToken: true, persistSession: true }
+});
+
+const $ = (id) => document.getElementById(id);
+const STATUS = [
+  { key: 'todos',      label: 'Todos',      emoji: '📋' },
+  { key: 'novo',       label: 'Novos',      emoji: '🔵' },
+  { key: 'atribuido',  label: 'Atribuídos', emoji: '🟣' },
+  { key: 'contatado',  label: 'Contatados', emoji: '🟡' },
+  { key: 'convertido', label: 'Convertidos',emoji: '🟢' },
+  { key: 'perdido',    label: 'Perdidos',   emoji: '🔴' },
+];
+const CAT_EMOJI = { imoveis:'🏠', veiculos:'🚗', eletronicos:'📱', outros:'📦' };
+
+let usuario = null, leads = [], perfisMap = {}, corretores = [], filtroAtual = 'todos';
+
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('open');
+  setTimeout(() => t.classList.remove('open'), 2400);
+}
+
+function formatarData(iso){
+  try{
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }) + ' ' +
+           d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  }catch{ return ''; }
+}
+
+function fmtPreco(v){
+  if (v == null) return null;
+  return Number(v).toLocaleString('pt-BR', { style:'currency', currency:'BRL', maximumFractionDigits:0 });
+}
+
+async function init(){
+  try{
+    const { data } = await sb.auth.getSession();
+    usuario = data?.session?.user || null;
+  }catch{ usuario = null; }
+
+  if (!usuario){
+    $('estadoCarregando').classList.remove('open');
+    $('estadoLogin').classList.add('open');
+    return;
+  }
+  await carregarTudo();
+}
+
+async function carregarTudo(){
+  try{
+    // 1) Leads (RLS filtra: admin vê tudo, corretor vê os seus)
+    const { data: ls, error } = await sb.from('marketplace_leads')
+      .select('*')
+      .order('criado_em', { ascending: false });
+    if (error) throw error;
+    leads = ls || [];
+
+    // 2) Perfis dos envolvidos — query separada, nunca FK join
+    const ids = [...new Set(leads.flatMap(l => [l.usuario_id, l.corretor_id]).filter(Boolean))];
+    perfisMap = {};
+    if (ids.length){
+      const { data: ps } = await sb.from('perfis').select('id, nome, foto_url').in('id', ids);
+      (ps || []).forEach(p => { perfisMap[p.id] = p; });
+    }
+
+    // 3) Corretores atribuíveis = usuários humanos (não agentes)
+    const { data: cs } = await sb.from('perfis')
+      .select('id, nome')
+      .neq('role', 'agente')
+      .order('nome');
+    corretores = cs || [];
+
+    renderizar();
+  }catch(e){
+    console.error('carregarTudo:', e);
+    $('estadoCarregando').classList.remove('open');
+    toast('Erro ao carregar leads');
+  }
+}
+
+function renderPipeline(){
+  const pipe = $('pipeline');
+  pipe.innerHTML = STATUS.map(s => {
+    const qtd = s.key === 'todos' ? leads.length : leads.filter(l => l.status === s.key).length;
+    return `<div class="pipe-chip ${filtroAtual === s.key ? 'ativo' : ''}" data-status="${s.key}">
+      ${s.emoji} ${s.label} <b>${qtd}</b>
+    </div>`;
+  }).join('');
+  pipe.querySelectorAll('.pipe-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      filtroAtual = chip.dataset.status;
+      renderizar();
+    });
+  });
+}
+
+function renderizar(){
+  $('estadoCarregando').classList.remove('open');
+  renderPipeline();
+
+  const visiveis = filtroAtual === 'todos' ? leads : leads.filter(l => l.status === filtroAtual);
+  const lista = $('listaLeads');
+
+  if (!visiveis.length){
+    lista.innerHTML = '';
+    $('estadoVazio').classList.add('open');
+    return;
+  }
+  $('estadoVazio').classList.remove('open');
+
+  lista.innerHTML = visiveis.map(l => {
+    const quem = perfisMap[l.usuario_id]?.nome || 'Usuário Fizu';
+    const c = l.criterios || {};
+    const chips = [];
+    if (c.bairro)       chips.push(`📍 <b>${c.bairro}</b>`);
+    if (c.tipo_negocio) chips.push(`<b>${c.tipo_negocio}</b>`);
+    if (c.quartos)      chips.push(`🛏 <b>${c.quartos} quartos</b>`);
+    if (c.preco_max)    chips.push(`até <b>${fmtPreco(c.preco_max)}</b>`);
+    if (c.preco_min)    chips.push(`de <b>${fmtPreco(c.preco_min)}</b>`);
+
+    const corretorAtual = l.corretor_id || '';
+    const opcoesCorretor = ['<option value="">— atribuir corretor —</option>']
+      .concat(corretores.map(p =>
+        `<option value="${p.id}" ${p.id === corretorAtual ? 'selected' : ''}>${p.nome}</option>`))
+      .join('');
+
+    const opcoesStatus = STATUS.filter(s => s.key !== 'todos').map(s =>
+      `<option value="${s.key}" ${s.key === l.status ? 'selected' : ''}>${s.emoji} ${s.label}</option>`).join('');
+
+    return `<div class="lead" id="lead-${l.id}">
+      <div class="lead-topo">
+        <div class="lead-cat">${CAT_EMOJI[l.categoria] || '📦'}</div>
+        <div class="lead-quem">
+          <div class="nome">${quem}</div>
+          <div class="quando">${formatarData(l.criado_em)} · ${l.categoria}</div>
+        </div>
+        <span class="status-pill st-${l.status}">${l.status}</span>
+      </div>
+      ${chips.length ? `<div class="criterios">${chips.map(x => `<span class="crit">${x}</span>`).join('')}</div>` : ''}
+      ${l.resumo_ia ? `<div class="resumo">🐟 ${l.resumo_ia}</div>` : ''}
+      <div class="lead-acoes">
+        <select data-acao="status" data-lead="${l.id}">${opcoesStatus}</select>
+        <select data-acao="corretor" data-lead="${l.id}">${opcoesCorretor}</select>
+        ${l.conversa_id ? `<button class="btn-chat" onclick="location.href='feed.html#chat=${l.conversa_id}'">💬 Chat</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  lista.querySelectorAll('select[data-acao]').forEach(sel => {
+    sel.addEventListener('change', () => aplicarMudanca(sel));
+  });
+}
+
+async function aplicarMudanca(sel){
+  const leadId = sel.dataset.lead;
+  const acao = sel.dataset.acao;
+  const valor = sel.value;
+  sel.disabled = true;
+
+  try{
+    const patch = { atualizado_em: new Date().toISOString() };
+    if (acao === 'status'){
+      patch.status = valor;
+    } else {
+      patch.corretor_id = valor || null;
+      // Atribuir corretor promove lead 'novo' automaticamente
+      const lead = leads.find(l => l.id === leadId);
+      if (valor && lead && lead.status === 'novo') patch.status = 'atribuido';
+    }
+
+    const { error } = await sb.from('marketplace_leads').update(patch).eq('id', leadId);
+    if (error) throw error;
+
+    // Notifica o corretor recém-atribuído (best effort)
+    if (acao === 'corretor' && valor){
+      try{
+        await sb.from('notificacoes').insert({
+          usuario_id: valor,
+          tipo: 'lead_atribuido',
+          autor_id: usuario.id,
+          mensagem: '🐟 Um lead do Marlin foi atribuído a você. Confira o painel de leads.',
+        });
+      }catch{}
+    }
+
+    const lead = leads.find(l => l.id === leadId);
+    if (lead) Object.assign(lead, patch);
+    renderizar();
+    toast(acao === 'status' ? 'Status atualizado' : (valor ? 'Corretor atribuído ✅' : 'Atribuição removida'));
+  }catch(e){
+    console.error('aplicarMudanca:', e);
+    toast('Não foi possível salvar');
+    sel.disabled = false;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
