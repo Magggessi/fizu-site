@@ -7336,9 +7336,9 @@ async function abrirMarketplace(el) {
         </svg>
       </div>
       <div class="mkt-agent-bubble" id="mktAgentBubble">
-        <div class="mkt-agent-av">🐬</div>
+        <div class="mkt-agent-av">🗡️</div>
         <div class="mkt-agent-text" id="mktAgentText">
-          <strong>Zari aqui!</strong> Me conta o que você procura e vou te ajudar a encontrar. Qual é o seu orçamento?
+          <strong>Marlin aqui.</strong> Me fala o que você procura — imóvel, carro, o que for — e eu corto direto ao ponto. 🗡️
         </div>
       </div>
     </div>
@@ -12170,25 +12170,66 @@ let mktBuscaTimer = null;
 let mktDadosImportados = null;
 let mktImagensImportadas = [];
 
-const MKT_AGENT_MSGS = [
-  { gatilho: /moto|bike|biciclet/i,      msg: '🏍️ <strong>Zari:</strong> Boa escolha! Para uso diário ou lazer?' },
-  { gatilho: /iphone|samsung|celular|smartphone/i, msg: '📱 <strong>Zari:</strong> Qual o armazenamento mínimo? Novo ou usado?' },
-  { gatilho: /imovel|imóvel|casa|apartamento/i, msg: '🏠 <strong>Zari:</strong> Para alugar ou comprar? Qual região?' },
-  { gatilho: /serviç|freelanc|design|program/i, msg: '💼 <strong>Zari:</strong> Qual o prazo do projeto?' },
-  { gatilho: /carro|veiculo|veículo|auto/i, msg: '🚗 <strong>Zari:</strong> Qual faixa de ano e km máxima?' },
-];
+// Histórico da conversa com o Marlin (mantém contexto entre mensagens)
+let marlinHistorico = [];
 
 function mktAtualizarAgente(texto) {
   const el = document.getElementById('mktAgentText');
   if (!el) return;
   if (!texto) {
-    el.innerHTML = '<strong>Zari aqui!</strong> Me conta o que você procura e vou te ajudar. Qual é o seu orçamento?';
+    el.innerHTML = '<strong>Marlin aqui.</strong> Me fala o que você procura e eu corto direto ao ponto. 🗡️';
     return;
   }
-  const match = MKT_AGENT_MSGS.find(m => m.gatilho.test(texto));
-  if (match) el.innerHTML = match.msg;
-  else if (texto.length > 3) {
-    el.innerHTML = `<strong>Zari:</strong> Buscando por "<em>${texto}</em>"... Adicione um valor máximo para filtrar melhor!`;
+  // Preview leve enquanto digita — a análise de verdade acontece ao apertar Enter
+  if (texto.length > 3) {
+    el.innerHTML = `<em style="color:var(--muted)">Toque Enter pra eu analisar "${escapeHtml(texto)}"…</em>`;
+  }
+}
+
+// Fala de verdade com o Marlin (chamado ao pressionar Enter, não a cada tecla —
+// evita custo de API a cada letra digitada e evita respostas a palavras incompletas)
+async function mktFalarComMarlin(mensagem) {
+  const bubbleText = document.getElementById('mktAgentText');
+  const bubble = document.getElementById('mktAgentBubble');
+
+  if (!usuarioAtual) {
+    if (bubbleText) bubbleText.innerHTML = '<strong>Marlin:</strong> Entra no Fizu pra eu te ajudar de verdade — sem login eu só mostro o que já tem no marketplace. 🗡️';
+    return;
+  }
+
+  if (bubbleText) bubbleText.innerHTML = '<em style="color:var(--muted)">Marlin tá analisando… 🗡️</em>';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token || SUPA_KEY;
+    const resp = await fetch(`${SUPA_URL}/functions/v1/marlin-busca`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY },
+      body: JSON.stringify({ mensagem, historico: marlinHistorico, usuario_id: usuarioAtual.id }),
+    });
+    if (!resp.ok) throw new Error('erro ' + resp.status);
+    const d = await resp.json();
+    if (d.error) throw new Error(d.error);
+
+    marlinHistorico.push({ autor: 'user', texto: mensagem });
+    marlinHistorico.push({ autor: 'marlin', texto: d.resposta });
+    if (marlinHistorico.length > 20) marlinHistorico = marlinHistorico.slice(-20);
+
+    if (bubbleText) bubbleText.innerHTML = `<strong>Marlin:</strong> ${escapeHtml(d.resposta)}`;
+
+    if (d.lead_pronto && d.lead_id) {
+      if (bubble) {
+        bubble.style.borderColor = 'var(--seal)';
+        const existente = document.getElementById('mktLeadConfirmado');
+        if (!existente) {
+          bubble.insertAdjacentHTML('beforeend', `<div id="mktLeadConfirmado" style="margin-top:8px;font-size:.78rem;color:var(--seal);font-weight:700">✅ Lead enviado — um corretor da RE/MAX Influencer vai te chamar.</div>`);
+        }
+      }
+      mostrarToast('🗡️ Marlin te conectou com um corretor!', 'success');
+    }
+  } catch (e) {
+    console.error('marlin-busca:', e);
+    if (bubbleText) bubbleText.innerHTML = '<strong>Marlin:</strong> Deu ruim aqui do meu lado, tenta de novo. 🗡️';
   }
 }
 
@@ -12196,10 +12237,19 @@ function mktOnBusca(valor) {
   clearTimeout(mktBuscaTimer);
   mktAtualizarAgente(valor);
   if (!valor.trim()) { mktLimparBusca(); return; }
-  mktBuscaTimer = setTimeout(() => mktBuscar(valor), 600);
+  mktBuscaTimer = setTimeout(() => mktBuscarGrid(valor), 600);
 }
 
+// mktBuscar: acionado ao apertar Enter — dispara a busca literal na grade
+// E a conversa com o Marlin em paralelo (não bloqueia um o outro)
 async function mktBuscar(termo) {
+  termo = termo || document.getElementById('mktSearch')?.value || '';
+  if (!termo.trim()) return;
+  mktFalarComMarlin(termo);
+  mktBuscarGrid(termo);
+}
+
+async function mktBuscarGrid(termo) {
   termo = termo || document.getElementById('mktSearch')?.value || '';
   if (!termo.trim()) return;
 
