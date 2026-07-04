@@ -2487,18 +2487,22 @@ async function iniciarSessao() {
   await carregarPosts();
 
   // Prioridade 2: dados do usuário em paralelo (sem bloquear o feed)
-  Promise.all([
-    carregarCurtidas(),
-    carregarSalvos(),
-    carregarFizurados(),
-    carregarCoinSaldo(),
-    carregarNotificacoes(),
-    carregarMsgsBadge(),
-    carregarMeusCírculos(),
-    verificarStreak(),
-  ]).then(() => {
+  try{
+    await Promise.all([
+      carregarCurtidas(),
+      carregarSalvos(),
+      carregarFizurados(),
+      carregarCoinSaldo(),
+      carregarNotificacoes(),
+      carregarMsgsBadge(),
+      carregarMeusCírculos(),
+      verificarStreak(),
+    ]);
     iniciarRealtime();
-  });
+  }catch(e){
+    console.error('Erro ao carregar dados do usuário:', e);
+    iniciarRealtime();
+  }
 
   // Baixa prioridade: sidebar e background tasks
   setTimeout(carregarSidebarDireito, 200);
@@ -2596,6 +2600,7 @@ async function carregarPosts() {
   postsOffset = posts.length;
   if (posts.length < POSTS_POR_PAGINA) feedTodosCarregados = true;
   _setupInfiniteScroll();
+  setupFonteLinks(feedEl);
   setTimeout(processarInstagramEmbeds, 300);
   setTimeout(processarTikTokEmbeds, 400);
   setTimeout(carregarNiveisPosts, 500); // lazy load dos badges de nível
@@ -2652,14 +2657,22 @@ async function inserirParaVoce() {
 async function _buscarPosts(offset) {
   // Garantir token fresco antes de buscar posts
   try { await sb.auth.refreshSession(); } catch(e) {}
-  const { data, error } = await sb
-    .from('posts')
-    .select('id,autor_id,conteudo,tipo,midia_url,fontes,reacoes,curtidas_count,comentarios_count,complementos_count,criado_em,status,is_ritual,ritual_agente_nome,ritual_agente_emoji,gerado_ia,ia_modelo')
-    .neq('status', 'removido')
-    .order('criado_em', { ascending: false })
-    .range(offset, offset + POSTS_POR_PAGINA - 1);
-  if (error) { console.error('Erro buscarPosts:', error); return []; }
-  return data || [];
+  try {
+    const { data, error } = await sb
+      .from('posts')
+      .select('id,autor_id,conteudo,tipo,midia_url,fontes,reacoes,curtidas_count,comentarios_count,complementos_count,criado_em,status,is_ritual,ritual_agente_nome,ritual_agente_emoji,gerado_ia,ia_modelo')
+      .neq('status', 'removido')
+      .order('criado_em', { ascending: false })
+      .range(offset, offset + POSTS_POR_PAGINA - 1);
+    if (error) {
+      console.error('Erro buscarPosts:', error.message || error.details || error.hint || JSON.stringify(error));
+      return [];
+    }
+    return data || [];
+  } catch(e) {
+    console.error('Erro de rede em buscarPosts:', e?.message || e);
+    return [];
+  }
 }
 
 // Busca mapa de perfis dado lista de posts
@@ -6681,29 +6694,50 @@ async function novaConversa() {
 async function iniciarConversaCom(outroId, outroNome, outroFoto) {
   document.querySelector('[style*=fixed]')?.remove();
 
-  // Verifica se conversa já existe (sem .single() para evitar erro)
-  const { data: existentes } = await sb.from('conversas')
-    .select('id')
-    .or(`and(usuario1_id.eq.${usuarioAtual.id},usuario2_id.eq.${outroId}),and(usuario1_id.eq.${outroId},usuario2_id.eq.${usuarioAtual.id})`);
+  try{
+    // Verifica se conversa já existe (busca nas duas direções)
+    const { data: existentes } = await sb.from('conversas')
+      .select('id')
+      .or(`and(usuario1_id.eq.${usuarioAtual.id},usuario2_id.eq.${outroId}),and(usuario1_id.eq.${outroId},usuario2_id.eq.${usuarioAtual.id})`);
 
-  let convId = existentes?.[0]?.id;
+    let convId = existentes?.[0]?.id;
 
-  if (!convId) {
-    // Cria nova conversa
-    const { data: nova, error } = await sb.from('conversas').insert({
-      usuario1_id: usuarioAtual.id,
-      usuario2_id: outroId,
-      ultima_mensagem: '',
-      ultima_mensagem_em: new Date().toISOString()
-    }).select('id').single();
-    
-    if (error) { mostrarToast('Erro ao criar conversa', 'error'); console.error(error); return; }
-    convId = nova?.id;
-  }
+    if (!convId) {
+      // Tenta criar nova conversa
+      const { data: nova, error } = await sb.from('conversas').insert({
+        usuario1_id: usuarioAtual.id,
+        usuario2_id: outroId,
+        ultima_mensagem: '',
+        ultima_mensagem_em: new Date().toISOString()
+      }).select('id').single();
+      
+      if (error) {
+        // Se erro for 23505 (índice único violado), significa que alguém criou no meio tempo
+        if(String(error.code) === '23505'){
+          // Rebusca para pegar a que foi criada
+          const { data: retry } = await sb.from('conversas')
+            .select('id')
+            .or(`and(usuario1_id.eq.${usuarioAtual.id},usuario2_id.eq.${outroId}),and(usuario1_id.eq.${outroId},usuario2_id.eq.${usuarioAtual.id})`)
+            .maybeSingle();
+          if(retry?.id){ convId = retry.id; }
+          else{ mostrarToast('Erro ao abrir conversa', 'error'); return; }
+        } else {
+          mostrarToast('Erro ao criar conversa', 'error');
+          console.error(error);
+          return;
+        }
+      } else {
+        convId = nova?.id;
+      }
+    }
 
-  if (convId) {
-    await abrirMensagens();
-    setTimeout(() => abrirConversa(convId, outroId, outroNome, outroFoto), 400);
+    if (convId) {
+      await abrirMensagens();
+      setTimeout(() => abrirConversa(convId, outroId, outroNome, outroFoto), 400);
+    }
+  }catch(e){
+    mostrarToast('Erro ao abrir conversa', 'error');
+    console.error('iniciarConversaCom:', e);
   }
 }
 
@@ -11606,21 +11640,35 @@ function renderFontes(post) {
   const fontes = post.fontes.slice(0, 5).map(parseFonte);
 
   // Pills clicáveis com favicon + nome da fonte
-  const pills = fontes.map(f => {
+  const pills = fontes.map((f, idx) => {
     const favicon = f.dominio
-      ? `<img src="${getFaviconUrl(f.dominio)}" style="width:14px;height:14px;border-radius:3px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`
+      ? `<img src="${getFaviconUrl(f.dominio)}" style="width:14px;height:14px;border-radius:3px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'" alt="favicon">`
       : `<span style="font-size:.65rem">🔗</span>`;
     const inner = `${favicon}<span style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${escapeHtml(f.nome)}</span>`;
     if (f.url) {
-      return `<a href="${f.url}" target="_blank" rel="noopener"
-        style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;text-decoration:none;transition:border-color .2s;cursor:pointer"
-        onmouseover="this.style.borderColor='var(--aqua)'" onmouseout="this.style.borderColor='var(--border)'"
+      return `<a href="${f.url}" target="_blank" rel="noopener" class="fonte-link" data-idx="${idx}"
+        style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;text-decoration:none;transition:all .2s ease;cursor:pointer;color:inherit;line-height:1"
         title="${escapeHtml(f.nome)}: ${f.url}">${inner}</a>`;
     }
-    return `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:20px" title="${escapeHtml(f.nome)}">${inner}</span>`;
+    return `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;line-height:1" title="${escapeHtml(f.nome)}">${inner}</span>`;
   }).join('');
 
-  return `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">${pills}</div>`;
+  return `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;pointer-events:auto">${pills}</div>`;
+}
+
+// Adicionar evento de hover aos links de fonte após renderização
+function setupFonteLinks(container) {
+  if (!container) return;
+  container.querySelectorAll('a.fonte-link').forEach(link => {
+    link.addEventListener('mouseenter', function() {
+      this.style.borderColor = 'var(--aqua)';
+      this.style.backgroundColor = 'var(--aqua-dim)';
+    });
+    link.addEventListener('mouseleave', function() {
+      this.style.borderColor = 'var(--border)';
+      this.style.backgroundColor = 'var(--bg2)';
+    });
+  });
 }
 
 // Extrai shortcode do Instagram de qualquer URL válida
