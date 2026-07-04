@@ -12198,6 +12198,10 @@ async function mktFalarComMarlin(mensagem) {
   }
 
   if (bubbleText) bubbleText.innerHTML = '<em style="color:var(--muted)">Marlin tá analisando… 🐟</em>';
+  // Limpa resíduos de uma busca anterior (links externos, confirmação de lead)
+  document.getElementById('mktLinksExternos')?.remove();
+  document.getElementById('mktLeadConfirmado')?.remove();
+  if (bubble) bubble.style.borderColor = '';
 
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -12216,6 +12220,19 @@ async function mktFalarComMarlin(mensagem) {
     if (marlinHistorico.length > 20) marlinHistorico = marlinHistorico.slice(-20);
 
     if (bubbleText) bubbleText.innerHTML = `<strong>Marlin:</strong> ${escapeHtml(d.resposta)}`;
+
+    // Links externos (quando o Fizu não tem achado próprio pra essa categoria)
+    if (Array.isArray(d.links_externos) && d.links_externos.length && bubble) {
+      const antigo = document.getElementById('mktLinksExternos');
+      if (antigo) antigo.remove();
+      const pills = d.links_externos.map(l =>
+        `<a href="${l.url}" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--bg2);
+                  border:1px solid var(--border);border-radius:20px;text-decoration:none;color:inherit;
+                  font-size:.78rem;font-weight:600">🔗 Ver no ${escapeHtml(l.nome)}</a>`
+      ).join('');
+      bubble.insertAdjacentHTML('beforeend', `<div id="mktLinksExternos" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${pills}</div>`);
+    }
 
     if (d.lead_pronto && d.lead_id) {
       if (bubble) {
