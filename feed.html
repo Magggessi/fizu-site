@@ -5507,9 +5507,9 @@ function iniciarRealtime() {
       if (conversaAtiva?.id === payload.new.conversa_id) {
         await renderMensagens(payload.new.conversa_id);
       } else {
-        // Senão, mostra toast e atualiza badge
+        // Senão, mostra toast e atualiza badge (com debounce contra "piscar")
         mostrarToast('💬 Nova mensagem recebida!');
-        await carregarConversas();
+        agendarCarregarConversas();
       }
     })
     .subscribe();
@@ -6328,8 +6328,22 @@ async function abrirMensagens(el) {
   await carregarConversas();
 }
 
+// Sequência anti-corrida: se uma chamada mais nova começar antes desta
+// terminar, esta descarta seu resultado em vez de sobrescrever a tela
+// com um estado desatualizado (era a causa da lista "pulando").
+let _convSeq = 0;
+// Agrupa várias mensagens chegando quase juntas numa única atualização da
+// lista, em vez de reconstruir o DOM inteiro a cada uma (era a causa da
+// lista de conversas parecer "pular"/piscar).
+let _debounceConversas = null;
+function agendarCarregarConversas() {
+  clearTimeout(_debounceConversas);
+  _debounceConversas = setTimeout(carregarConversas, 400);
+}
+
 async function carregarConversas() {
   if (!usuarioAtual) return;
+  const _meuSeq = ++_convSeq;
 
   const { data: conversas } = await sb.from('conversas')
     .select('id, usuario1_id, usuario2_id, ultima_mensagem, ultima_mensagem_em, nao_lidas_usuario1, nao_lidas_usuario2')
@@ -6372,6 +6386,9 @@ async function carregarConversas() {
 
   const listEl = document.getElementById('chatList');
   if (!listEl) return;
+
+  // Uma chamada mais recente já assumiu — descarta este resultado desatualizado
+  if (_meuSeq !== _convSeq) return;
 
   if (!unicas.length) {
     listEl.innerHTML = `<div style="padding:32px 16px;text-align:center;color:var(--muted);font-size:.82rem">Nenhuma conversa ainda.<br>Inicie uma nova! 🐟</div>`;
@@ -9827,7 +9844,7 @@ async function explorarPessoas(el) {
         <div style="font-weight:700;font-size:.9rem;cursor:pointer" onclick="abrirPerfilPublico('${p.id}')">${escapeHtml(p.nome||'Usuário')}</div>
         ${p.biografia ? `<div style="font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.biografia.substring(0,60))}</div>` : ''}
       </div>
-      <button id="seg-btn-${p.id}" onclick="toggleSeguir('${p.id}', ${jaSegue})"
+      <button id="btn-seguir-${p.id}" onclick="toggleSeguir('${p.id}', ${jaSegue})"
         style="background:${jaSegue ? 'none' : 'var(--aqua)'};border:${jaSegue ? '1px solid var(--border)' : 'none'};border-radius:20px;padding:7px 16px;font-size:.78rem;color:${jaSegue ? 'var(--muted)' : '#fff'};cursor:pointer;font-family:inherit;font-weight:700;flex-shrink:0">
         ${jaSegue ? '✓ Seguindo' : '+ Seguir'}
       </button>
