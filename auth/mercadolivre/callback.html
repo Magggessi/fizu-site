@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conectando ao Mercado Livre… — Fizu</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d0d10;color:#f2f0ea;
+    display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}
+  .box{max-width:380px;padding:32px}
+  .spinner{width:34px;height:34px;border:3px solid #2a2a35;border-top-color:#d4a017;border-radius:50%;
+    margin:0 auto 18px;animation:girar .8s linear infinite}
+  @keyframes girar{to{transform:rotate(360deg)}}
+  p{color:#9b98a5;font-size:14px}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="spinner"></div>
+    <p>Conectando sua conta do Mercado Livre ao Fizu…</p>
+  </div>
+  <script>
+    // Repassa o code/error recebido do Mercado Livre para a Edge Function
+    // que faz a troca segura do código pelo token de acesso.
+    var params = window.location.search; // já vem com ?code=...&state=... etc
+    window.location.replace(
+      'https://tnwildfshzrvktrlfjhz.supabase.co/functions/v1/ml-oauth-callback' + params
+    );
+  </script>
+</body>
+</html>
