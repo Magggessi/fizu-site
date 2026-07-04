@@ -7336,9 +7336,9 @@ async function abrirMarketplace(el) {
         </svg>
       </div>
       <div class="mkt-agent-bubble" id="mktAgentBubble">
-        <div class="mkt-agent-av">🗡️</div>
+        <div class="mkt-agent-av">🐟</div>
         <div class="mkt-agent-text" id="mktAgentText">
-          <strong>Marlin aqui.</strong> Me fala o que você procura — imóvel, carro, o que for — e eu corto direto ao ponto. 🗡️
+          <strong>Marlin aqui.</strong> Me fala o que você procura — imóvel, carro, o que for — e eu corto direto ao ponto. 🐟
         </div>
       </div>
     </div>
@@ -12177,7 +12177,7 @@ function mktAtualizarAgente(texto) {
   const el = document.getElementById('mktAgentText');
   if (!el) return;
   if (!texto) {
-    el.innerHTML = '<strong>Marlin aqui.</strong> Me fala o que você procura e eu corto direto ao ponto. 🗡️';
+    el.innerHTML = '<strong>Marlin aqui.</strong> Me fala o que você procura e eu corto direto ao ponto. 🐟';
     return;
   }
   // Preview leve enquanto digita — a análise de verdade acontece ao apertar Enter
@@ -12193,11 +12193,11 @@ async function mktFalarComMarlin(mensagem) {
   const bubble = document.getElementById('mktAgentBubble');
 
   if (!usuarioAtual) {
-    if (bubbleText) bubbleText.innerHTML = '<strong>Marlin:</strong> Entra no Fizu pra eu te ajudar de verdade — sem login eu só mostro o que já tem no marketplace. 🗡️';
+    if (bubbleText) bubbleText.innerHTML = '<strong>Marlin:</strong> Entra no Fizu pra eu te ajudar de verdade — sem login eu só mostro o que já tem no marketplace. 🐟';
     return;
   }
 
-  if (bubbleText) bubbleText.innerHTML = '<em style="color:var(--muted)">Marlin tá analisando… 🗡️</em>';
+  if (bubbleText) bubbleText.innerHTML = '<em style="color:var(--muted)">Marlin tá analisando… 🐟</em>';
 
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -12225,11 +12225,11 @@ async function mktFalarComMarlin(mensagem) {
           bubble.insertAdjacentHTML('beforeend', `<div id="mktLeadConfirmado" style="margin-top:8px;font-size:.78rem;color:var(--seal);font-weight:700">✅ Lead enviado — um corretor da RE/MAX Influencer vai te chamar.</div>`);
         }
       }
-      mostrarToast('🗡️ Marlin te conectou com um corretor!', 'success');
+      mostrarToast('🐟 Marlin te conectou com um corretor!', 'success');
     }
   } catch (e) {
     console.error('marlin-busca:', e);
-    if (bubbleText) bubbleText.innerHTML = '<strong>Marlin:</strong> Deu ruim aqui do meu lado, tenta de novo. 🗡️';
+    if (bubbleText) bubbleText.innerHTML = '<strong>Marlin:</strong> Deu ruim aqui do meu lado, tenta de novo. 🐟';
   }
 }
 
