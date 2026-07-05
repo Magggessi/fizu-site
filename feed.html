@@ -723,6 +723,44 @@ html.dark .mem-mini{border-color:rgba(245,200,66,0.15)}
 .search-user-row:last-child { border:none }
 .search-highlight { background:rgba(59,158,255,0.2);border-radius:3px;padding:0 2px }
 
+/* ═══ CARD DE RESPOSTA DO AGENTE (busca conversacional) ═══ */
+.agente-resposta-card { background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow) }
+.agente-resposta-header { display:flex;align-items:center;gap:10px;margin-bottom:10px }
+.agente-resposta-avatar { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0 }
+.agente-resposta-nome { font-weight:700;font-size:.88rem;color:var(--text) }
+.agente-resposta-texto { font-size:.92rem;line-height:1.55;color:var(--text);margin-bottom:10px }
+.agente-ponto-vista { background:var(--bg2);border-left:3px solid var(--aqua);border-radius:8px;padding:10px 12px;font-size:.86rem;line-height:1.5;color:var(--text2);font-style:italic;margin-bottom:14px }
+.agente-cards-scroll { display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:thin }
+.agente-card { flex:0 0 220px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--text);transition:transform .15s,box-shadow .15s;display:block }
+.agente-card:hover { transform:translateY(-2px);box-shadow:var(--shadow) }
+.agente-card-img { width:100%;height:110px;object-fit:cover;background:var(--bg3) }
+.agente-card-body { padding:9px 11px }
+.agente-card-titulo { font-size:.8rem;font-weight:600;line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden }
+.agente-card-resumo { font-size:.72rem;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden }
+.agente-card-video-badge { position:absolute;background:rgba(0,0,0,.65);color:#fff;border-radius:6px;padding:2px 6px;font-size:.65rem;margin:6px;display:inline-flex;align-items:center;gap:3px }
+.agente-card-wrap { position:relative }
+.agente-fontes { display:flex;flex-wrap:wrap;gap:6px;padding-top:10px;border-top:1px solid var(--border) }
+.agente-fonte-chip { display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:4px 10px 4px 6px;font-size:.72rem;color:var(--muted);text-decoration:none;transition:all .15s }
+.agente-fonte-chip:hover { border-color:var(--aqua);color:var(--aqua) }
+.agente-fonte-chip img { width:14px;height:14px;border-radius:3px }
+
+/* ═══ DROPDOWN DE BUSCA (resposta simples, sem entrar no feed) ═══ */
+.busca-dropdown { position:fixed;z-index:9998;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);overflow-y:auto;max-height:70vh }
+.busca-dropdown.inline-mobile { position:static;box-shadow:none;border:none;background:none;max-height:none;margin-top:12px }
+.bd-row { display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border) }
+.bd-row:last-of-type { border-bottom:none }
+.bd-row:hover { background:var(--bg2) }
+.bd-avatar { width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--aqua-dim) }
+.bd-avatar-fallback { width:38px;height:38px;border-radius:50%;background:var(--aqua-dim);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:var(--aqua);flex-shrink:0 }
+.bd-titulo { font-size:.86rem;font-weight:700;color:var(--text) }
+.bd-sub { font-size:.74rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+.bd-vermais { display:block;text-align:center;padding:11px;font-size:.82rem;font-weight:700;color:var(--aqua);cursor:pointer;background:var(--bg2) }
+.bd-vermais:hover { background:var(--aqua-dim) }
+.bd-vazio { text-align:center;padding:28px 16px;color:var(--muted);font-size:.85rem }
+.bd-loading { text-align:center;padding:24px;color:var(--muted);font-size:.85rem }
+
+
+
 /* ═══ BOTTOM BAR MOBILE ═══ */
 .mobile-bottom-bar { display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--nav-bg);backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom,6px) }
 .mobile-bottom-bar .mbb-items { display:flex;justify-content:space-around;align-items:center }
@@ -1260,7 +1298,7 @@ html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#005
     </div>
     <span class="fizu-brand">FIZU</span>
   </a>
-  <div class="search-bar"><input type="text" id="searchInput" placeholder="Buscar no Fizu..." onkeypress="if(event.key==='Enter'){buscaComRoteador(this.value)}" oninput="if(!this.value)carregarPosts()"><span class="search-icon" style="pointer-events:auto;cursor:pointer" onclick="var v=document.getElementById('searchInput').value.trim();if(v){buscaComRoteador(v)}else{document.getElementById('searchInput').focus()}">🔍</span></div>
+  <div class="search-bar"><input type="text" id="searchInput" placeholder="Buscar no Fizu..." onkeypress="if(event.key==='Enter'){buscaComRoteador(this.value)}" oninput="if(!this.value){fecharDropdownBusca();carregarPosts()}"><span class="search-icon" style="pointer-events:auto;cursor:pointer" onclick="var v=document.getElementById('searchInput').value.trim();if(v){buscaComRoteador(v)}else{document.getElementById('searchInput').focus()}">🔍</span></div>
   <button onclick="abrirMarketplace(document.getElementById('tab-marketplace'))" id="navMktBtn"
     title="Marketplace" class="nav-icon"
     style="font-size:1.2rem">🏪</button>
@@ -8014,7 +8052,7 @@ function abrirBuscaMobile() {
         onkeypress="if(event.key==='Enter')_execBuscaMobile()">
       <button onclick="_execBuscaMobile()" style="background:var(--aqua);border:none;color:#fff;border-radius:20px;padding:9px 18px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit">Buscar</button>
     </div>
-    <div style="padding:18px 16px;font-size:.84rem;color:var(--muted);line-height:1.6">🔍 Encontre pessoas e publicações no Fizu.<br>Digite acima e toque em <strong>Buscar</strong>.</div>`;
+    <div id="mobSearchPlaceholder" style="padding:18px 16px;font-size:.84rem;color:var(--muted);line-height:1.6">🔍 Encontre pessoas e publicações no Fizu.<br>Digite acima e toque em <strong>Buscar</strong>.</div>`;
   document.body.appendChild(ov);
   setTimeout(() => document.getElementById('mobSearchInput')?.focus(), 60);
 }
@@ -8022,26 +8060,287 @@ function abrirBuscaMobile() {
 function _execBuscaMobile() {
   const v = document.getElementById('mobSearchInput')?.value.trim();
   if (!v) return;
-  document.getElementById('mobSearchOverlay')?.remove();
   buscaComRoteador(v);
 }
 
+// ════════════════════════════════════════════════════════════
+// DROPDOWN DE BUSCA — resposta simples, ancorada na barra de busca,
+// sem nunca substituir o feed. "Ver mais" é o único jeito de aprofundar.
+// ════════════════════════════════════════════════════════════
+
+let _buscaDropdownOutsideHandler = null;
+
+function _mobOverlayAberto() {
+  return !!document.getElementById('mobSearchOverlay');
+}
+
+// Cria (ou reaproveita) o container do dropdown, posicionado corretamente
+// pro modo desktop (flutuante, ancorado na search-bar) ou mobile (inline no overlay).
+function _obterDropdownBusca() {
+  let el = document.getElementById('busca-dropdown');
+  if (_mobOverlayAberto()) {
+    const placeholder = document.getElementById('mobSearchPlaceholder');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'busca-dropdown';
+      el.className = 'busca-dropdown inline-mobile';
+      placeholder?.replaceWith(el);
+    } else if (el.parentElement?.id !== 'mobSearchOverlay') {
+      el.className = 'busca-dropdown inline-mobile';
+      placeholder ? placeholder.replaceWith(el) : document.getElementById('mobSearchOverlay')?.appendChild(el);
+    }
+    return el;
+  }
+
+  // Desktop: flutuante, ancorado embaixo do input
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'busca-dropdown';
+    document.body.appendChild(el);
+  }
+  el.className = 'busca-dropdown';
+  const input = document.getElementById('searchInput');
+  if (input) {
+    const r = input.getBoundingClientRect();
+    el.style.top = (r.bottom + 8) + 'px';
+    el.style.left = r.left + 'px';
+    el.style.width = Math.max(r.width, 320) + 'px';
+  }
+
+  if (_buscaDropdownOutsideHandler) document.removeEventListener('mousedown', _buscaDropdownOutsideHandler);
+  _buscaDropdownOutsideHandler = (ev) => {
+    if (!el.contains(ev.target) && ev.target.id !== 'searchInput' && !ev.target.closest('.search-icon')) {
+      fecharDropdownBusca();
+    }
+  };
+  document.addEventListener('mousedown', _buscaDropdownOutsideHandler);
+  return el;
+}
+
+function fecharDropdownBusca() {
+  if (_mobOverlayAberto()) return; // no mobile o dropdown é inline, não fecha sozinho
+  document.getElementById('busca-dropdown')?.remove();
+  if (_buscaDropdownOutsideHandler) {
+    document.removeEventListener('mousedown', _buscaDropdownOutsideHandler);
+    _buscaDropdownOutsideHandler = null;
+  }
+}
+
+function preencherDropdownBusca(html) {
+  const el = _obterDropdownBusca();
+  el.innerHTML = html;
+}
+
+function mostrarLoadingDropdown(msg) {
+  const el = _obterDropdownBusca();
+  el.innerHTML = `<div class="bd-loading">${msg} <span class="marlin-typing"><span></span><span></span><span></span></span></div>`;
+}
+
+function botaoVerMais(query, aba, total) {
+  const qSafe = escapeHtml(query).replace(/'/g, "\\'");
+  return `<div class="bd-vermais" onclick="aprofundarBusca('${qSafe}','${aba}')">Ver ${total > 0 ? 'todos os ' + total + ' resultados' : 'mais'} →</div>`;
+}
+
+// Aprofundar: só aqui que abrimos o feed com abas (posts/usuários/marketplace) —
+// é a experiência completa, só pra quem pediu explicitamente mais.
+function aprofundarBusca(query, aba) {
+  fecharDropdownBusca();
+  document.getElementById('mobSearchOverlay')?.remove();
+  setActiveTab(document.getElementById('tab-feed'));
+  _buscaAba = aba;
+  mostrarAbaBusca(query);
+}
+
+// ────────────────────────────────────────────────────────────
+// Buscas compactas (máx. 4 itens) — mesma fonte de dados das
+// buscas completas, só que enxutas pro dropdown.
+// ────────────────────────────────────────────────────────────
+
+async function buscarUsuariosCompacto(query) {
+  const qLower = query.toLowerCase();
+  const [{ data: porNome }, { data: porUsername }] = await Promise.all([
+    sb.from('perfis').select('id,nome,foto_url,username').ilike('nome', `%${query}%`).limit(6),
+    sb.from('perfis').select('id,nome,foto_url,username').ilike('username', `%${query}%`).limit(6),
+  ]);
+  const agentesMatch = Object.values(AGENTES)
+    .filter(a => a.nome.toLowerCase().includes(qLower))
+    .map(a => ({ id: a.id, nome: a.nome, foto_url: a.foto_url, username: a.nome.toLowerCase(), _emoji: a.emoji }));
+
+  const seen = new Set();
+  const todos = [...agentesMatch, ...(porUsername || []), ...(porNome || [])]
+    .filter(u => { if (seen.has(u.id)) return false; seen.add(u.id); return true; });
+
+  if (!todos.length) return { count: 0, html: `<div class="bd-vazio">👤 Nenhum usuário encontrado para "${escapeHtml(query)}"</div>` };
+
+  const html = todos.slice(0, 4).map(u => {
+    const ini = (u.nome || '?').charAt(0).toUpperCase();
+    const avatar = u.foto_url
+      ? `<img class="bd-avatar" src="${u.foto_url}" onerror="this.style.display='none'">`
+      : `<div class="bd-avatar-fallback">${u._emoji || ini}</div>`;
+    return `<div class="bd-row" onclick="fecharDropdownBusca();document.getElementById('mobSearchOverlay')?.remove();abrirPerfilPublico('${u.id}')">
+      ${avatar}
+      <div style="min-width:0"><div class="bd-titulo">${escapeHtml(u.nome || 'Usuário')}</div><div class="bd-sub">@${escapeHtml(u.username || '')}</div></div>
+    </div>`;
+  }).join('');
+  return { count: todos.length, html };
+}
+
+async function buscarMarketplaceCompacto(query) {
+  const { data: listings } = await sb.from('marketplace_listings')
+    .select('id,titulo,preco').eq('status', 'ativo')
+    .or(`titulo.ilike.%${query}%,descricao.ilike.%${query}%`).limit(20);
+
+  if (!listings?.length) return { count: 0, html: `<div class="bd-vazio">🏪 Nenhum anúncio no Fizu para "${escapeHtml(query)}"</div>` };
+
+  const ids = listings.slice(0, 4).map(l => l.id);
+  const { data: imgs } = await sb.from('marketplace_imagens').select('listing_id,url').in('listing_id', ids).order('ordem', { ascending: true });
+  const fotoPorListing = {};
+  (imgs || []).forEach(im => { if (!fotoPorListing[im.listing_id]) fotoPorListing[im.listing_id] = im.url; });
+
+  const html = listings.slice(0, 4).map(l => {
+    const preco = l.preco ? `R$ ${Number(l.preco).toLocaleString('pt-BR')}` : 'Consulte';
+    const foto = fotoPorListing[l.id];
+    const avatar = foto ? `<img class="bd-avatar" style="border-radius:8px" src="${foto}" onerror="this.style.display='none'">` : `<div class="bd-avatar-fallback" style="border-radius:8px">🏪</div>`;
+    return `<div class="bd-row" onclick="location.href='anuncio.html?id=${l.id}'">
+      ${avatar}
+      <div style="min-width:0"><div class="bd-titulo">${escapeHtml(l.titulo || '')}</div><div class="bd-sub" style="color:var(--gold);font-weight:700">${preco}</div></div>
+    </div>`;
+  }).join('');
+  return { count: listings.length, html };
+}
+
+async function buscarPostsCompacto(query) {
+  const { data: posts } = await sb.from('posts')
+    .select('id,autor_id,conteudo,criado_em').ilike('conteudo', `%${query}%`)
+    .neq('status', 'removido').order('curtidas_count', { ascending: false }).limit(20);
+
+  if (!posts?.length) return { count: 0, html: `<div class="bd-vazio">🔍 Nenhum post encontrado para "${escapeHtml(query)}"</div>` };
+
+  const autorIds = [...new Set(posts.slice(0, 4).map(p => p.autor_id).filter(Boolean))];
+  const { data: perfisData } = await sb.from('perfis').select('id,nome,foto_url').in('id', autorIds);
+  const pm = {};
+  (perfisData || []).forEach(p => { pm[p.id] = p; });
+  Object.values(AGENTES).forEach(ag => { if (!pm[ag.id]) pm[ag.id] = { id: ag.id, nome: ag.nome, foto_url: ag.foto_url }; });
+
+  const html = posts.slice(0, 4).map(post => {
+    const autor = pm[post.autor_id];
+    const nome = autor?.nome || 'Usuário';
+    const ini = nome.charAt(0).toUpperCase();
+    const avatar = autor?.foto_url ? `<img class="bd-avatar" src="${autor.foto_url}" onerror="this.style.display='none'">` : `<div class="bd-avatar-fallback">${ini}</div>`;
+    const trecho = (post.conteudo || '').substring(0, 70);
+    return `<div class="bd-row" onclick="aprofundarBusca('${escapeHtml(query).replace(/'/g,"\\'")}','posts')">
+      ${avatar}
+      <div style="min-width:0"><div class="bd-titulo">${escapeHtml(nome)}</div><div class="bd-sub">${escapeHtml(trecho)}${(post.conteudo||'').length>70?'…':''}</div></div>
+    </div>`;
+  }).join('');
+  return { count: posts.length, html };
+}
+
+// Renderiza a resposta rica do agente (busca conversacional) em versão compacta
+// pro dropdown: avatar, ponto de vista, cards interativos e fontes com favicon.
+function renderizarRespostaAgente(resultado, query) {
+  const agenteInfo = AGENTES[resultado.agente] || { nome: resultado.agente, emoji: '🤖', cor: '#0055a8' };
+  window._ultimaInteracaoAgente = { resultado, query, agenteInfo };
+
+  const cardsHtml = (resultado.cards || []).slice(0, 4).map(c => {
+    const isVideo = c.tipo === 'video';
+    const badge = isVideo ? `<span class="agente-card-video-badge">▶ vídeo</span>` : '';
+    const img = c.imagem
+      ? `<img class="agente-card-img" src="${c.imagem}" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="agente-card-img" style="display:flex;align-items:center;justify-content:center;font-size:1.6rem">${isVideo ? '🎬' : '🔗'}</div>`;
+    return `
+      <a class="agente-card" href="${c.link}" target="_blank" rel="noopener">
+        <div class="agente-card-wrap">${img}${badge}</div>
+        <div class="agente-card-body">
+          <div class="agente-card-titulo">${escapeHtml(c.titulo || '')}</div>
+          <div class="agente-card-resumo">${escapeHtml(c.resumo || '')}</div>
+        </div>
+      </a>`;
+  }).join('');
+
+  const fontesHtml = (resultado.fontes || []).map(f => `
+    <a class="agente-fonte-chip" href="${f.link}" target="_blank" rel="noopener">
+      <img src="${f.favicon_url}" onerror="this.style.display='none'"> ${escapeHtml(f.nome || f.dominio)}
+    </a>`).join('');
+
+  const publicarHtml = usuarioAtual
+    ? `<div id="publicar-interacao-btn" onclick="publicarInteracaoAgente()" style="margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--aqua-dim);border:1px solid var(--aqua-glow);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .15s">
+        <span style="font-size:1.1rem">📢</span>
+        <div><div style="font-size:.8rem;font-weight:700;color:var(--aqua)">Publicar</div><div style="font-size:.72rem;color:var(--muted)">Sua interação vale muito — ajude outras pessoas tornando isso público no feed do Fizu.</div></div>
+      </div>`
+    : `<div style="margin-top:12px;text-align:center"><a href="#" onclick="pedirLogin('publicar');return false" style="font-size:.78rem;color:var(--aqua);text-decoration:none">Faça login pra publicar essa resposta no feed</a></div>`;
+
+  return `
+    <div class="agente-resposta-card" style="border:none;box-shadow:none;margin-bottom:0;border-radius:0">
+      <div class="agente-resposta-header">
+        <div class="agente-resposta-avatar" style="background:${agenteInfo.cor}22;color:${agenteInfo.cor}">${agenteInfo.emoji}</div>
+        <div class="agente-resposta-nome">${escapeHtml(agenteInfo.nome)}</div>
+      </div>
+      <div class="agente-resposta-texto">${escapeHtml(resultado.resposta_curta || '')}</div>
+      ${resultado.ponto_de_vista ? `<div class="agente-ponto-vista">💭 ${escapeHtml(resultado.ponto_de_vista)}</div>` : ''}
+      ${cardsHtml ? `<div class="agente-cards-scroll">${cardsHtml}</div>` : ''}
+      ${fontesHtml ? `<div class="agente-fontes">${fontesHtml}</div>` : ''}
+      ${publicarHtml}
+    </div>`;
+}
+
+// Transforma a interação de busca (resposta do agente) num post público real,
+// reaproveitando as colunas que já existem em `posts` (fontes, midia_url, gerado_ia).
+async function publicarInteracaoAgente() {
+  const dados = window._ultimaInteracaoAgente;
+  if (!dados || !usuarioAtual) return;
+  const { resultado, query, agenteInfo } = dados;
+
+  const btn = document.getElementById('publicar-interacao-btn');
+  if (btn) btn.innerHTML = `<span style="font-size:.8rem;color:var(--muted)">Publicando...</span>`;
+
+  const conteudo = `🔎 Pesquisei: "${query}"\n\n${agenteInfo.emoji} ${agenteInfo.nome} respondeu:\n${resultado.resposta_curta || ''}${resultado.ponto_de_vista ? `\n\n💭 ${resultado.ponto_de_vista}` : ''}`;
+  const fontesStrings = (resultado.fontes || []).map(f => `${f.nome || f.dominio}: ${f.link}`);
+  const primeiraImagem = (resultado.cards || []).find(c => c.imagem)?.imagem || null;
+
+  try {
+    const { data: novoPost, error } = await sb.from('posts').insert({
+      autor_id: usuarioAtual.id,
+      conteudo,
+      tipo: 'texto',
+      midia_url: primeiraImagem,
+      fontes: fontesStrings,
+      gerado_ia: true,
+      ia_modelo: 'claude-sonnet-4-6',
+      criado_em: new Date().toISOString(),
+    }).select('id').single();
+
+    if (error) throw error;
+
+    if (novoPost?.id) ganharCoinsSeDedupe('post', novoPost.id);
+    mostrarToast('🎉 Publicado no seu feed!');
+    if (btn) btn.innerHTML = `<div style="text-align:center;width:100%;font-size:.82rem;font-weight:700;color:var(--seal, #059669)">✅ Publicado!</div>`;
+  } catch (e) {
+    console.error('publicarInteracaoAgente:', e);
+    mostrarToast('Não consegui publicar agora. Tente de novo.', 'error');
+    if (btn) btn.innerHTML = `<span style="font-size:1.1rem">📢</span><div><div style="font-size:.8rem;font-weight:700;color:var(--aqua)">Publicar</div><div style="font-size:.72rem;color:var(--muted)">Sua interação vale muito — ajude outras pessoas tornando isso público no feed do Fizu.</div></div>`;
+  }
+}
+
+async function buscarComAgenteRouter(query) {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPA_KEY;
+  const r = await fetch(`${SUPA_URL}/functions/v1/agente-router-busca`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPA_KEY },
+    body: JSON.stringify({ pergunta: query, usuario_id: perfilAtual?.id || null }),
+  });
+  return await r.json();
+}
+
 // Roteador inteligente de busca: classifica a intenção (pessoa/produto/post/pergunta)
-// antes de decidir qual aba mostrar. Se for uma pergunta factual, responde direto
-// na voz combinada de SereIA + Marlin, sem precisar abrir nenhuma aba.
+// e responde SEMPRE num dropdown simples, ancorado na busca — nunca abre o feed
+// sozinho. Só quando a pessoa clica em "Ver mais" é que mergulha na plataforma.
 async function buscaComRoteador(query) {
   query = (query || '').trim();
-  if (!query) return;
+  if (!query) { fecharDropdownBusca(); return; }
 
-  const feedEl = document.getElementById('feedPostsReais');
-  if (feedEl) {
-    feedEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:.88rem">
-      <span style="display:inline-flex;align-items:center;gap:8px">
-        Analisando sua busca
-        <span class="marlin-typing"><span></span><span></span><span></span></span>
-      </span>
-    </div>`;
-  }
+  mostrarLoadingDropdown('Analisando sua busca');
 
   let formato = 'post', respostaIA = null;
   try {
@@ -8059,20 +8358,33 @@ async function buscaComRoteador(query) {
     console.error('busca-magica:', e);
   }
 
-  _buscaAba = formato === 'pessoa' ? 'usuarios' : formato === 'produto' ? 'marketplace' : 'posts';
-  mostrarAbaBusca(query);
-
-  if (formato === 'pergunta' && respostaIA) {
-    setTimeout(() => {
-      const ctx = document.getElementById('wiki-context-card');
-      if (ctx) {
-        ctx.insertAdjacentHTML('beforebegin', `
-          <div style="background:var(--card);border:1px solid var(--aqua);border-radius:14px;padding:16px;margin-bottom:12px">
-            <div style="font-size:.7rem;font-weight:700;color:var(--aqua);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🧜‍♀️🐟 SereIA & Marlin respondem</div>
-            <div style="font-size:.92rem;line-height:1.55">${escapeHtml(respostaIA)}</div>
-          </div>`);
+  if (formato === 'pergunta') {
+    mostrarLoadingDropdown('Consultando o agente');
+    try {
+      const resultado = await buscarComAgenteRouter(query);
+      if (resultado && !resultado.erro) {
+        preencherDropdownBusca(renderizarRespostaAgente(resultado, query) + botaoVerMais(query, 'posts', 0));
+      } else if (respostaIA) {
+        preencherDropdownBusca(`<div style="padding:16px"><div style="font-size:.7rem;font-weight:700;color:var(--aqua);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🧜‍♀️🐟 SereIA & Marlin respondem</div><div style="font-size:.92rem;line-height:1.55">${escapeHtml(respostaIA)}</div></div>`);
+      } else {
+        preencherDropdownBusca(`<div class="bd-vazio">Não consegui responder agora. Tente de novo em instantes.</div>`);
       }
-    }, 30);
+    } catch (e) {
+      console.error('agente-router-busca:', e);
+      preencherDropdownBusca(`<div class="bd-vazio">Não consegui responder agora. Tente de novo em instantes.</div>`);
+    }
+    return;
+  }
+
+  const aba = formato === 'pessoa' ? 'usuarios' : formato === 'produto' ? 'marketplace' : 'posts';
+  try {
+    const resultado = aba === 'usuarios' ? await buscarUsuariosCompacto(query)
+      : aba === 'marketplace' ? await buscarMarketplaceCompacto(query)
+      : await buscarPostsCompacto(query);
+    preencherDropdownBusca(resultado.html + (resultado.count > 0 ? botaoVerMais(query, aba, resultado.count) : ''));
+  } catch (e) {
+    console.error('busca compacta:', e);
+    preencherDropdownBusca(`<div class="bd-vazio">Erro ao buscar. Tente de novo.</div>`);
   }
 }
 
