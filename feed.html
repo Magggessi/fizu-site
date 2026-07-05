@@ -2443,7 +2443,15 @@ async function iniciarSessao() {
   });
 
   // Ponte homepage → feed: publica (ou pede login) o post pendente da SereIA
-  await processarPostPendenteSereia();
+  // Blindado: essa função ainda não foi implementada nesse arquivo; sem o try/catch
+  // o erro trava a sessão inteira e o login fica "carregando" para sempre.
+  try {
+    if (typeof processarPostPendenteSereia === 'function') {
+      await processarPostPendenteSereia();
+    }
+  } catch (e) {
+    console.error('processarPostPendenteSereia:', e);
+  }
 
   if (!usuarioAtual) {
     // Modo visitante: posts primeiro, sidebar depois
