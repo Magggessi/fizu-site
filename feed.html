@@ -8167,25 +8167,47 @@ async function buscarMarketplaceInline(query) {
   const el = document.getElementById('search-results-content');
   if (!el) return;
   try {
-    const { data: listings } = await sb.from('marketplace_listings')
-      .select('id,titulo,descricao,preco,imagens,condicao,categoria')
+    const { data: listings, error } = await sb.from('marketplace_listings')
+      .select('id,titulo,descricao,preco,condicao,categoria_id,origem_plataforma')
+      .eq('status', 'ativo')
       .or(`titulo.ilike.%${query}%,descricao.ilike.%${query}%`)
       .limit(20);
+    if (error) throw error;
+
     if (!listings?.length) {
-      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:2rem;margin-bottom:8px">🏪</div><div>Nenhum anúncio encontrado para "<strong>${escapeHtml(query)}</strong>"</div></div>`;
+      // Sem achado no Fizu: sugere o mercado mais amplo (mesmo padrão do Marlin)
+      const slug = query.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-');
+      el.innerHTML = `<div style="text-align:center;padding:36px 20px;color:var(--muted)">
+        <div style="font-size:2rem;margin-bottom:8px">🏪</div>
+        <div style="margin-bottom:14px">Nenhum anúncio no Fizu ainda para "<strong>${escapeHtml(query)}</strong>"</div>
+        <a href="https://lista.mercadolivre.com.br/${slug}" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:var(--card);border:1px solid var(--border);border-radius:20px;text-decoration:none;color:var(--text);font-size:.85rem;font-weight:600">
+           🔗 Ver no Mercado Livre</a>
+      </div>`;
       return;
     }
+
+    // Busca as fotos de todos os anúncios encontrados numa só query (sem FK join)
+    const ids = listings.map(l => l.id);
+    const { data: imgs } = await sb.from('marketplace_imagens').select('listing_id,url,ordem').in('listing_id', ids).order('ordem', { ascending: true });
+    const fotoPorListing = {};
+    (imgs || []).forEach(im => { if (!fotoPorListing[im.listing_id]) fotoPorListing[im.listing_id] = im.url; });
+
     el.innerHTML = `<div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">${listings.length} anúncio(s) encontrado(s)</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">` +
       listings.map(l => {
-        const img = Array.isArray(l.imagens) && l.imagens[0] ? l.imagens[0] : null;
+        const img = fotoPorListing[l.id] || null;
         const preco = l.preco ? `R$ ${Number(l.preco).toLocaleString('pt-BR')}` : 'Consulte';
-        return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer" onclick="abrirMarketplace(document.getElementById('tab-marketplace'))">
-          <div style="height:110px;background:${img ? `url(${img}) center/cover` : 'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:1.6rem">${img?'':'🏪'}</div>
+        const badge = l.origem_plataforma && l.origem_plataforma !== 'manual'
+          ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px">↗ ${escapeHtml(l.origem_plataforma)}</div>` : '';
+        return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer" onclick="location.href='anuncio.html?id=${l.id}'">
+          <div style="position:relative;height:110px;background:${img ? `url(${img}) center/cover` : 'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:1.6rem">${img?'':'🏪'}${badge}</div>
           <div style="padding:10px"><div style="font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.titulo||'')}</div><div style="font-size:.78rem;color:var(--gold);font-weight:700;margin-top:2px">${preco}</div></div>
         </div>`;
       }).join('') + '</div>';
   } catch(e) {
+    console.error('buscarMarketplaceInline:', e);
     el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">Erro ao buscar marketplace.</div>`;
   }
 }
