@@ -740,6 +740,9 @@ html.dark .mem-mini{border-color:rgba(245,200,66,0.15)}
 .agente-card-video-badge { position:absolute;background:rgba(0,0,0,.65);color:#fff;border-radius:6px;padding:2px 6px;font-size:.65rem;margin:6px;display:inline-flex;align-items:center;gap:3px }
 .agente-card-wrap { position:relative }
 .agente-fontes { display:flex;flex-wrap:wrap;gap:6px;padding-top:10px;border-top:1px solid var(--border) }
+.agente-sugestoes { display:flex;flex-wrap:wrap;gap:8px;margin-top:12px }
+.agente-sugestao-chip { background:none;border:1px solid var(--aqua-glow);color:var(--aqua);border-radius:16px;padding:7px 14px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s }
+.agente-sugestao-chip:hover { background:var(--aqua-dim);border-color:var(--aqua) }
 .agente-fonte-chip { display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:4px 10px 4px 6px;font-size:.72rem;color:var(--muted);text-decoration:none;transition:all .15s }
 .agente-fonte-chip:hover { border-color:var(--aqua);color:var(--aqua) }
 .agente-fonte-chip img { width:14px;height:14px;border-radius:3px }
@@ -3702,11 +3705,12 @@ async function inicializarOGDinamico() {
   // Tratar #busca= (vindo da homepage com termo de pesquisa)
   if (hash.startsWith('#busca=')) {
     const termo = decodeURIComponent(hash.replace('#busca=', ''));
+    window.location.hash = '';
     setTimeout(() => {
       const inp = document.getElementById('searchInput');
       if (inp) inp.value = termo;
-      mostrarAbaBusca(termo);
-    }, 400);
+      buscaComRoteador(termo);
+    }, 500);
     return;
   }
   // Tratar #perfil-ID (vindo da homepage)
@@ -8292,6 +8296,11 @@ function renderizarRespostaAgente(resultado, query) {
       </div>`
     : `<div style="margin-top:12px;text-align:center"><a href="#" onclick="pedirLogin('publicar');return false" style="font-size:.78rem;color:var(--aqua);text-decoration:none">Faça login pra publicar essa resposta no feed</a></div>`;
 
+  const sugestoesHtml = (resultado.sugestoes || []).length
+    ? `<div class="agente-sugestoes">${(resultado.sugestoes || []).map(s => `
+        <button class="agente-sugestao-chip" onclick="document.getElementById('searchInput').value='${escapeHtml(s).replace(/'/g,"\\'")}';buscaComRoteador('${escapeHtml(s).replace(/'/g,"\\'")}')">${escapeHtml(s)}</button>`).join('')}</div>`
+    : '';
+
   return `
     <div class="agente-resposta-card" style="border:none;box-shadow:none;margin-bottom:0;border-radius:0">
       <div class="agente-resposta-header">
@@ -8302,6 +8311,7 @@ function renderizarRespostaAgente(resultado, query) {
       ${resultado.ponto_de_vista ? `<div class="agente-ponto-vista">💭 ${escapeHtml(resultado.ponto_de_vista)}</div>` : ''}
       ${cardsHtml ? `<div class="agente-cards-scroll">${cardsHtml}</div>` : ''}
       ${fontesHtml ? `<div class="agente-fontes">${fontesHtml}</div>` : ''}
+      ${sugestoesHtml}
       ${publicarHtml}
     </div>`;
 }
