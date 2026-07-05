@@ -105,32 +105,49 @@ html.light .logo-txts .nome{color:#0d1628}
   letter-spacing:.1em;text-transform:uppercase;margin-top:5px;
 }
 
+/* ── SAUDAÇÃO ── */
+.saudacao{
+  font-family:'DM Sans',sans-serif;font-size:1.3rem;font-weight:500;
+  color:var(--text);opacity:.85;margin-bottom:22px;text-align:center;
+  animation:fade-up .7s .15s cubic-bezier(.22,1,.36,1) both;
+}
+
 /* ── BARRA ── */
 .search-wrap{
   width:100%;max-width:640px;position:relative;z-index:10;
   animation:fade-up .7s .2s cubic-bezier(.22,1,.36,1) both;
 }
 .mode-tabs{
-  display:flex;gap:0;margin-bottom:10px;
-  background:rgba(13,22,40,.6);border-radius:12px;
-  padding:4px;border:1px solid var(--border);width:fit-content;
+  display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center;
 }
-html.light .mode-tabs{background:rgba(255,255,255,.7)}
 .mode-tab{
-  padding:7px 18px;border-radius:9px;border:none;background:none;
-  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;
+  padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:rgba(13,22,40,.4);
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;
   color:var(--muted);cursor:pointer;transition:all .2s;
   display:flex;align-items:center;gap:6px;text-decoration:none;
 }
-.mode-tab.active{background:rgba(59,158,255,.15);color:var(--aqua)}
+html.light .mode-tab{background:rgba(255,255,255,.6)}
+.mode-tab.active{background:rgba(59,158,255,.15);color:var(--aqua);border-color:rgba(59,158,255,.3)}
 html.light .mode-tab.active{background:rgba(0,85,204,.1)}
-.mode-tab:hover:not(.active){color:var(--text)}
+.mode-tab:hover:not(.active){color:var(--text);border-color:var(--aqua)}
+
+.links-wrap-inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+
+.anexo-chip{display:none;align-items:center;justify-content:space-between;gap:8px;background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.25);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:.78rem;color:var(--aqua)}
+.anexo-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem}
+
+.anexo-menu{display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:var(--card-solid);border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);min-width:170px;z-index:20}
+.anexo-menu.show{display:block}
+.anexo-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.82rem;color:var(--text);background:none;border:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.anexo-item:hover{background:rgba(59,158,255,.1)}
+.barra-btn.mais{position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.08);color:var(--muted);right:auto}
+.barra-btn.mais:hover{color:var(--aqua)}
 
 .barra{position:relative;width:100%}
 .barra-input{
   width:100%;background:rgba(13,22,40,.9);
   border:1.5px solid rgba(59,158,255,.2);border-radius:28px;
-  padding:18px 60px 18px 24px;font-size:1rem;color:var(--text);
+  padding:18px 60px 18px 56px;font-size:1rem;color:var(--text);
   font-family:'DM Sans',sans-serif;outline:none;
   transition:border-color .2s,box-shadow .2s;backdrop-filter:blur(12px);
 }
@@ -311,15 +328,20 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
     </div>
   </div>
 
+  <!-- Saudação -->
+  <div class="saudacao" id="saudacao"></div>
+
   <!-- Barra -->
   <div class="search-wrap">
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="tabBuscar" onclick="setMode('buscar')">🔍 Buscar</button>
-      <button class="mode-tab" id="tabPostar" onclick="setMode('postar')">✏️ Postar</button>
-      <a class="mode-tab" href="/feed#marketplace">🏪 Anunciar grátis</a>
-    </div>
-
     <div class="barra">
+      <button class="barra-btn mais" id="btnMais" onclick="toggleAnexoMenu()" title="Anexar arquivo, foto ou link">+</button>
+      <div class="anexo-menu" id="anexoMenu">
+        <button class="anexo-item" onclick="escolherAnexoArquivo('imagem')">📷 Foto ou vídeo</button>
+        <button class="anexo-item" onclick="escolherAnexoArquivo('documento')">📄 Documento</button>
+        <button class="anexo-item" onclick="escolherAnexoLink()">🔗 Link</button>
+      </div>
+      <input type="file" id="anexoInputImagem" accept="image/*,video/*" style="display:none" onchange="onAnexoArquivoSelecionado(event,'imagem')">
+      <input type="file" id="anexoInputDocumento" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="onAnexoArquivoSelecionado(event,'documento')">
       <input class="barra-input" id="barraInput"
         placeholder="O que está acontecendo no Fizu..."
         autocomplete="off"
@@ -331,8 +353,24 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
       <div class="sugs" id="sugs"></div>
     </div>
 
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tabBuscar" onclick="setMode('buscar')">🔍 Buscar</button>
+      <button class="mode-tab" id="tabPostar" onclick="setMode('postar')">✏️ Postar</button>
+      <a class="mode-tab" href="/feed#marketplace">🏪 Anunciar grátis</a>
+    </div>
+
+    <!-- Links -->
+    <div class="links-wrap-inline">
+      <button class="link-btn outline" onclick="abrirSobre()">🐟 O que é Fizu?</button>
+      <a class="link-btn outline" href="/feed#">👁️ Espiada no feed</a>
+    </div>
+
     <!-- Caixa de post -->
     <div class="post-box" id="postBox">
+      <div class="anexo-chip" id="anexoChip" style="display:none">
+        <span id="anexoChipTxt"></span>
+        <button onclick="removerAnexo()" title="Remover anexo">✕</button>
+      </div>
       <textarea class="post-ta" id="postTa" placeholder="O que você quer compartilhar?" maxlength="500" oninput="onPostInput()"></textarea>
       <div class="post-row">
         <span class="post-chars" id="postChars">0/500</span>
@@ -356,12 +394,8 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
     </div>
   </div>
 
-  <!-- Links -->
+  <!-- Tagline -->
   <div class="links-wrap">
-    <div class="links-row">
-      <button class="link-btn outline" onclick="abrirSobre()">🐟 O que é Fizu?</button>
-      <a class="link-btn outline" href="/feed#">👁️ Espiada no feed</a>
-    </div>
     <p class="tagline">A rede social da verdade permanente · Posts eternos · IA integrada</p>
   </div>
 
@@ -433,6 +467,14 @@ function toggleTheme(){
   document.getElementById('themeIcon').textContent=d?'🌙':'☀️';
 }
 initTheme();
+
+// SAUDAÇÃO por horário do dia (visitante anônimo, sem nome ainda)
+(function(){
+  const h = new Date().getHours();
+  const txt = h >= 5 && h < 12 ? 'Bom dia' : h >= 12 && h < 18 ? 'Boa tarde' : 'Boa noite';
+  const el = document.getElementById('saudacao');
+  if (el) el.textContent = txt + ', tudo bem?';
+})();
 
 // MODO
 function setMode(m){
@@ -593,8 +635,69 @@ async function publicarIdx(){
   window.location.href='/feed#sereia-post';
 }
 
+// ANEXO (+ foto/vídeo, documento, link) — a SereIA lê/usa isso ao criar o post
+let anexoAtual = null; // { tipo: 'imagem'|'documento'|'link', url, nome }
+
+function toggleAnexoMenu(){
+  document.getElementById('anexoMenu').classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#btnMais') && !e.target.closest('#anexoMenu')) {
+    document.getElementById('anexoMenu')?.classList.remove('show');
+  }
+});
+
+function escolherAnexoArquivo(tipo){
+  document.getElementById('anexoMenu').classList.remove('show');
+  document.getElementById(tipo === 'imagem' ? 'anexoInputImagem' : 'anexoInputDocumento').click();
+}
+
+async function onAnexoArquivoSelecionado(ev, tipo){
+  const file = ev.target.files?.[0];
+  if (!file) return;
+  setMode('postar');
+  mostrarAnexoChip(`Enviando ${file.name}...`);
+  try {
+    const path = `idx/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
+    const resp = await fetch(`${SUPA_URL}/storage/v1/object/posts/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    });
+    if (!resp.ok) throw new Error('Falha no upload');
+    const url = `${SUPA_URL}/storage/v1/object/public/posts/${path}`;
+    anexoAtual = { tipo, url, nome: file.name };
+    mostrarAnexoChip(`${tipo === 'imagem' ? '📷' : '📄'} ${file.name}`);
+  } catch (e) {
+    console.error('anexo upload:', e);
+    showToast('Não consegui enviar o arquivo agora.');
+    removerAnexo();
+  }
+}
+
+function escolherAnexoLink(){
+  document.getElementById('anexoMenu').classList.remove('show');
+  const url = prompt('Cole o link que você quer que a SereIA leia:');
+  if (!url || !url.trim()) return;
+  setMode('postar');
+  anexoAtual = { tipo: 'link', url: url.trim(), nome: url.trim() };
+  mostrarAnexoChip(`🔗 ${url.trim()}`);
+}
+
+function mostrarAnexoChip(texto){
+  const chip = document.getElementById('anexoChip');
+  document.getElementById('anexoChipTxt').textContent = texto;
+  chip.style.display = 'flex';
+}
+function removerAnexo(){
+  anexoAtual = null;
+  document.getElementById('anexoChip').style.display = 'none';
+}
+
 // SEREIA
 async function gerarSereia(){
+
+
   const ideia=document.getElementById('postTa').value.trim()||document.getElementById('barraInput').value.trim();
   if(ideia.length<2){showToast('Descreva sua ideia para a SereIA');return;}
   const prev=document.getElementById('sPrev');
@@ -604,10 +707,12 @@ async function gerarSereia(){
   const btns=document.getElementById('sBtns');
   prev.classList.add('show');load.style.display='block';img.style.display='none';txt.textContent='';btns.style.display='none';
   try{
-    const r=await(await fetch(`${SUPA_URL}/functions/v1/sereia-compose`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`},body:JSON.stringify({ideia})})).json();
+    const r=await(await fetch(`${SUPA_URL}/functions/v1/sereia-compose`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`},body:JSON.stringify({ideia, anexo: anexoAtual})})).json();
     if(!r.ok)throw new Error(r.error);
     sPost=r.post;load.style.display='none';txt.textContent=r.post;
-    if(r.imagem_en){
+    if(r.midia_anexada){
+      sImg=r.midia_anexada;img.src=r.midia_anexada;img.style.display='block';
+    }else if(r.imagem_en){
       const ir=await(await fetch(`${SUPA_URL}/functions/v1/gerar-imagem-ia`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY,Authorization:`Bearer ${SUPA_KEY}`},body:JSON.stringify({prompt:r.imagem_en})})).json();
       if(ir.ok&&ir.url){sImg=ir.url;img.src=ir.url;img.style.display='block';}
     }

@@ -8246,6 +8246,20 @@ async function buscarPostsCompacto(query) {
 
 // Renderiza a resposta rica do agente (busca conversacional) em versão compacta
 // pro dropdown: avatar, ponto de vista, cards interativos e fontes com favicon.
+// Mensagens motivacionais moderadas pro convite de publicar — variação para não soar repetitivo,
+// sem forçar a barra. Sempre reforça o convite de tornar a interação pública no feed.
+const MENSAGENS_PUBLICAR = [
+  'Essa é uma boa visão — ajude outras pessoas com ela',
+  'Vale a pena compartilhar isso no feed',
+  'Publique e ajude quem também tem essa dúvida',
+  'Sua busca pode ajudar outras pessoas — publicar?',
+  'Boa reflexão. Que tal tornar isso público?',
+  'Publicar',
+];
+function mensagemPublicar() {
+  return MENSAGENS_PUBLICAR[Math.floor(Math.random() * MENSAGENS_PUBLICAR.length)];
+}
+
 function renderizarRespostaAgente(resultado, query) {
   const agenteInfo = AGENTES[resultado.agente] || { nome: resultado.agente, emoji: '🤖', cor: '#0055a8' };
   window._ultimaInteracaoAgente = { resultado, query, agenteInfo };
@@ -8274,7 +8288,7 @@ function renderizarRespostaAgente(resultado, query) {
   const publicarHtml = usuarioAtual
     ? `<div id="publicar-interacao-btn" onclick="publicarInteracaoAgente()" style="margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--aqua-dim);border:1px solid var(--aqua-glow);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .15s">
         <span style="font-size:1.1rem">📢</span>
-        <div><div style="font-size:.8rem;font-weight:700;color:var(--aqua)">Publicar</div><div style="font-size:.72rem;color:var(--muted)">Sua interação vale muito — ajude outras pessoas tornando isso público no feed do Fizu.</div></div>
+        <div><div style="font-size:.8rem;font-weight:700;color:var(--aqua)">${escapeHtml(mensagemPublicar())}</div><div style="font-size:.72rem;color:var(--muted)">Ganhe Fizu Coins e suba no ranking de reputação ao publicar</div></div>
       </div>`
     : `<div style="margin-top:12px;text-align:center"><a href="#" onclick="pedirLogin('publicar');return false" style="font-size:.78rem;color:var(--aqua);text-decoration:none">Faça login pra publicar essa resposta no feed</a></div>`;
 
@@ -8321,8 +8335,9 @@ async function publicarInteracaoAgente() {
     if (error) throw error;
 
     if (novoPost?.id) ganharCoinsSeDedupe('post', novoPost.id);
-    mostrarToast('🎉 Publicado no seu feed!');
-    if (btn) btn.innerHTML = `<div style="text-align:center;width:100%;font-size:.82rem;font-weight:700;color:var(--seal, #059669)">✅ Publicado!</div>`;
+    const elogios = ['Nossa, que visão inteligente!', 'Boa! Isso vai ajudar gente de verdade.', 'Uau, gostei dessa reflexão!', 'Publicado — e olha só, você ganhou coins por isso.'];
+    mostrarToast('🎉 ' + elogios[Math.floor(Math.random() * elogios.length)]);
+    if (btn) btn.innerHTML = `<div style="text-align:center;width:100%;font-size:.82rem;font-weight:700;color:var(--seal, #059669)">✅ Publicado! +coins e +reputação</div>`;
   } catch (e) {
     console.error('publicarInteracaoAgente:', e);
     mostrarToast('Não consegui publicar agora. Tente de novo.', 'error');
