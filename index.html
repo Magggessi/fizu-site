@@ -495,12 +495,12 @@ function setMode(m){
   }
 }
 
-// BUSCA EM TEMPO REAL
-function onInput(){
-  const v=document.getElementById('barraInput').value.trim();
-  if(modo==='buscar'){clearTimeout(timer);if(v.length<2){fecharSugs();return;}timer=setTimeout(()=>buscarRT(v),320);}
-}
-function onFocus(){const v=document.getElementById('barraInput').value.trim();if(modo==='buscar'&&v.length>=2)buscarRT(v);}
+// BUSCA EM TEMPO REAL — desativada: a experiência completa (agente + cards +
+// fontes + sugestões) só acontece depois do Enter, no dropdown novo do feed.
+// Manter essa prévia ativa deixava a primeira impressão fraca (ex: "nenhum
+// resultado" pra perguntas conversacionais que o roteador de IA resolveria bem).
+function onInput(){}
+function onFocus(){}
 function onKey(e){if(e.key==='Enter')buscar();if(e.key==='Escape')fecharSugs();}
 function fecharSugs(){document.getElementById('sugs').classList.remove('show');}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
