@@ -8027,6 +8027,7 @@ async function vincularEmail(email) {
 let _buscaAba = 'posts'; // 'posts' | 'usuarios'
 
 function focarBusca() {
+  if (isMobile()) { abrirBuscaMobile(); return; }
   const inp = document.getElementById('searchInput');
   if (inp) { inp.focus(); inp.select(); }
   // Scroll para o topo
@@ -8372,6 +8373,16 @@ async function buscarComAgenteRouter(query) {
 async function buscaComRoteador(query) {
   query = (query || '').trim();
   if (!query) { fecharDropdownBusca(); return; }
+
+  // No mobile, os resultados só devem aparecer dentro do overlay de busca
+  // em tela cheia. Sem isso, o dropdown "flutuante" (pensado pro desktop,
+  // ancorado no #searchInput) tenta se posicionar em cima de um input que
+  // está com display:none no mobile, e acaba flutuando sobre o header.
+  if (isMobile() && !_mobOverlayAberto()) {
+    abrirBuscaMobile();
+  }
+  const mobInp = document.getElementById('mobSearchInput');
+  if (mobInp) mobInp.value = query;
 
   mostrarLoadingDropdown('Analisando sua busca');
 
