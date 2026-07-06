@@ -325,15 +325,21 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 }
 
 .turno-agente{width:100%;animation:fade-up .35s .05s cubic-bezier(.22,1,.36,1) both}
-.ac-loading{
-  display:flex;gap:5px;align-items:center;background:var(--card);
-  border:1px solid var(--border);border-radius:18px 18px 18px 4px;
-  padding:16px 18px;width:fit-content;backdrop-filter:blur(12px);
-}
-.ac-dot{width:7px;height:7px;border-radius:50%;background:var(--aqua);opacity:.4;animation:ac-pulse 1.1s ease infinite}
-.ac-dot:nth-child(2){animation-delay:.15s}
-.ac-dot:nth-child(3){animation-delay:.3s}
-@keyframes ac-pulse{0%,100%{opacity:.25;transform:scale(.85)}50%{opacity:1;transform:scale(1.05)}}
+.ac-loading{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:14px 16px 15px;width:fit-content;min-width:210px;backdrop-filter:blur(12px)}
+.ac-loading-logo{width:30px;height:30px;border-radius:10px;margin:0 auto 10px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;animation:ac-boiar 2.2s ease-in-out infinite;box-shadow:0 0 16px rgba(124,58,237,.35)}
+.ac-loading-logo svg{width:19px;height:19px}
+@keyframes ac-boiar{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.ac-oceano{position:relative;height:44px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(59,158,255,.16),rgba(124,58,237,.14))}
+.ac-bolha{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,255,255,.6);animation:ac-subir 2.6s ease-in infinite}
+.ac-bolha.b1{left:14%;width:5px;height:5px;animation-delay:0s;animation-duration:2.3s}
+.ac-bolha.b2{left:36%;width:7px;height:7px;animation-delay:.5s;animation-duration:2.8s}
+.ac-bolha.b3{left:60%;width:4px;height:4px;animation-delay:1s;animation-duration:2.1s}
+.ac-bolha.b4{left:80%;width:6px;height:6px;animation-delay:1.5s;animation-duration:2.6s}
+@keyframes ac-subir{0%{transform:translateY(0);opacity:0}15%{opacity:.9}85%{opacity:.4}100%{transform:translateY(-38px);opacity:0}}
+.ac-peixinho{position:absolute;bottom:7px;font-size:.92rem;animation:ac-nadar 3.6s linear infinite;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+@keyframes ac-nadar{0%{left:-10%}100%{left:104%}}
+.ac-loading-txt{margin-top:9px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
+.ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
 
 .ac-card-wrap{
   background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;
@@ -350,13 +356,20 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-detalhada{margin-top:10px;font-size:.87rem;line-height:1.65;color:var(--text);border-top:1px solid var(--border);padding-top:12px}
 .ac-detalhada p{margin-bottom:10px;white-space:pre-line}
 .ac-detalhada p:last-child{margin-bottom:0}
-.ac-cards-scroll{display:flex;gap:10px;overflow-x:auto;margin-top:12px;padding-bottom:2px}
-.ac-card{flex:0 0 auto;width:150px;border-radius:12px;overflow:hidden;text-decoration:none;background:rgba(255,255,255,.03);border:1px solid var(--border);transition:transform .15s}
+.ac-cards-wrap{position:relative}
+.ac-cards-wrap::after{content:'';position:absolute;top:0;right:0;bottom:4px;width:26px;background:linear-gradient(90deg, transparent, var(--card));pointer-events:none;border-radius:0 14px 14px 0}
+.ac-cards-scroll{display:flex;gap:10px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.ac-cards-scroll::-webkit-scrollbar{height:4px}
+.ac-cards-scroll::-webkit-scrollbar-thumb{background:rgba(59,158,255,.25);border-radius:4px}
+.ac-card{flex:0 0 auto;width:196px;border-radius:14px;overflow:hidden;text-decoration:none;background:rgba(255,255,255,.03);border:1px solid var(--border);transition:transform .15s;scroll-snap-align:start}
 .ac-card:hover{transform:translateY(-2px)}
-.ac-card-img{width:100%;height:84px;object-fit:cover;background:rgba(59,158,255,.08)}
-.ac-card-icon{display:flex;align-items:center;justify-content:center;font-size:1.4rem}
-.ac-card-body{padding:8px 9px}
-.ac-card-titulo{font-size:.74rem;font-weight:700;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ac-card-img-wrap{position:relative;width:100%;height:118px;background:rgba(59,158,255,.08)}
+.ac-card-img{width:100%;height:100%;object-fit:cover;display:block}
+.ac-card-icon{display:flex;align-items:center;justify-content:center;font-size:1.6rem;height:118px}
+.ac-card-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.5) 100%)}
+.ac-card-play span{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.94);color:#0d1628;display:flex;align-items:center;justify-content:center;font-size:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.3);padding-left:2px}
+.ac-card-body{padding:9px 10px 10px}
+.ac-card-titulo{font-size:.76rem;font-weight:700;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ac-card-resumo{font-size:.68rem;color:var(--muted);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ac-fontes{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
 .ac-fonte{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted);text-decoration:none;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:4px 9px;transition:all .15s}
@@ -385,7 +398,8 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-ent-sub{font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 
 @media(max-width:600px){
-  .ac-card{width:132px}
+  .ac-card{width:168px}
+  .ac-card-img-wrap,.ac-card-icon{height:100px}
   body.modo-conversa .centro{padding-top:64px}
 }
 </style>
@@ -649,13 +663,50 @@ function renderTurnoUsuario(query){
   return div;
 }
 
+const FRASES_LOADING_OCEANO = [
+  'Mergulhando fundo pra te responder...',
+  'Nadando atrás da resposta certa...',
+  'Consultando as profundezas do Fizu...',
+  'Juntando as pérolas certas pra você...',
+  'Organizando a maré de informações...',
+];
+
 function renderCartaoAgenteLoading(){
   const area = document.getElementById('areaConversa');
   const div = document.createElement('div');
   div.className = 'turno-agente';
-  div.innerHTML = `<div class="ac-loading"><span class="ac-dot"></span><span class="ac-dot"></span><span class="ac-dot"></span></div>`;
+  div.innerHTML = `
+    <div class="ac-loading">
+      <div class="ac-loading-logo">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="rotate(-12 50 50)">
+            <ellipse cx="55" cy="50" rx="26" ry="17" fill="none" stroke="white" stroke-width="8" stroke-linecap="round"/>
+            <polygon points="25,50 5,35 10,50 5,65" fill="none" stroke="white" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="68" cy="45" r="6" fill="white"/>
+          </g>
+        </svg>
+      </div>
+      <div class="ac-oceano">
+        <span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>
+        <span class="ac-peixinho">🐟</span>
+      </div>
+      <div class="ac-loading-txt">${FRASES_LOADING_OCEANO[0]}</div>
+    </div>`;
   area.appendChild(div);
+  const txtEl = div.querySelector('.ac-loading-txt');
+  let i = 0;
+  div._loadingTimer = setInterval(()=>{
+    i = (i+1) % FRASES_LOADING_OCEANO.length;
+    if(txtEl){
+      txtEl.style.opacity = '0';
+      setTimeout(()=>{ txtEl.textContent = FRASES_LOADING_OCEANO[i]; txtEl.style.opacity = '1'; }, 250);
+    }
+  }, 2300);
   return div;
+}
+
+function pararLoadingOceano(el){
+  if(el && el._loadingTimer){ clearInterval(el._loadingTimer); el._loadingTimer = null; }
 }
 
 function scrollParaTurno(turnoEl){
@@ -690,6 +741,7 @@ function renderBotaoPublicar(turnoId){
 }
 
 function atualizarCartaoAgente(el, resultado, query){
+  pararLoadingOceano(el);
   const ag = AGENTES_IDX[resultado.agente] || { nome: resultado.agente || 'Agente', emoji:'🤖', cor:'#0055cc', foto:null };
   const turnoId = 't' + (++_turnoSeq);
   _turnosAgenteMap[turnoId] = { resultado, query, agente: ag };
@@ -702,10 +754,11 @@ function atualizarCartaoAgente(el, resultado, query){
 
   const cardsHtml = (resultado.cards||[]).slice(0,4).map(c=>{
     const isVideo = c.tipo === 'video';
-    const img = c.imagem
+    const imgInner = c.imagem
       ? `<img class="ac-card-img" src="${c.imagem}" loading="lazy" onerror="this.style.display='none'">`
-      : `<div class="ac-card-img ac-card-icon">${isVideo?'🎬':'🔗'}</div>`;
-    return `<a class="ac-card" href="${c.link}" target="_blank" rel="noopener">${img}<div class="ac-card-body"><div class="ac-card-titulo">${esc(c.titulo||'')}</div><div class="ac-card-resumo">${esc(c.resumo||'')}</div></div></a>`;
+      : `<div class="ac-card-icon">${isVideo?'🎬':'🔗'}</div>`;
+    const playOverlay = (isVideo && c.imagem) ? `<div class="ac-card-play"><span>▶</span></div>` : '';
+    return `<a class="ac-card" href="${c.link}" target="_blank" rel="noopener"><div class="ac-card-img-wrap">${imgInner}${playOverlay}</div><div class="ac-card-body"><div class="ac-card-titulo">${esc(c.titulo||'')}</div><div class="ac-card-resumo">${esc(c.resumo||'')}</div></div></a>`;
   }).join('');
 
   const fontesHtml = (resultado.fontes||[]).map(f=>`<a class="ac-fonte" href="${f.link}" target="_blank" rel="noopener"><img src="${f.favicon_url}" onerror="this.style.display='none'"> ${esc(f.nome||f.dominio)}</a>`).join('');
@@ -727,7 +780,7 @@ function atualizarCartaoAgente(el, resultado, query){
       <div class="ac-texto">${esc(resultado.resposta_curta||'')}</div>
       ${resultado.ponto_de_vista ? `<div class="ac-opiniao">💭 ${esc(resultado.ponto_de_vista)}</div>` : ''}
       ${detalhadaHtml}
-      ${cardsHtml ? `<div class="ac-cards-scroll">${cardsHtml}</div>` : ''}
+      ${cardsHtml ? `<div class="ac-cards-wrap"><div class="ac-cards-scroll">${cardsHtml}</div></div>` : ''}
       ${fontesHtml ? `<div class="ac-fontes">${fontesHtml}</div>` : ''}
       ${sugestoesHtml}
       ${renderBotaoPublicar(turnoId)}
@@ -821,6 +874,7 @@ async function buscarPostsIdx(query){
 }
 
 function atualizarCartaoComEntidades(el, resultado, formato, query){
+  pararLoadingOceano(el);
   const { count, itens } = resultado;
   if(!count){
     el.innerHTML = `<div class="ac-vazio">Não encontrei nada no Fizu para "${esc(query)}" ainda.</div>`;
@@ -865,6 +919,7 @@ async function responderComAgente(loadingEl, query){
     atualizarComposer();
   }catch(e){
     console.error('agente-router-busca idx:', e);
+    pararLoadingOceano(loadingEl);
     loadingEl.innerHTML = `<div class="ac-erro">Não consegui responder agora. Tente de novo em instantes.</div>`;
   }
 }
