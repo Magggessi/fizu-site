@@ -294,6 +294,100 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
   .footer-inner{flex-direction:column;align-items:flex-start;gap:10px}
   .footer-links{gap:10px}
 }
+
+/* ══════════════════ MODO CONVERSA (busca/agente inline) ══════════════════ */
+body.modo-conversa .logo-wrap,
+body.modo-conversa .saudacao,
+body.modo-conversa .links-wrap-inline,
+body.modo-conversa .links-wrap,
+body.modo-conversa .mode-tabs{display:none}
+body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
+
+.conversa-toolbar{
+  display:none;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:14px;padding:2px 4px;
+}
+.conversa-toolbar span{font-size:.8rem;color:var(--muted);font-weight:600}
+.conversa-nova-btn{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:16px;padding:6px 14px;font-size:.76rem;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;
+}
+.conversa-nova-btn:hover{border-color:var(--aqua);color:var(--aqua)}
+
+.area-conversa{width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px;margin-bottom:8px}
+.turno-usuario{display:flex;justify-content:flex-end}
+.tu-bolha{
+  background:linear-gradient(135deg,#3b9eff,#7C3AED);color:#fff;
+  border-radius:18px 18px 4px 18px;padding:11px 17px;max-width:82%;
+  font-size:.9rem;line-height:1.5;font-weight:500;
+  animation:fade-up .35s cubic-bezier(.22,1,.36,1) both;
+}
+
+.turno-agente{width:100%;animation:fade-up .35s .05s cubic-bezier(.22,1,.36,1) both}
+.ac-loading{
+  display:flex;gap:5px;align-items:center;background:var(--card);
+  border:1px solid var(--border);border-radius:18px 18px 18px 4px;
+  padding:16px 18px;width:fit-content;backdrop-filter:blur(12px);
+}
+.ac-dot{width:7px;height:7px;border-radius:50%;background:var(--aqua);opacity:.4;animation:ac-pulse 1.1s ease infinite}
+.ac-dot:nth-child(2){animation-delay:.15s}
+.ac-dot:nth-child(3){animation-delay:.3s}
+@keyframes ac-pulse{0%,100%{opacity:.25;transform:scale(.85)}50%{opacity:1;transform:scale(1.05)}}
+
+.ac-card-wrap{
+  background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;
+  padding:16px 18px;backdrop-filter:blur(12px);
+}
+.ac-header{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.ac-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.ac-avatar-emoji{display:flex;align-items:center;justify-content:center;font-size:1rem}
+.ac-nome{font-size:.86rem;font-weight:800}
+.ac-texto{font-size:.92rem;line-height:1.6;color:var(--text)}
+.ac-opiniao{margin-top:9px;font-size:.85rem;line-height:1.55;color:var(--muted);font-style:italic;padding-left:11px;border-left:2px solid var(--aqua)}
+.ac-vermais-btn{margin-top:10px;background:none;border:none;color:var(--aqua);font-size:.78rem;font-weight:700;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif}
+.ac-vermais-btn:hover{text-decoration:underline}
+.ac-detalhada{margin-top:10px;font-size:.87rem;line-height:1.65;color:var(--text);border-top:1px solid var(--border);padding-top:12px}
+.ac-detalhada p{margin-bottom:10px;white-space:pre-line}
+.ac-detalhada p:last-child{margin-bottom:0}
+.ac-cards-scroll{display:flex;gap:10px;overflow-x:auto;margin-top:12px;padding-bottom:2px}
+.ac-card{flex:0 0 auto;width:150px;border-radius:12px;overflow:hidden;text-decoration:none;background:rgba(255,255,255,.03);border:1px solid var(--border);transition:transform .15s}
+.ac-card:hover{transform:translateY(-2px)}
+.ac-card-img{width:100%;height:84px;object-fit:cover;background:rgba(59,158,255,.08)}
+.ac-card-icon{display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.ac-card-body{padding:8px 9px}
+.ac-card-titulo{font-size:.74rem;font-weight:700;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ac-card-resumo{font-size:.68rem;color:var(--muted);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ac-fontes{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.ac-fonte{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted);text-decoration:none;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:4px 9px;transition:all .15s}
+.ac-fonte:hover{color:var(--aqua);border-color:var(--aqua)}
+.ac-fonte img{width:13px;height:13px;border-radius:3px}
+.ac-sugestoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.ac-chip{background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.25);color:var(--aqua);border-radius:16px;padding:7px 13px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.ac-chip:hover{background:rgba(59,158,255,.2)}
+.ac-publicar{margin-top:13px;display:flex;align-items:center;gap:9px;cursor:pointer;background:rgba(59,158,255,.08);border:1px solid rgba(59,158,255,.2);border-radius:12px;padding:10px 12px;transition:all .15s}
+.ac-publicar:hover{background:rgba(59,158,255,.14)}
+.ac-publicar-ico{font-size:1.1rem}
+.ac-publicar-txt{font-size:.8rem;font-weight:700;color:var(--aqua)}
+.ac-publicar-sub{font-size:.7rem;color:var(--muted);margin-top:1px}
+.ac-publicar-login{margin-top:12px;text-align:center}
+.ac-login-link{font-size:.78rem;color:var(--aqua);text-decoration:none;font-weight:600}
+.ac-login-link:hover{text-decoration:underline}
+.ac-vazio,.ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
+
+.ac-ent-titulo-secao{font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
+.ac-ent-row{display:flex;align-items:center;gap:11px;padding:9px 4px;border-radius:10px;cursor:pointer;transition:background .15s}
+.ac-ent-row:hover{background:rgba(59,158,255,.07)}
+.ac-ent-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.ac-ent-fallback{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b9eff,#7c3aed);color:#fff;font-weight:700;font-size:.85rem}
+.ac-ent-info{min-width:0}
+.ac-ent-titulo{font-size:.87rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-ent-sub{font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+@media(max-width:600px){
+  .ac-card{width:132px}
+  body.modo-conversa .centro{padding-top:64px}
+}
 </style>
 </head>
 <body>
@@ -331,6 +425,9 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
   <!-- Saudação -->
   <div class="saudacao" id="saudacao"></div>
 
+  <!-- Área de conversa: nasce e cresce aqui, na própria index — nunca some pro feed -->
+  <div class="area-conversa" id="areaConversa"></div>
+
   <!-- Barra -->
   <div class="search-wrap">
     <div class="barra">
@@ -357,6 +454,11 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
       <button class="mode-tab active" id="tabBuscar" onclick="setMode('buscar')">🔍 Buscar</button>
       <button class="mode-tab" id="tabPostar" onclick="setMode('postar')">✏️ Postar</button>
       <a class="mode-tab" href="/feed#marketplace">🏪 Anunciar grátis</a>
+    </div>
+
+    <div class="conversa-toolbar" id="conversaToolbar">
+      <span id="conversaContinuarTxt">💬 Continue a conversa</span>
+      <button class="conversa-nova-btn" onclick="resetParaHome()">✕ Nova busca</button>
     </div>
 
     <!-- Links -->
@@ -450,10 +552,360 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPA_URL='https://tnwildfshzrvktrlfjhz.supabase.co';
 const SUPA_KEY='sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN';
 let modo='buscar', sPost='', sImg='', timer=null;
+
+// ════════════════════════════════════════════════════════════
+// CONVERSA INLINE — busca conversacional com agente, sempre na
+// própria index. Nunca redireciona pro feed, nunca vira popup
+// flutuante. O resultado nasce e cresce na mesma tela.
+// ════════════════════════════════════════════════════════════
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+let usuarioAtual = null;
+let perfilAtual = null;
+
+// ID anônimo persistente pro visitante (antes do login) — alimenta o
+// rastreamento de busca_classificacoes.visitante_id no backend, que já
+// existia mas nunca tinha sido conectado por nenhum front-end.
+function getVisitanteId(){
+  try{
+    let v = localStorage.getItem('fizu_visitor_id');
+    if(!v){
+      v = (crypto.randomUUID ? crypto.randomUUID() : 'v-'+Date.now()+'-'+Math.random().toString(36).slice(2));
+      localStorage.setItem('fizu_visitor_id', v);
+    }
+    return v;
+  }catch(e){ return null; }
+}
+
+(async function initSessaoIdx(){
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session?.user){
+      usuarioAtual = session.user;
+      const { data: perfil } = await sb.from('perfis').select('id,nome,foto_url').eq('id', session.user.id).maybeSingle();
+      perfilAtual = perfil || null;
+    }
+  }catch(e){ /* segue como visitante anônimo */ }
+})();
+
+const AGENTES_IDX = {
+  zari:   { nome:'Zari',   emoji:'🐬',   cor:'#0088cc', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000001/Zari.png' },
+  apolus: { nome:'Apolus', emoji:'🦈',   cor:'#1a6ca0', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000002/Apolus.png' },
+  anthos: { nome:'Anthos', emoji:'🐋',   cor:'#0a8a6a', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000003/Anthos.png' },
+  sereia: { nome:'SereIA', emoji:'🧜‍♀️', cor:'#FF2E88', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000004/SereIA.png' },
+  okto:   { nome:'Okto',   emoji:'🐙',   cor:'#9333ea', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000005/Okto.png' },
+  maya:   { nome:'Maya',   emoji:'🌙',   cor:'#2d6a4f', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000006/Maya.png' },
+  flux:   { nome:'Flux',   emoji:'🔦',   cor:'#0ea5e9', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux.png' },
+  luna:   { nome:'Luna',   emoji:'🐟',   cor:'#c58a1f', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Luna.png' },
+  marlin: { nome:'Marlin', emoji:'🐟',   cor:'#1e5f8f', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Marlin.png' },
+};
+
+const MENSAGENS_PUBLICAR_IDX = [
+  'Essa é uma boa visão — ajude outras pessoas com ela',
+  'Vale a pena compartilhar isso no feed',
+  'Publique e ajude quem também tem essa dúvida',
+  'Boa reflexão. Que tal tornar isso público?',
+  'Publicar',
+];
+function mensagemPublicarIdx(){ return MENSAGENS_PUBLICAR_IDX[Math.floor(Math.random()*MENSAGENS_PUBLICAR_IDX.length)]; }
+
+let conversaHistorico = [];   // [{autor:'usuario'|'agente', texto, agente?}]
+let agenteDaConversa = null;  // slug do agente atual da thread
+let conversaAtiva = false;
+let _turnosAgenteMap = {};
+let _turnoSeq = 0;
+
+function ativarModoConversa(){
+  if(conversaAtiva) return;
+  conversaAtiva = true;
+  document.body.classList.add('modo-conversa');
+  const tb = document.getElementById('conversaToolbar');
+  if(tb) tb.style.display = 'flex';
+}
+
+function resetParaHome(){
+  conversaAtiva = false;
+  conversaHistorico = [];
+  agenteDaConversa = null;
+  document.body.classList.remove('modo-conversa');
+  document.getElementById('areaConversa').innerHTML = '';
+  const tb = document.getElementById('conversaToolbar');
+  if(tb) tb.style.display = 'none';
+  const inp = document.getElementById('barraInput');
+  inp.placeholder = 'O que está acontecendo no Fizu...';
+  inp.focus();
+}
+
+function renderTurnoUsuario(query){
+  const area = document.getElementById('areaConversa');
+  const div = document.createElement('div');
+  div.className = 'turno-usuario';
+  div.innerHTML = `<div class="tu-bolha">${esc(query)}</div>`;
+  area.appendChild(div);
+  return div;
+}
+
+function renderCartaoAgenteLoading(){
+  const area = document.getElementById('areaConversa');
+  const div = document.createElement('div');
+  div.className = 'turno-agente';
+  div.innerHTML = `<div class="ac-loading"><span class="ac-dot"></span><span class="ac-dot"></span><span class="ac-dot"></span></div>`;
+  area.appendChild(div);
+  return div;
+}
+
+function scrollParaTurno(turnoEl){
+  setTimeout(()=>{ turnoEl.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);
+}
+
+function atualizarComposer(){
+  const ag = AGENTES_IDX[agenteDaConversa];
+  const inp = document.getElementById('barraInput');
+  const txt = document.getElementById('conversaContinuarTxt');
+  if(ag){
+    inp.placeholder = `Pergunte mais para ${ag.nome} ${ag.emoji}...`;
+    if(txt) txt.textContent = `💬 Continue a conversa com ${ag.nome} ${ag.emoji}`;
+  } else {
+    inp.placeholder = 'Continue a busca no Fizu...';
+    if(txt) txt.textContent = '💬 Continue a conversa';
+  }
+}
+
+function continuarConversa(sugestao){
+  processarBusca(sugestao);
+}
+
+function renderBotaoPublicar(turnoId){
+  if(usuarioAtual){
+    return `<div class="ac-publicar" id="pub-${turnoId}" onclick="publicarInteracaoIdx('${turnoId}')">
+      <span class="ac-publicar-ico">📢</span>
+      <div><div class="ac-publicar-txt">${esc(mensagemPublicarIdx())}</div><div class="ac-publicar-sub">Ganhe Fizu Coins e apareça no feed</div></div>
+    </div>`;
+  }
+  return `<div class="ac-publicar-login"><a class="ac-login-link" href="/login.html">Entre pra publicar essa resposta no feed — e ganhe 50 Fizu Coins de boas-vindas</a></div>`;
+}
+
+function atualizarCartaoAgente(el, resultado, query){
+  const ag = AGENTES_IDX[resultado.agente] || { nome: resultado.agente || 'Agente', emoji:'🤖', cor:'#0055cc', foto:null };
+  const turnoId = 't' + (++_turnoSeq);
+  _turnosAgenteMap[turnoId] = { resultado, query, agente: ag };
+
+  const detalhada = (resultado.resposta_detalhada || '').trim();
+  const detalhadaHtml = detalhada
+    ? `<div class="ac-detalhada" id="det-${turnoId}" style="display:none">${detalhada.split(/\n\s*\n/).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+       <button class="ac-vermais-btn" id="verbtn-${turnoId}" onclick="toggleDetalhada('${turnoId}')">Ver resposta completa ↓</button>`
+    : '';
+
+  const cardsHtml = (resultado.cards||[]).slice(0,4).map(c=>{
+    const isVideo = c.tipo === 'video';
+    const img = c.imagem
+      ? `<img class="ac-card-img" src="${c.imagem}" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="ac-card-img ac-card-icon">${isVideo?'🎬':'🔗'}</div>`;
+    return `<a class="ac-card" href="${c.link}" target="_blank" rel="noopener">${img}<div class="ac-card-body"><div class="ac-card-titulo">${esc(c.titulo||'')}</div><div class="ac-card-resumo">${esc(c.resumo||'')}</div></div></a>`;
+  }).join('');
+
+  const fontesHtml = (resultado.fontes||[]).map(f=>`<a class="ac-fonte" href="${f.link}" target="_blank" rel="noopener"><img src="${f.favicon_url}" onerror="this.style.display='none'"> ${esc(f.nome||f.dominio)}</a>`).join('');
+
+  const sugestoesHtml = (resultado.sugestoes||[]).length
+    ? `<div class="ac-sugestoes">${(resultado.sugestoes||[]).map(s=>{
+        const sSafe = esc(s).replace(/'/g,"\\'");
+        return `<button class="ac-chip" onclick="continuarConversa('${sSafe}')">${esc(s)}</button>`;
+      }).join('')}</div>`
+    : '';
+
+  const avatarHtml = ag.foto
+    ? `<img class="ac-avatar" src="${ag.foto}" onerror="this.style.display='none'">`
+    : `<div class="ac-avatar ac-avatar-emoji" style="background:${ag.cor}22;color:${ag.cor}">${ag.emoji}</div>`;
+
+  el.innerHTML = `
+    <div class="ac-card-wrap" style="border-color:${ag.cor}33">
+      <div class="ac-header">${avatarHtml}<div class="ac-nome" style="color:${ag.cor}">${esc(ag.nome)}</div></div>
+      <div class="ac-texto">${esc(resultado.resposta_curta||'')}</div>
+      ${resultado.ponto_de_vista ? `<div class="ac-opiniao">💭 ${esc(resultado.ponto_de_vista)}</div>` : ''}
+      ${detalhadaHtml}
+      ${cardsHtml ? `<div class="ac-cards-scroll">${cardsHtml}</div>` : ''}
+      ${fontesHtml ? `<div class="ac-fontes">${fontesHtml}</div>` : ''}
+      ${sugestoesHtml}
+      ${renderBotaoPublicar(turnoId)}
+    </div>`;
+}
+
+function toggleDetalhada(turnoId){
+  const det = document.getElementById('det-'+turnoId);
+  const btn = document.getElementById('verbtn-'+turnoId);
+  if(!det||!btn) return;
+  const aberto = det.style.display !== 'none';
+  det.style.display = aberto ? 'none' : 'block';
+  btn.textContent = aberto ? 'Ver resposta completa ↓' : 'Ver menos ↑';
+}
+
+async function publicarInteracaoIdx(turnoId){
+  const dados = _turnosAgenteMap[turnoId];
+  if(!dados || !usuarioAtual) return;
+  const { resultado, query, agente } = dados;
+  const btnEl = document.getElementById('pub-'+turnoId);
+  if(btnEl) btnEl.innerHTML = `<span style="font-size:.8rem;color:var(--muted)">Publicando...</span>`;
+
+  const conteudo = `🔎 Pesquisei: "${query}"\n\n${agente.emoji} ${agente.nome} respondeu:\n${resultado.resposta_curta||''}${resultado.ponto_de_vista?`\n\n💭 ${resultado.ponto_de_vista}`:''}`;
+  const fontesStrings = (resultado.fontes||[]).map(f=>`${f.nome||f.dominio}: ${f.link}`);
+  const primeiraImagem = (resultado.cards||[]).find(c=>c.imagem)?.imagem || null;
+
+  try{
+    const { data: novoPost, error } = await sb.from('posts').insert({
+      autor_id: usuarioAtual.id,
+      conteudo,
+      tipo: 'texto',
+      midia_url: primeiraImagem,
+      fontes: fontesStrings,
+      gerado_ia: true,
+      ia_modelo: 'claude-sonnet-4-6',
+      criado_em: new Date().toISOString(),
+    }).select('id').single();
+    if(error) throw error;
+
+    try{
+      await sb.rpc('dar_coins', { p_usuario_id: usuarioAtual.id, p_valor:1, p_tipo:'post', p_descricao:'Post publicado', p_ref_id: novoPost?.id||null });
+    }catch(e){ /* coins são um bônus, não pode travar a publicação */ }
+
+    showToast('🎉 Publicado! Você ganhou coins por essa interação.');
+    if(btnEl) btnEl.innerHTML = `<div style="text-align:center;width:100%;font-size:.82rem;font-weight:700;color:#10b981">✅ Publicado no feed</div>`;
+  }catch(e){
+    console.error('publicarInteracaoIdx:', e);
+    showToast('Não consegui publicar agora. Tente de novo.');
+    if(btnEl) btnEl.innerHTML = `<span class="ac-publicar-ico">📢</span><div><div class="ac-publicar-txt">Publicar</div></div>`;
+  }
+}
+
+async function buscarPessoasIdx(query){
+  const qLower = query.toLowerCase();
+  const [{data:porNome},{data:porUsername}] = await Promise.all([
+    sb.from('perfis').select('id,nome,foto_url,username').ilike('nome',`%${query}%`).limit(6),
+    sb.from('perfis').select('id,nome,foto_url,username').ilike('username',`%${query}%`).limit(6),
+  ]);
+  const agentesMatch = Object.values(AGENTES_IDX)
+    .filter(a=>a.nome.toLowerCase().includes(qLower))
+    .map(a=>({ id:a.nome.toLowerCase(), nome:a.nome, foto_url:a.foto, username:a.nome.toLowerCase(), _emoji:a.emoji }));
+  const seen = new Set();
+  const todos = [...agentesMatch, ...(porUsername||[]), ...(porNome||[])].filter(u=>{
+    if(!u?.id || seen.has(u.id)) return false; seen.add(u.id); return true;
+  });
+  return { count: todos.length, itens: todos.slice(0,5) };
+}
+
+async function buscarMarketplaceIdx(query){
+  const { data: listings } = await sb.from('marketplace_listings')
+    .select('id,titulo,preco').eq('status','ativo')
+    .or(`titulo.ilike.%${query}%,descricao.ilike.%${query}%`).limit(20);
+  if(!listings?.length) return { count:0, itens:[] };
+  const ids = listings.slice(0,5).map(l=>l.id);
+  const { data: imgs } = await sb.from('marketplace_imagens').select('listing_id,url').in('listing_id',ids).order('ordem',{ascending:true});
+  const fotoMap = {};
+  (imgs||[]).forEach(im=>{ if(!fotoMap[im.listing_id]) fotoMap[im.listing_id]=im.url; });
+  return { count: listings.length, itens: listings.slice(0,5).map(l=>({...l, _foto: fotoMap[l.id]})) };
+}
+
+async function buscarPostsIdx(query){
+  const { data: posts } = await sb.from('posts')
+    .select('id,autor_id,conteudo,criado_em').ilike('conteudo',`%${query}%`)
+    .neq('status','removido').order('curtidas_count',{ascending:false}).limit(20);
+  if(!posts?.length) return { count:0, itens:[] };
+  const autorIds = [...new Set(posts.slice(0,5).map(p=>p.autor_id).filter(Boolean))];
+  const { data: perfisData } = await sb.from('perfis').select('id,nome,foto_url').in('id',autorIds);
+  const pm = {};
+  (perfisData||[]).forEach(p=>{ pm[p.id]=p; });
+  return { count: posts.length, itens: posts.slice(0,5).map(p=>({...p, _autor: pm[p.autor_id]})) };
+}
+
+function atualizarCartaoComEntidades(el, resultado, formato, query){
+  const { count, itens } = resultado;
+  if(!count){
+    el.innerHTML = `<div class="ac-vazio">Não encontrei nada no Fizu para "${esc(query)}" ainda.</div>`;
+    return;
+  }
+  const titulo = formato==='pessoa' ? '👤 Pessoas no Fizu' : formato==='produto' ? '🏪 No Marketplace' : '📝 Posts relacionados';
+  const linhas = itens.map(it=>{
+    if(formato==='pessoa'){
+      const ini = (it.nome||'?').charAt(0).toUpperCase();
+      const avatar = it.foto_url ? `<img class="ac-ent-avatar" src="${it.foto_url}" onerror="this.style.display='none'">` : `<div class="ac-ent-avatar ac-ent-fallback">${it._emoji||ini}</div>`;
+      return `<div class="ac-ent-row" onclick="location.href='/feed#perfil-${it.id}'">${avatar}<div class="ac-ent-info"><div class="ac-ent-titulo">${esc(it.nome||'')}</div><div class="ac-ent-sub">@${esc(it.username||'')}</div></div></div>`;
+    }
+    if(formato==='produto'){
+      const preco = it.preco ? `R$ ${Number(it.preco).toLocaleString('pt-BR')}` : 'Consulte';
+      const avatar = it._foto ? `<img class="ac-ent-avatar" style="border-radius:8px" src="${it._foto}">` : `<div class="ac-ent-avatar ac-ent-fallback" style="border-radius:8px">🏪</div>`;
+      return `<div class="ac-ent-row" onclick="location.href='/anuncio.html?id=${it.id}'">${avatar}<div class="ac-ent-info"><div class="ac-ent-titulo">${esc(it.titulo||'')}</div><div class="ac-ent-sub" style="color:#e0aa2e;font-weight:700">${preco}</div></div></div>`;
+    }
+    const autor = it._autor;
+    const nome = autor?.nome || 'Usuário';
+    const ini = nome.charAt(0).toUpperCase();
+    const avatar = autor?.foto_url ? `<img class="ac-ent-avatar" src="${autor.foto_url}">` : `<div class="ac-ent-avatar ac-ent-fallback">${ini}</div>`;
+    const trecho = (it.conteudo||'').substring(0,80);
+    return `<div class="ac-ent-row" onclick="location.href='/feed#post-${it.id}'">${avatar}<div class="ac-ent-info"><div class="ac-ent-titulo">${esc(nome)}</div><div class="ac-ent-sub">${esc(trecho)}${(it.conteudo||'').length>80?'…':''}</div></div></div>`;
+  }).join('');
+  el.innerHTML = `<div class="ac-card-wrap"><div class="ac-ent-titulo-secao">${titulo}</div>${linhas}</div>`;
+}
+
+async function responderComAgente(loadingEl, query){
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const token = session?.access_token || SUPA_KEY;
+    const r = await fetch(`${SUPA_URL}/functions/v1/agente-router-busca`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}`, apikey:SUPA_KEY },
+      body: JSON.stringify({ pergunta: query, usuario_id: perfilAtual?.id || usuarioAtual?.id || null, visitante_id: usuarioAtual ? null : getVisitanteId(), historico: conversaHistorico.slice(-6) }),
+    });
+    const resultado = await r.json();
+    if(resultado?.erro) throw new Error(resultado.erro);
+    conversaHistorico.push({ autor:'agente', texto: resultado.resposta_curta || '', agente: resultado.agente });
+    agenteDaConversa = resultado.agente;
+    atualizarCartaoAgente(loadingEl, resultado, query);
+    atualizarComposer();
+  }catch(e){
+    console.error('agente-router-busca idx:', e);
+    loadingEl.innerHTML = `<div class="ac-erro">Não consegui responder agora. Tente de novo em instantes.</div>`;
+  }
+}
+
+async function processarBusca(query){
+  query = (query||'').trim();
+  if(!query) return;
+  ativarModoConversa();
+  const turnoEl = renderTurnoUsuario(query);
+  const loadingEl = renderCartaoAgenteLoading();
+  conversaHistorico.push({ autor:'usuario', texto: query });
+  scrollParaTurno(turnoEl);
+
+  let formato = 'pergunta';
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const token = session?.access_token || SUPA_KEY;
+    const r = await fetch(`${SUPA_URL}/functions/v1/busca-magica`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}`, apikey:SUPA_KEY },
+      body: JSON.stringify({ query }),
+    });
+    const d = await r.json();
+    if(['pessoa','produto','post','pergunta'].includes(d.formato)) formato = d.formato;
+  }catch(e){ console.error('busca-magica idx:', e); }
+
+  if(formato==='pessoa' || formato==='produto' || formato==='post'){
+    try{
+      const resultado = formato==='pessoa' ? await buscarPessoasIdx(query)
+        : formato==='produto' ? await buscarMarketplaceIdx(query)
+        : await buscarPostsIdx(query);
+      atualizarCartaoComEntidades(loadingEl, resultado, formato, query);
+    }catch(e){
+      console.error('busca entidade idx:', e);
+      await responderComAgente(loadingEl, query);
+    }
+    return;
+  }
+
+  await responderComAgente(loadingEl, query);
+}
 
 // TEMA
 function initTheme(){
@@ -621,7 +1073,14 @@ async function buscarRT(qRaw){
   el.innerHTML=html;el.classList.add('show');
 }
 
-function buscar(){const q=document.getElementById('barraInput').value.trim();if(q)window.location.href=`/feed#busca=${encodeURIComponent(q)}`;}
+function buscar(){
+  const inp=document.getElementById('barraInput');
+  const q=inp.value.trim();
+  if(!q)return;
+  inp.value='';
+  fecharSugs();
+  processarBusca(q);
+}
 document.addEventListener('click',e=>{if(!e.target.closest('.barra'))fecharSugs();});
 
 // POST
