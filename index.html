@@ -147,7 +147,7 @@ html.light .mode-tab.active{background:rgba(0,85,204,.1)}
 .barra-input{
   width:100%;background:rgba(13,22,40,.9);
   border:1.5px solid rgba(59,158,255,.2);border-radius:28px;
-  padding:18px 60px 18px 56px;font-size:1rem;color:var(--text);
+  padding:18px 104px 18px 56px;font-size:1rem;color:var(--text);
   font-family:'DM Sans',sans-serif;outline:none;
   transition:border-color .2s,box-shadow .2s;backdrop-filter:blur(12px);
 }
@@ -159,6 +159,11 @@ html.light .barra-input{background:rgba(255,255,255,.95);border-color:rgba(0,85,
   width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;font-size:1.05rem;transition:all .2s;
 }
+.barra-btn.mic{right:56px;background:rgba(255,255,255,.06);color:var(--muted)}
+html.light .barra-btn.mic{background:rgba(0,0,0,.045);color:var(--muted)}
+.barra-btn.mic:hover{color:var(--aqua)}
+.barra-btn.mic.gravando{background:rgba(239,68,68,.16);color:#ef4444;animation:ac-mic-pulso 1.1s ease infinite}
+@keyframes ac-mic-pulso{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.35)}50%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
 .barra-btn.buscar{background:rgba(59,158,255,.2);color:var(--aqua)}
 .barra-btn.buscar:hover{background:var(--aqua);color:#fff}
 .barra-btn.sereia{
@@ -288,7 +293,7 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
   .fizu-icon svg{width:36px;height:36px}
   .logo-txts .nome{font-size:2.6rem}
   .logo-wrap{margin-bottom:32px;gap:12px}
-  .barra-input{font-size:.92rem;padding:16px 54px 16px 16px}
+  .barra-input{font-size:.92rem;padding:16px 96px 16px 16px}
   .search-wrap{max-width:100%}
   .links-row{gap:8px}
   .footer-inner{flex-direction:column;align-items:flex-start;gap:10px}
@@ -346,6 +351,23 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   padding:16px 18px;backdrop-filter:blur(12px);
 }
 .ac-header{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.ac-nome{flex:1}
+.ac-avatar-wrap{position:relative;flex-shrink:0;border-radius:50%}
+.ac-avatar-wrap.falando::before{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid var(--aqua);opacity:.55;
+  animation:ac-fala-pulso 1s ease-out infinite;
+}
+@keyframes ac-fala-pulso{0%{transform:scale(.85);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+.ac-avatar-wrap.falando .ac-avatar{animation:ac-fala-boiar 1.6s ease-in-out infinite}
+@keyframes ac-fala-boiar{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+.ac-play-btn{
+  width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:.68rem;
+  transition:all .15s;flex-shrink:0;
+}
+.ac-play-btn:hover{color:var(--aqua);border-color:var(--aqua)}
 .ac-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0}
 .ac-avatar-emoji{display:flex;align-items:center;justify-content:center;font-size:1rem}
 .ac-nome{font-size:.86rem;font-weight:800}
@@ -459,6 +481,7 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
         oninput="onInput()"
         onkeydown="onKey(event)"
         onfocus="onFocus()">
+      <button class="barra-btn mic" id="btnMic" onclick="iniciarReconhecimentoVoz()" title="Perguntar por voz">🎤</button>
       <button class="barra-btn buscar" id="btnBuscar" onclick="buscar()" title="Buscar">🔍</button>
       <button class="barra-btn sereia" id="btnSereia" style="display:none" onclick="ativarSereia()" title="Criar com a SereIA">🧜‍♀️</button>
       <div class="sugs" id="sugs"></div>
@@ -613,7 +636,7 @@ const AGENTES_IDX = {
   sereia: { nome:'SereIA', emoji:'🧜‍♀️', cor:'#FF2E88', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000004/SereIA.png' },
   okto:   { nome:'Okto',   emoji:'🐙',   cor:'#9333ea', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000005/Okto.png' },
   maya:   { nome:'Maya',   emoji:'🌙',   cor:'#2d6a4f', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000006/Maya.png' },
-  flux:   { nome:'Flux',   emoji:'🔦',   cor:'#0ea5e9', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux.png' },
+  flux:   { nome:'Flux',   emoji:'🔦',   cor:'#0ea5e9', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux.png', fotoFala:['https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux-fala-1.png','https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux-fala-2.png'] },
   luna:   { nome:'Luna',   emoji:'🐟',   cor:'#c58a1f', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Luna.png' },
   marlin: { nome:'Marlin', emoji:'🐟',   cor:'#1e5f8f', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Marlin.png' },
 };
@@ -626,6 +649,148 @@ const MENSAGENS_PUBLICAR_IDX = [
   'Publicar',
 ];
 function mensagemPublicarIdx(){ return MENSAGENS_PUBLICAR_IDX[Math.floor(Math.random()*MENSAGENS_PUBLICAR_IDX.length)]; }
+
+// ════════════════════════════════════════════════════════════
+// VOZ — narração da resposta (Web Speech API) com timbre por
+// agente, e busca por voz via microfone (SpeechRecognition).
+// ════════════════════════════════════════════════════════════
+const VOZ_AGENTES = {
+  zari:   { pitch:1.15, rate:1.0  },
+  apolus: { pitch:0.9,  rate:1.15 },
+  anthos: { pitch:0.75, rate:0.88 },
+  sereia: { pitch:1.05, rate:0.92 },
+  okto:   { pitch:1.1,  rate:1.12 },
+  maya:   { pitch:1.05, rate:0.9  },
+  flux:   { pitch:1.0,  rate:1.05 },
+  luna:   { pitch:0.95, rate:1.0  },
+  marlin: { pitch:0.9,  rate:1.0  },
+};
+
+let _vozesPtBr = [];
+function carregarVozesPt(){
+  if(!('speechSynthesis' in window)) return;
+  _vozesPtBr = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pt'));
+}
+if('speechSynthesis' in window){
+  carregarVozesPt();
+  speechSynthesis.onvoiceschanged = carregarVozesPt;
+}
+
+let _vozBtnAtual = null;
+let _vozAvatarTimer = null;
+let _vozAvatarWrapAtual = null;
+
+function iniciarAnimacaoAvatarFala(turnoId, agenteSlug){
+  if(!turnoId) return;
+  const wrap = document.getElementById('avatarwrap-'+turnoId);
+  if(!wrap) return;
+  wrap.classList.add('falando');
+  _vozAvatarWrapAtual = wrap;
+  const ag = AGENTES_IDX[agenteSlug];
+  const img = document.getElementById('avatar-'+turnoId);
+  if(img && ag && ag.foto && ag.fotoFala && ag.fotoFala.length){
+    const frames = [ag.foto, ag.fotoFala[0], ag.foto, ag.fotoFala[1] || ag.fotoFala[0]];
+    let i = 0;
+    _vozAvatarTimer = setInterval(()=>{
+      i = (i+1) % frames.length;
+      img.src = frames[i];
+    }, 220);
+  }
+}
+
+function pararAnimacaoAvatarFala(){
+  if(_vozAvatarTimer){ clearInterval(_vozAvatarTimer); _vozAvatarTimer = null; }
+  if(_vozAvatarWrapAtual){
+    const turnoIdAtual = _vozAvatarWrapAtual.id.replace('avatarwrap-','');
+    const dados = _turnosAgenteMap[turnoIdAtual];
+    const img = document.getElementById('avatar-'+turnoIdAtual);
+    if(img && dados){
+      const ag = AGENTES_IDX[dados.resultado.agente];
+      if(ag && ag.foto) img.src = ag.foto;
+    }
+    _vozAvatarWrapAtual.classList.remove('falando');
+    _vozAvatarWrapAtual = null;
+  }
+}
+
+function narrarTexto(texto, agenteSlug, btnEl, turnoId){
+  if(!('speechSynthesis' in window)){ showToast('Seu navegador não suporta narração por voz.'); return; }
+  const jaEraEsteBotao = (_vozBtnAtual === btnEl);
+  if(speechSynthesis.speaking || speechSynthesis.pending){
+    speechSynthesis.cancel();
+    pararAnimacaoAvatarFala();
+    if(_vozBtnAtual) _vozBtnAtual.innerHTML = '▶';
+    _vozBtnAtual = null;
+    if(jaEraEsteBotao) return; // clicou de novo no mesmo = só parar
+  }
+  if(!texto) return;
+  const u = new SpeechSynthesisUtterance(texto);
+  const cfg = VOZ_AGENTES[agenteSlug] || { pitch:1, rate:1 };
+  u.lang = 'pt-BR';
+  u.pitch = cfg.pitch;
+  u.rate = cfg.rate;
+  if(_vozesPtBr.length) u.voice = _vozesPtBr[0];
+  u.onend = () => { if(btnEl) btnEl.innerHTML = '▶'; if(_vozBtnAtual===btnEl) _vozBtnAtual=null; pararAnimacaoAvatarFala(); };
+  u.onerror = () => { if(btnEl) btnEl.innerHTML = '▶'; if(_vozBtnAtual===btnEl) _vozBtnAtual=null; pararAnimacaoAvatarFala(); };
+  if(btnEl){ btnEl.innerHTML = '⏸'; _vozBtnAtual = btnEl; }
+  iniciarAnimacaoAvatarFala(turnoId, agenteSlug);
+  speechSynthesis.speak(u);
+}
+
+function narrarTurno(turnoId, btnEl){
+  const dados = _turnosAgenteMap[turnoId];
+  if(!dados) return;
+  const partes = [dados.resultado.resposta_curta || ''];
+  if(dados.resultado.ponto_de_vista) partes.push(dados.resultado.ponto_de_vista);
+  narrarTexto(partes.join('. '), dados.resultado.agente, btnEl, turnoId);
+}
+
+let _reconhecimentoVoz = null;
+let _gravandoVoz = false;
+
+function iniciarReconhecimentoVoz(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ showToast('Seu navegador não suporta busca por voz. Tente no Chrome ou Edge.'); return; }
+  if(_gravandoVoz){ pararReconhecimentoVoz(); return; }
+  if(speechSynthesis?.speaking) speechSynthesis.cancel();
+
+  _reconhecimentoVoz = new SR();
+  _reconhecimentoVoz.lang = 'pt-BR';
+  _reconhecimentoVoz.interimResults = true;
+  _reconhecimentoVoz.maxAlternatives = 1;
+
+  const inp = document.getElementById('barraInput');
+  const btn = document.getElementById('btnMic');
+  _gravandoVoz = true;
+  if(btn){ btn.classList.add('gravando'); btn.title = 'Ouvindo... toque pra parar'; }
+  inp.placeholder = '🎙️ Pode falar...';
+
+  _reconhecimentoVoz.onresult = (ev) => {
+    let texto = '';
+    let final = false;
+    for(let i=0; i<ev.results.length; i++){
+      texto += ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) final = true;
+    }
+    inp.value = texto;
+    if(final){
+      pararReconhecimentoVoz();
+      buscar();
+    }
+  };
+  _reconhecimentoVoz.onerror = () => { pararReconhecimentoVoz(); };
+  _reconhecimentoVoz.onend = () => { pararReconhecimentoVoz(); };
+  try{ _reconhecimentoVoz.start(); }catch(e){ pararReconhecimentoVoz(); }
+}
+
+function pararReconhecimentoVoz(){
+  _gravandoVoz = false;
+  const btn = document.getElementById('btnMic');
+  if(btn){ btn.classList.remove('gravando'); btn.title = 'Perguntar por voz'; }
+  if(conversaAtiva) atualizarComposer();
+  else { const inp = document.getElementById('barraInput'); if(inp) inp.placeholder = 'O que está acontecendo no Fizu...'; }
+  if(_reconhecimentoVoz){ try{ _reconhecimentoVoz.stop(); }catch(e){} }
+}
 
 let conversaHistorico = [];   // [{autor:'usuario'|'agente', texto, agente?}]
 let agenteDaConversa = null;  // slug do agente atual da thread
@@ -771,12 +936,12 @@ function atualizarCartaoAgente(el, resultado, query){
     : '';
 
   const avatarHtml = ag.foto
-    ? `<img class="ac-avatar" src="${ag.foto}" onerror="this.style.display='none'">`
-    : `<div class="ac-avatar ac-avatar-emoji" style="background:${ag.cor}22;color:${ag.cor}">${ag.emoji}</div>`;
+    ? `<img class="ac-avatar" id="avatar-${turnoId}" src="${ag.foto}" onerror="this.style.display='none'">`
+    : `<div class="ac-avatar ac-avatar-emoji" id="avatar-${turnoId}" style="background:${ag.cor}22;color:${ag.cor}">${ag.emoji}</div>`;
 
   el.innerHTML = `
     <div class="ac-card-wrap" style="border-color:${ag.cor}33">
-      <div class="ac-header">${avatarHtml}<div class="ac-nome" style="color:${ag.cor}">${esc(ag.nome)}</div></div>
+      <div class="ac-header"><div class="ac-avatar-wrap" id="avatarwrap-${turnoId}">${avatarHtml}</div><div class="ac-nome" style="color:${ag.cor}">${esc(ag.nome)}</div><button class="ac-play-btn" onclick="narrarTurno('${turnoId}', this)" title="Ouvir resposta">▶</button></div>
       <div class="ac-texto">${esc(resultado.resposta_curta||'')}</div>
       ${resultado.ponto_de_vista ? `<div class="ac-opiniao">💭 ${esc(resultado.ponto_de_vista)}</div>` : ''}
       ${detalhadaHtml}
@@ -990,14 +1155,15 @@ function setMode(m){
   const pb=document.getElementById('postBox');
   const bb=document.getElementById('btnBuscar');
   const bs=document.getElementById('btnSereia');
+  const bm=document.getElementById('btnMic');
   document.getElementById('tabBuscar').classList.toggle('active',m==='buscar');
   document.getElementById('tabPostar').classList.toggle('active',m==='postar');
   if(m==='buscar'){
-    pb.classList.remove('show');bb.style.display='';bs.style.display='none';
+    pb.classList.remove('show');bb.style.display='';bs.style.display='none';if(bm)bm.style.display='';
     inp.placeholder='O que está acontecendo no Fizu...';inp.focus();
     document.getElementById('sugs').classList.remove('show');
   } else {
-    pb.classList.add('show');bb.style.display='none';bs.style.display='';
+    pb.classList.add('show');bb.style.display='none';bs.style.display='';if(bm)bm.style.display='none';
     inp.placeholder='Sobre o que você quer postar?';inp.value='';inp.focus();
   }
 }
