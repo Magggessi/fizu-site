@@ -81,6 +81,13 @@ html.light .theme-toggle{background:rgba(255,255,255,.85);border-color:rgba(0,85
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:80px 20px 60px;
 }
+.logo-wrap{order:0}
+.saudacao{order:1}
+.search-wrap{order:2}
+.mode-tabs{order:3}
+.links-wrap-inline{order:4}
+.area-conversa{order:5}
+.links-wrap{order:6}
 
 /* ── LOGO ── */
 .logo-wrap{
@@ -118,6 +125,7 @@ html.light .logo-txts .nome{color:#0d1628}
   animation:fade-up .7s .2s cubic-bezier(.22,1,.36,1) both;
 }
 .mode-tabs{
+  width:100%;max-width:640px;
   display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center;
 }
 .mode-tab{
@@ -131,7 +139,7 @@ html.light .mode-tab{background:rgba(255,255,255,.6)}
 html.light .mode-tab.active{background:rgba(0,85,204,.1)}
 .mode-tab:hover:not(.active){color:var(--text);border-color:var(--aqua)}
 
-.links-wrap-inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.links-wrap-inline{width:100%;max-width:640px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 
 .anexo-chip{display:none;align-items:center;justify-content:space-between;gap:8px;background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.25);border-radius:10px;padding:7px 12px;margin-bottom:8px;font-size:.78rem;color:var(--aqua)}
 .anexo-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem}
@@ -301,11 +309,12 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
 }
 
 /* ══════════════════ MODO CONVERSA (busca/agente inline) ══════════════════ */
-body.modo-conversa .logo-wrap,
 body.modo-conversa .saudacao,
-body.modo-conversa .links-wrap-inline,
-body.modo-conversa .links-wrap,
-body.modo-conversa .mode-tabs{display:none}
+body.modo-conversa .links-wrap{display:none}
+body.modo-conversa .mode-tabs{order:1}
+body.modo-conversa .links-wrap-inline{order:2}
+body.modo-conversa .area-conversa{order:3}
+body.modo-conversa .search-wrap{order:4}
 body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 
 .conversa-toolbar{
@@ -330,20 +339,55 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 }
 
 .turno-agente{width:100%;animation:fade-up .35s .05s cubic-bezier(.22,1,.36,1) both}
-.ac-loading{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:14px 16px 15px;width:fit-content;min-width:210px;backdrop-filter:blur(12px)}
-.ac-loading-logo{width:30px;height:30px;border-radius:10px;margin:0 auto 10px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;animation:ac-boiar 2.2s ease-in-out infinite;box-shadow:0 0 16px rgba(124,58,237,.35)}
+.ac-loading{
+  background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;
+  padding:16px 18px 15px;width:100%;
+  display:flex;flex-direction:column;align-items:center;
+  backdrop-filter:blur(12px);
+}
+.ac-loading-logo{width:30px;height:30px;border-radius:10px;margin:0 auto 10px;background:linear-gradient(135deg,#3b9eff 0%,#7C3AED 50%,#FF2E88 100%);display:flex;align-items:center;justify-content:center;animation:ac-boiar 2.2s ease-in-out infinite;box-shadow:0 0 16px rgba(124,58,237,.35);flex-shrink:0}
 .ac-loading-logo svg{width:19px;height:19px}
 @keyframes ac-boiar{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.ac-oceano{position:relative;height:44px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(59,158,255,.16),rgba(124,58,237,.14))}
-.ac-bolha{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,255,255,.6);animation:ac-subir 2.6s ease-in infinite}
-.ac-bolha.b1{left:14%;width:5px;height:5px;animation-delay:0s;animation-duration:2.3s}
-.ac-bolha.b2{left:36%;width:7px;height:7px;animation-delay:.5s;animation-duration:2.8s}
-.ac-bolha.b3{left:60%;width:4px;height:4px;animation-delay:1s;animation-duration:2.1s}
-.ac-bolha.b4{left:80%;width:6px;height:6px;animation-delay:1.5s;animation-duration:2.6s}
-@keyframes ac-subir{0%{transform:translateY(0);opacity:0}15%{opacity:.9}85%{opacity:.4}100%{transform:translateY(-38px);opacity:0}}
-.ac-peixinho{position:absolute;bottom:7px;font-size:.92rem;animation:ac-nadar 3.6s linear infinite;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+
+/* ── Cena do oceano: jornada do peixinho, sorteada a cada loading, nunca igual ── */
+.ac-oceano{
+  position:relative;width:100%;max-width:340px;height:82px;
+  border-radius:14px;overflow:hidden;margin:0 auto;
+  background:linear-gradient(180deg,rgba(59,158,255,.24) 0%,rgba(59,158,255,.13) 45%,rgba(8,16,32,.42) 100%);
+}
+.ac-oceano::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.4);z-index:2}
+
+.ac-bolha{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,255,255,.6);animation:ac-subir 2.6s ease-in infinite;z-index:1}
+.ac-bolha.b1{left:10%;width:5px;height:5px;animation-delay:0s;animation-duration:2.3s}
+.ac-bolha.b2{left:30%;width:6px;height:6px;animation-delay:.5s;animation-duration:2.8s}
+.ac-bolha.b3{left:55%;width:4px;height:4px;animation-delay:1s;animation-duration:2.1s}
+.ac-bolha.b4{left:75%;width:6px;height:6px;animation-delay:1.5s;animation-duration:2.6s}
+@keyframes ac-subir{0%{transform:translateY(0);opacity:0}15%{opacity:.9}85%{opacity:.4}100%{transform:translateY(-72px);opacity:0}}
+
+.ac-oc-fundo{position:absolute;bottom:4px;font-size:1rem;opacity:.88;animation:ac-oc-balanco 2.6s ease-in-out infinite;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.ac-oc-superficie{position:absolute;top:3px;font-size:1.05rem;opacity:.92;animation:ac-oc-boiar-navio 3.2s ease-in-out infinite}
+.ac-oc-especie{position:absolute;bottom:32px;font-size:.88rem;opacity:.85;animation:ac-oc-nadar-fundo 4.6s linear infinite,ac-oc-balanco-esp 2.2s ease-in-out infinite}
+.ac-oc-predador{position:absolute;bottom:11px;font-size:1.05rem;opacity:.9;animation:ac-nadar 4.2s linear infinite;animation-delay:.55s;transform:scaleX(-1)}
+
+@keyframes ac-oc-balanco{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+@keyframes ac-oc-balanco-esp{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-3px)}}
+@keyframes ac-oc-boiar-navio{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes ac-oc-nadar-fundo{0%{left:-10%}100%{left:104%}}
+
+.ac-peixinho{
+  position:absolute;bottom:10px;font-size:1.05rem;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
+  transform:scaleX(-1);
+  animation:ac-nadar 4.2s linear infinite, ac-oc-bob 1.3s ease-in-out infinite;
+}
 @keyframes ac-nadar{0%{left:-10%}100%{left:104%}}
-.ac-loading-txt{margin-top:9px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
+@keyframes ac-oc-bob{0%,100%{bottom:10px}50%{bottom:15px}}
+.ac-peixinho.pulando{animation:ac-nadar 4.2s linear infinite, ac-oc-pulo 4.2s ease-in-out infinite}
+@keyframes ac-oc-pulo{
+  0%{bottom:10px} 36%{bottom:10px} 46%{bottom:58px} 56%{bottom:10px} 100%{bottom:10px}
+}
+
+.ac-loading-txt{margin-top:10px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
 .ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
 
 .ac-card-wrap{
@@ -380,7 +424,7 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-detalhada p:last-child{margin-bottom:0}
 .ac-cards-wrap{position:relative}
 .ac-cards-wrap::after{content:'';position:absolute;top:0;right:0;bottom:4px;width:26px;background:linear-gradient(90deg, transparent, var(--card));pointer-events:none;border-radius:0 14px 14px 0}
-.ac-cards-scroll{display:flex;gap:10px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.ac-cards-scroll{display:flex;gap:10px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-x pinch-zoom}
 .ac-cards-scroll::-webkit-scrollbar{height:4px}
 .ac-cards-scroll::-webkit-scrollbar-thumb{background:rgba(59,158,255,.25);border-radius:4px}
 .ac-card{flex:0 0 auto;width:196px;border-radius:14px;overflow:hidden;text-decoration:none;background:rgba(255,255,255,.03);border:1px solid var(--border);transition:transform .15s;scroll-snap-align:start}
@@ -400,15 +444,28 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-sugestoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .ac-chip{background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.25);color:var(--aqua);border-radius:16px;padding:7px 13px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .ac-chip:hover{background:rgba(59,158,255,.2)}
-.ac-publicar{margin-top:13px;display:flex;align-items:center;gap:9px;cursor:pointer;background:rgba(59,158,255,.08);border:1px solid rgba(59,158,255,.2);border-radius:12px;padding:10px 12px;transition:all .15s}
-.ac-publicar:hover{background:rgba(59,158,255,.14)}
-.ac-publicar-ico{font-size:1.1rem}
-.ac-publicar-txt{font-size:.8rem;font-weight:700;color:var(--aqua)}
-.ac-publicar-sub{font-size:.7rem;color:var(--muted);margin-top:1px}
+.ac-publicar{
+  margin-top:13px;display:flex;align-items:center;gap:10px;cursor:pointer;
+  background:linear-gradient(135deg,#3b9eff,#7C3AED);border:none;border-radius:14px;
+  padding:12px 14px;transition:all .2s;box-shadow:0 4px 16px rgba(59,158,255,.35);
+  animation:ac-publicar-glow 2.4s ease-in-out infinite;
+}
+.ac-publicar:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,.5)}
+@keyframes ac-publicar-glow{0%,100%{box-shadow:0 4px 16px rgba(59,158,255,.35)}50%{box-shadow:0 4px 24px rgba(124,58,237,.55)}}
+.ac-publicar-ico{font-size:1.2rem}
+.ac-publicar-txt{font-size:.83rem;font-weight:800;color:#fff}
+.ac-publicar-sub{font-size:.71rem;color:rgba(255,255,255,.88);margin-top:1px}
 .ac-publicar-login{margin-top:12px;text-align:center}
 .ac-login-link{font-size:.78rem;color:var(--aqua);text-decoration:none;font-weight:600}
 .ac-login-link:hover{text-decoration:underline}
 .ac-vazio,.ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
+
+.fizu-coin-voando{position:fixed;z-index:500;font-size:1.3rem;pointer-events:none;animation:ac-coin-voar .95s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes ac-coin-voar{
+  0%{transform:translate(0,0) scale(.6) rotate(0deg);opacity:0}
+  15%{opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) scale(1.15) rotate(220deg);opacity:0}
+}
 
 .ac-ent-titulo-secao{font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
 .ac-ent-row{display:flex;align-items:center;gap:11px;padding:9px 4px;border-radius:10px;cursor:pointer;transition:background .15s}
@@ -461,10 +518,21 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   <!-- Saudação -->
   <div class="saudacao" id="saudacao"></div>
 
+  <!-- Botões e links: sempre visíveis, acima do resultado — só a barra em si desce -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabBuscar" onclick="setMode('buscar')">🔍 Buscar</button>
+    <button class="mode-tab" id="tabPostar" onclick="setMode('postar')">✏️ Postar</button>
+    <a class="mode-tab" href="/feed#marketplace">🏪 Anunciar grátis</a>
+  </div>
+  <div class="links-wrap-inline">
+    <button class="link-btn outline" onclick="abrirSobre()">🐟 O que é Fizu?</button>
+    <a class="link-btn outline" href="/feed#">👁️ Espiada no feed</a>
+  </div>
+
   <!-- Área de conversa: nasce e cresce aqui, na própria index — nunca some pro feed -->
   <div class="area-conversa" id="areaConversa"></div>
 
-  <!-- Barra -->
+  <!-- Barra: composer. Some do topo e reaparece logo abaixo do resultado, como já era. -->
   <div class="search-wrap">
     <div class="barra">
       <button class="barra-btn mais" id="btnMais" onclick="toggleAnexoMenu()" title="Anexar arquivo, foto ou link">+</button>
@@ -487,21 +555,9 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
       <div class="sugs" id="sugs"></div>
     </div>
 
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="tabBuscar" onclick="setMode('buscar')">🔍 Buscar</button>
-      <button class="mode-tab" id="tabPostar" onclick="setMode('postar')">✏️ Postar</button>
-      <a class="mode-tab" href="/feed#marketplace">🏪 Anunciar grátis</a>
-    </div>
-
     <div class="conversa-toolbar" id="conversaToolbar">
       <span id="conversaContinuarTxt">💬 Continue a conversa</span>
       <button class="conversa-nova-btn" onclick="resetParaHome()">✕ Nova busca</button>
-    </div>
-
-    <!-- Links -->
-    <div class="links-wrap-inline">
-      <button class="link-btn outline" onclick="abrirSobre()">🐟 O que é Fizu?</button>
-      <a class="link-btn outline" href="/feed#">👁️ Espiada no feed</a>
     </div>
 
     <!-- Caixa de post -->
@@ -836,6 +892,53 @@ const FRASES_LOADING_OCEANO = [
   'Organizando a maré de informações...',
 ];
 
+// ── Cena do oceano: a jornada do peixinho, sorteada a cada loading ──
+const OCEANO_FUNDO = ['🪸','🗿','⚓','🏺','💎','🌿','🐚','🦴'];      // corais, estátua, âncora, ânfora, achados perdidos
+const OCEANO_SUPERFICIE = ['🚢','⛵'];                              // embarcações passando lá em cima
+const OCEANO_ESPECIES = ['🐢','🐙','🦑','🐡','🦞','🐬','⭐','🦀'];  // outras espécies cruzando o caminho
+
+function _embaralhar(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function montarCenaOceanoHtml(){
+  const slotsDisponiveis = _embaralhar([6,22,38,54,70,86]);
+  let slotIdx = 0;
+  const proximoSlot = () => slotIdx < slotsDisponiveis.length ? slotsDisponiveis[slotIdx++] : Math.round(Math.random()*80+5);
+
+  let html = '';
+
+  // 1 a 2 achados/estátuas/corais no fundo do mar
+  const qtdFundo = 1 + Math.floor(Math.random()*2);
+  _embaralhar(OCEANO_FUNDO).slice(0, qtdFundo).forEach(e=>{
+    const delay = (Math.random()*2).toFixed(2);
+    html += `<span class="ac-oc-fundo" style="left:${proximoSlot()}%;animation-delay:${delay}s">${e}</span>`;
+  });
+
+  // às vezes uma embarcação passa lá em cima
+  if(Math.random() < 0.55){
+    const e = OCEANO_SUPERFICIE[Math.floor(Math.random()*OCEANO_SUPERFICIE.length)];
+    html += `<span class="ac-oc-superficie" style="left:${Math.round(Math.random()*70+12)}%">${e}</span>`;
+  }
+
+  // quase sempre uma espécie cruza o caminho do peixinho
+  if(Math.random() < 0.85){
+    const e = OCEANO_ESPECIES[Math.floor(Math.random()*OCEANO_ESPECIES.length)];
+    html += `<span class="ac-oc-especie" style="animation-delay:${(Math.random()*1.5).toFixed(2)}s,${(Math.random()*2).toFixed(2)}s">${e}</span>`;
+  }
+
+  // às vezes um predador vem atrás — o peixinho foge!
+  if(Math.random() < 0.4){
+    html += `<span class="ac-oc-predador">🦈</span>`;
+  }
+
+  // o protagonista — às vezes pula pra fora d'água no meio do caminho
+  const vaiPular = Math.random() < 0.4;
+  html += `<span class="ac-peixinho${vaiPular ? ' pulando' : ''}">🐟</span>`;
+
+  html += `<span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>`;
+
+  return html;
+}
+
 function renderCartaoAgenteLoading(){
   const area = document.getElementById('areaConversa');
   const div = document.createElement('div');
@@ -851,10 +954,7 @@ function renderCartaoAgenteLoading(){
           </g>
         </svg>
       </div>
-      <div class="ac-oceano">
-        <span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>
-        <span class="ac-peixinho">🐟</span>
-      </div>
+      <div class="ac-oceano">${montarCenaOceanoHtml()}</div>
       <div class="ac-loading-txt">${FRASES_LOADING_OCEANO[0]}</div>
     </div>`;
   area.appendChild(div);
@@ -897,12 +997,32 @@ function continuarConversa(sugestao){
 
 function renderBotaoPublicar(turnoId){
   if(usuarioAtual){
-    return `<div class="ac-publicar" id="pub-${turnoId}" onclick="publicarInteracaoIdx('${turnoId}')">
+    return `<div class="ac-publicar" id="pub-${turnoId}" onclick="explodirCoinsPublicar(this);publicarInteracaoIdx('${turnoId}')">
       <span class="ac-publicar-ico">📢</span>
       <div><div class="ac-publicar-txt">${esc(mensagemPublicarIdx())}</div><div class="ac-publicar-sub">Ganhe Fizu Coins e apareça no feed</div></div>
     </div>`;
   }
   return `<div class="ac-publicar-login"><a class="ac-login-link" href="/login.html">Entre pra publicar essa resposta no feed — e ganhe 50 Fizu Coins de boas-vindas</a></div>`;
+}
+
+function explodirCoinsPublicar(btnEl){
+  const rect = btnEl.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  for(let i=0; i<7; i++){
+    const coin = document.createElement('div');
+    coin.className = 'fizu-coin-voando';
+    coin.textContent = '🪙';
+    const dx = Math.round(Math.random()*160 - 80);
+    const dy = Math.round(-(60 + Math.random()*90));
+    coin.style.left = cx + 'px';
+    coin.style.top = cy + 'px';
+    coin.style.setProperty('--dx', dx+'px');
+    coin.style.setProperty('--dy', dy+'px');
+    coin.style.animationDelay = (i*0.045) + 's';
+    document.body.appendChild(coin);
+    setTimeout(()=>coin.remove(), 1200);
+  }
 }
 
 function atualizarCartaoAgente(el, resultado, query){
@@ -966,7 +1086,7 @@ async function publicarInteracaoIdx(turnoId){
   if(!dados || !usuarioAtual) return;
   const { resultado, query, agente } = dados;
   const btnEl = document.getElementById('pub-'+turnoId);
-  if(btnEl) btnEl.innerHTML = `<span style="font-size:.8rem;color:var(--muted)">Publicando...</span>`;
+  if(btnEl) btnEl.innerHTML = `<span style="font-size:.83rem;color:#fff;font-weight:700">Publicando...</span>`;
 
   const conteudo = `🔎 Pesquisei: "${query}"\n\n${agente.emoji} ${agente.nome} respondeu:\n${resultado.resposta_curta||''}${resultado.ponto_de_vista?`\n\n💭 ${resultado.ponto_de_vista}`:''}`;
   const fontesStrings = (resultado.fontes||[]).map(f=>`${f.nome||f.dominio}: ${f.link}`);
@@ -990,7 +1110,7 @@ async function publicarInteracaoIdx(turnoId){
     }catch(e){ /* coins são um bônus, não pode travar a publicação */ }
 
     showToast('🎉 Publicado! Você ganhou coins por essa interação.');
-    if(btnEl) btnEl.innerHTML = `<div style="text-align:center;width:100%;font-size:.82rem;font-weight:700;color:#10b981">✅ Publicado no feed</div>`;
+    if(btnEl) btnEl.innerHTML = `<div style="text-align:center;width:100%;font-size:.83rem;font-weight:800;color:#fff">✅ Publicado no feed!</div>`;
   }catch(e){
     console.error('publicarInteracaoIdx:', e);
     showToast('Não consegui publicar agora. Tente de novo.');
