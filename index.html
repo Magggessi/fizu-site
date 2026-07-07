@@ -349,25 +349,35 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-loading-logo svg{width:19px;height:19px}
 @keyframes ac-boiar{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
-/* ── Cena do oceano: jornada do peixinho, sorteada a cada loading, nunca igual ── */
+/* ── Cena do oceano: jornada do peixinho por vários cenários, sorteada e nunca igual ── */
 .ac-oceano{
-  position:relative;width:100%;max-width:340px;height:82px;
+  position:relative;width:100%;max-width:460px;height:126px;
   border-radius:14px;overflow:hidden;margin:0 auto;
   background:linear-gradient(180deg,rgba(59,158,255,.24) 0%,rgba(59,158,255,.13) 45%,rgba(8,16,32,.42) 100%);
+  transition:background 1.1s ease;
 }
-.ac-oceano::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.4);z-index:2}
+.ac-oceano::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.4);z-index:3}
+.ac-oc-camada{position:absolute;inset:0;transition:opacity .6s ease;opacity:1}
+.ac-oc-camada.saindo{opacity:0}
+.ac-oc-legenda{
+  position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:.62rem;
+  letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700;z-index:3;
+  transition:opacity .6s ease;
+}
 
-.ac-bolha{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,255,255,.6);animation:ac-subir 2.6s ease-in infinite;z-index:1}
+.ac-bolha{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,255,255,.6);animation:ac-subir 2.6s ease-in infinite;z-index:2}
 .ac-bolha.b1{left:10%;width:5px;height:5px;animation-delay:0s;animation-duration:2.3s}
 .ac-bolha.b2{left:30%;width:6px;height:6px;animation-delay:.5s;animation-duration:2.8s}
 .ac-bolha.b3{left:55%;width:4px;height:4px;animation-delay:1s;animation-duration:2.1s}
 .ac-bolha.b4{left:75%;width:6px;height:6px;animation-delay:1.5s;animation-duration:2.6s}
-@keyframes ac-subir{0%{transform:translateY(0);opacity:0}15%{opacity:.9}85%{opacity:.4}100%{transform:translateY(-72px);opacity:0}}
+@keyframes ac-subir{0%{transform:translateY(0);opacity:0}15%{opacity:.9}85%{opacity:.4}100%{transform:translateY(-110px);opacity:0}}
 
-.ac-oc-fundo{position:absolute;bottom:4px;font-size:1rem;opacity:.88;animation:ac-oc-balanco 2.6s ease-in-out infinite;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
-.ac-oc-superficie{position:absolute;top:3px;font-size:1.05rem;opacity:.92;animation:ac-oc-boiar-navio 3.2s ease-in-out infinite}
-.ac-oc-especie{position:absolute;bottom:32px;font-size:.88rem;opacity:.85;animation:ac-oc-nadar-fundo 4.6s linear infinite,ac-oc-balanco-esp 2.2s ease-in-out infinite}
-.ac-oc-predador{position:absolute;bottom:11px;font-size:1.05rem;opacity:.9;animation:ac-nadar 4.2s linear infinite;animation-delay:.55s;transform:scaleX(-1)}
+.ac-oc-fundo{position:absolute;bottom:4px;font-size:1.15rem;opacity:.88;animation:ac-oc-balanco 2.6s ease-in-out infinite;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.ac-oc-superficie{position:absolute;top:5px;font-size:1.2rem;opacity:.92;animation:ac-oc-boiar-navio 3.2s ease-in-out infinite}
+.ac-oc-especie{position:absolute;bottom:46px;font-size:1rem;opacity:.85;animation:ac-oc-nadar-fundo 4.6s linear infinite,ac-oc-balanco-esp 2.2s ease-in-out infinite}
+.ac-oc-predador{position:absolute;bottom:15px;font-size:1.2rem;opacity:.9;animation:ac-nadar 3.6s linear infinite;transform:scaleX(-1)}
+.ac-oc-brilho{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),transparent 70%);animation:ac-oc-brilhar 2.4s ease-in-out infinite}
+@keyframes ac-oc-brilhar{0%,100%{opacity:.15}50%{opacity:.8}}
 
 @keyframes ac-oc-balanco{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
 @keyframes ac-oc-balanco-esp{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-3px)}}
@@ -375,15 +385,18 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 @keyframes ac-oc-nadar-fundo{0%{left:-10%}100%{left:104%}}
 
 .ac-peixinho{
-  position:absolute;bottom:10px;font-size:1.05rem;
+  position:absolute;bottom:14px;font-size:1.3rem;z-index:4;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
   transform:scaleX(-1);
   animation:ac-nadar 4.2s linear infinite, ac-oc-bob 1.3s ease-in-out infinite;
 }
 @keyframes ac-nadar{0%{left:-10%}100%{left:104%}}
-@keyframes ac-oc-bob{0%,100%{bottom:10px}50%{bottom:15px}}
+@keyframes ac-oc-bob{0%,100%{bottom:14px}50%{bottom:20px}}
 .ac-peixinho.pulando{animation:ac-nadar 4.2s linear infinite, ac-oc-pulo 4.2s ease-in-out infinite}
 @keyframes ac-oc-pulo{
+  0%{bottom:14px} 36%{bottom:14px} 46%{bottom:76px} 56%{bottom:14px} 100%{bottom:14px}
+}
+.ac-peixinho.fugindo{animation:ac-nadar 2.3s linear infinite, ac-oc-bob 1.3s ease-in-out infinite}
   0%{bottom:10px} 36%{bottom:10px} 46%{bottom:58px} 56%{bottom:10px} 100%{bottom:10px}
 }
 
@@ -474,6 +487,12 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   text-align:center;
 }
 .jogo-offline-overlay.show{display:flex}
+.jogo-fechar-btn{
+  position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--muted);
+  font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.jogo-fechar-btn:hover{color:var(--text);border-color:var(--aqua)}
 .jogo-offline-titulo{font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:900;margin-bottom:6px}
 .jogo-offline-sub{font-size:.84rem;color:var(--muted);margin-bottom:18px;min-height:1.2em}
 .jogo-area{
@@ -669,6 +688,7 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 
 <!-- Joguinho offline: aparece quando cai a conexão, tipo o Dino do Chrome -->
 <div class="jogo-offline-overlay" id="jogoOfflineOverlay">
+  <button class="jogo-fechar-btn" onclick="jogoEsconderOverlay()" title="Fechar">✕</button>
   <div class="jogo-offline-titulo">📡 Sem conexão com o Fizu</div>
   <div class="jogo-offline-sub">Enquanto isso, ajuda o peixinho a fugir...</div>
   <div class="jogo-area" id="jogoArea">
@@ -937,51 +957,97 @@ const FRASES_LOADING_OCEANO = [
   'Organizando a maré de informações...',
 ];
 
-// ── Cena do oceano: a jornada do peixinho, sorteada a cada loading ──
-const OCEANO_FUNDO = ['🪸','🗿','⚓','🏺','💎','🌿','🐚','🦴'];      // corais, estátua, âncora, ânfora, achados perdidos
-const OCEANO_SUPERFICIE = ['🚢','⛵'];                              // embarcações passando lá em cima
-const OCEANO_ESPECIES = ['🐢','🐙','🦑','🐡','🦞','🐬','⭐','🦀'];  // outras espécies cruzando o caminho
-
+// ── Jornada do oceano: o peixinho atravessa vários cenários, câmera
+// acompanha ele o tempo todo, cenário muda a cada poucos segundos ──
 function _embaralhar(arr){ return [...arr].sort(()=>Math.random()-0.5); }
 
-function montarCenaOceanoHtml(){
-  const slotsDisponiveis = _embaralhar([6,22,38,54,70,86]);
-  let slotIdx = 0;
-  const proximoSlot = () => slotIdx < slotsDisponiveis.length ? slotsDisponiveis[slotIdx++] : Math.round(Math.random()*80+5);
+const CENAS_OCEANO = [
+  {
+    id:'recife',
+    fundo:'linear-gradient(180deg, rgba(45,212,191,.38) 0%, rgba(59,158,255,.18) 55%, rgba(8,16,32,.4) 100%)',
+    legenda:'🪸 Cruzando o recife...',
+    peixeClasse:'',
+    elementos(){
+      const slots = _embaralhar([16,66]);
+      const especie = _embaralhar(['🐢','🐡','⭐','🦀'])[0];
+      return `<span class="ac-oc-fundo" style="left:${slots[0]}%">🪸</span>`
+           + `<span class="ac-oc-fundo" style="left:${slots[1]}%;animation-delay:.6s">🌿</span>`
+           + `<span class="ac-oc-especie" style="animation-delay:${(Math.random()*1.2).toFixed(2)}s,0s">${especie}</span>`;
+    }
+  },
+  {
+    id:'naufragio',
+    fundo:'linear-gradient(180deg, rgba(100,120,80,.32) 0%, rgba(59,90,80,.26) 55%, rgba(8,16,20,.48) 100%)',
+    legenda:'⚓ Explorando o naufrágio...',
+    peixeClasse:'',
+    elementos(){
+      const achados = _embaralhar(['⚓','🏺','💎','🦴']).slice(0,2);
+      const slots = _embaralhar([14,44,72]);
+      let html = achados.map((e,i)=>`<span class="ac-oc-fundo" style="left:${slots[i]}%;animation-delay:${(i*.4).toFixed(2)}s">${e}</span>`).join('');
+      html += `<span class="ac-oc-especie" style="animation-delay:.3s,0s">🦑</span>`;
+      return html;
+    }
+  },
+  {
+    id:'perseguicao',
+    fundo:'linear-gradient(180deg, rgba(29,78,216,.38) 0%, rgba(15,50,120,.3) 55%, rgba(4,10,26,.55) 100%)',
+    legenda:'🦈 Fugindo de um predador!',
+    peixeClasse:'fugindo',
+    elementos(){ return `<span class="ac-oc-predador">🦈</span>`; }
+  },
+  {
+    id:'superficie',
+    fundo:'linear-gradient(180deg, rgba(147,197,253,.48) 0%, rgba(59,158,255,.2) 55%, rgba(10,20,40,.4) 100%)',
+    legenda:"🌊 Pulando pra fora d'água...",
+    peixeClasse:'pulando',
+    elementos(){
+      const barco = Math.random()<0.5 ? '🚢' : '⛵';
+      return `<span class="ac-oc-superficie" style="left:${Math.round(Math.random()*60+15)}%">${barco}</span>`
+           + `<span class="ac-oc-brilho" style="width:64px;height:64px;top:-28px;left:${Math.round(Math.random()*50+20)}%"></span>`;
+    }
+  },
+  {
+    id:'abissal',
+    fundo:'linear-gradient(180deg, rgba(40,25,70,.35) 0%, rgba(12,10,32,.42) 55%, rgba(2,2,10,.68) 100%)',
+    legenda:'🌑 Nas profundezas abissais...',
+    peixeClasse:'',
+    elementos(){
+      let html = `<span class="ac-oc-fundo" style="left:50%">🗿</span><span class="ac-oc-especie" style="animation-delay:.2s,0s">🐙</span>`;
+      for(let i=0;i<3;i++){
+        html += `<span class="ac-oc-brilho" style="width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;left:${Math.round(Math.random()*90+5)}%;top:${Math.round(Math.random()*55+15)}%;animation-delay:${(Math.random()*2).toFixed(2)}s"></span>`;
+      }
+      return html;
+    }
+  },
+];
 
-  let html = '';
+function iniciarJornadaOceano(oceanoEl){
+  const ordem = _embaralhar(CENAS_OCEANO);
+  let idx = 0;
 
-  // 1 a 2 achados/estátuas/corais no fundo do mar
-  const qtdFundo = 1 + Math.floor(Math.random()*2);
-  _embaralhar(OCEANO_FUNDO).slice(0, qtdFundo).forEach(e=>{
-    const delay = (Math.random()*2).toFixed(2);
-    html += `<span class="ac-oc-fundo" style="left:${proximoSlot()}%;animation-delay:${delay}s">${e}</span>`;
-  });
+  function aplicarCena(cena){
+    oceanoEl.style.background = cena.fundo;
+    const peixe = oceanoEl.querySelector('.ac-peixinho');
+    if(peixe) peixe.className = 'ac-peixinho' + (cena.peixeClasse ? ' '+cena.peixeClasse : '');
 
-  // às vezes uma embarcação passa lá em cima
-  if(Math.random() < 0.55){
-    const e = OCEANO_SUPERFICIE[Math.floor(Math.random()*OCEANO_SUPERFICIE.length)];
-    html += `<span class="ac-oc-superficie" style="left:${Math.round(Math.random()*70+12)}%">${e}</span>`;
+    const antiga = oceanoEl.querySelector('.ac-oc-camada');
+    if(antiga) antiga.classList.add('saindo');
+
+    const nova = document.createElement('div');
+    nova.className = 'ac-oc-camada';
+    nova.style.opacity = '0';
+    nova.innerHTML = cena.elementos() + `<div class="ac-oc-legenda">${cena.legenda}</div>`;
+    oceanoEl.insertBefore(nova, peixe || oceanoEl.firstChild);
+    requestAnimationFrame(()=>{ nova.style.opacity = '1'; });
+
+    setTimeout(()=>{ if(antiga) antiga.remove(); }, 700);
   }
 
-  // quase sempre uma espécie cruza o caminho do peixinho
-  if(Math.random() < 0.85){
-    const e = OCEANO_ESPECIES[Math.floor(Math.random()*OCEANO_ESPECIES.length)];
-    html += `<span class="ac-oc-especie" style="animation-delay:${(Math.random()*1.5).toFixed(2)}s,${(Math.random()*2).toFixed(2)}s">${e}</span>`;
-  }
-
-  // às vezes um predador vem atrás — o peixinho foge!
-  if(Math.random() < 0.4){
-    html += `<span class="ac-oc-predador">🦈</span>`;
-  }
-
-  // o protagonista — às vezes pula pra fora d'água no meio do caminho
-  const vaiPular = Math.random() < 0.4;
-  html += `<span class="ac-peixinho${vaiPular ? ' pulando' : ''}">🐟</span>`;
-
-  html += `<span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>`;
-
-  return html;
+  aplicarCena(ordem[0]);
+  return setInterval(()=>{
+    idx = (idx+1) % ordem.length;
+    aplicarCena(ordem[idx]);
+  }, 2400);
 }
 
 function renderCartaoAgenteLoading(){
@@ -999,10 +1065,17 @@ function renderCartaoAgenteLoading(){
           </g>
         </svg>
       </div>
-      <div class="ac-oceano">${montarCenaOceanoHtml()}</div>
+      <div class="ac-oceano">
+        <span class="ac-peixinho">🐟</span>
+        <span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>
+      </div>
       <div class="ac-loading-txt">${FRASES_LOADING_OCEANO[0]}</div>
     </div>`;
   area.appendChild(div);
+
+  const oceanoEl = div.querySelector('.ac-oceano');
+  div._jornadaTimer = iniciarJornadaOceano(oceanoEl);
+
   const txtEl = div.querySelector('.ac-loading-txt');
   let i = 0;
   div._loadingTimer = setInterval(()=>{
@@ -1017,6 +1090,7 @@ function renderCartaoAgenteLoading(){
 
 function pararLoadingOceano(el){
   if(el && el._loadingTimer){ clearInterval(el._loadingTimer); el._loadingTimer = null; }
+  if(el && el._jornadaTimer){ clearInterval(el._jornadaTimer); el._jornadaTimer = null; }
 }
 
 function scrollParaTurno(turnoEl){
@@ -1732,6 +1806,20 @@ function _jogoHandlerTecla(ev){
   }
 }
 
+let _jogoOfflineDebounce = null;
+
+function _jogoOnOffline(){
+  clearTimeout(_jogoOfflineDebounce);
+  // Debounce: evita mostrar o overlay em cima de uma oscilação rápida de rede
+  // (troca de wifi, VPN reconectando etc). Só mostra se realmente continuar
+  // offline depois de 1.2s.
+  _jogoOfflineDebounce = setTimeout(()=>{ if(!navigator.onLine) jogoMostrarOverlay(); }, 1200);
+}
+function _jogoOnOnline(){
+  clearTimeout(_jogoOfflineDebounce);
+  jogoEsconderOverlay();
+}
+
 (function initJogoOfflineListeners(){
   const area = document.getElementById('jogoArea');
   if(area){
@@ -1739,9 +1827,12 @@ function _jogoHandlerTecla(ev){
     area.addEventListener('touchstart', (e)=>{ e.preventDefault(); _jogoHandlerClique(); }, { passive:false });
   }
   document.addEventListener('keydown', _jogoHandlerTecla);
-  window.addEventListener('offline', jogoMostrarOverlay);
-  window.addEventListener('online', jogoEsconderOverlay);
-  if(!navigator.onLine) jogoMostrarOverlay();
+  window.addEventListener('offline', _jogoOnOffline);
+  window.addEventListener('online', _jogoOnOnline);
+  // Sem checagem de navigator.onLine no carregamento da página: essa leitura
+  // inicial não é confiável em vários navegadores/redes e podia travar a
+  // tela inteira (o overlay é fixed + cobre tudo) sem o usuário nunca ter
+  // realmente ficado offline. Só reage a transições reais de conexão.
 })();
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
