@@ -467,6 +467,30 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   100%{transform:translate(var(--dx),var(--dy)) scale(1.15) rotate(220deg);opacity:0}
 }
 
+/* ══════════════════ JOGUINHO OFFLINE (tipo Dino do Chrome) ══════════════════ */
+.jogo-offline-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;
+  text-align:center;
+}
+.jogo-offline-overlay.show{display:flex}
+.jogo-offline-titulo{font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:900;margin-bottom:6px}
+.jogo-offline-sub{font-size:.84rem;color:var(--muted);margin-bottom:18px;min-height:1.2em}
+.jogo-area{
+  position:relative;width:100%;max-width:480px;height:180px;border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(59,158,255,.22) 0%,rgba(59,158,255,.1) 55%,rgba(8,16,32,.4) 100%);
+  border:1px solid var(--border);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;
+}
+.jogo-area::after{content:'';position:absolute;left:0;right:0;bottom:26px;height:2px;background:rgba(255,255,255,.25)}
+.jogo-pontuacao{position:absolute;top:10px;right:14px;font-family:'Inter',sans-serif;font-weight:800;font-size:1rem;color:var(--text);opacity:.9;z-index:3}
+.jogo-peixe{position:absolute;left:13%;bottom:26px;font-size:1.8rem;transform:scaleX(-1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));z-index:2;will-change:bottom}
+.jogo-obstaculo{position:absolute;bottom:26px;font-size:1.6rem;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));z-index:2;will-change:left}
+.jogo-mensagem{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.86rem;font-weight:700;color:var(--text);background:rgba(8,16,32,.25);
+  padding:0 20px;text-align:center;z-index:4;
+}
+
 .ac-ent-titulo-secao{font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
 .ac-ent-row{display:flex;align-items:center;gap:11px;padding:9px 4px;border-radius:10px;cursor:pointer;transition:background .15s}
 .ac-ent-row:hover{background:rgba(59,158,255,.07)}
@@ -643,6 +667,18 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 
 <div class="toast-idx" id="toast"></div>
 
+<!-- Joguinho offline: aparece quando cai a conexão, tipo o Dino do Chrome -->
+<div class="jogo-offline-overlay" id="jogoOfflineOverlay">
+  <div class="jogo-offline-titulo">📡 Sem conexão com o Fizu</div>
+  <div class="jogo-offline-sub">Enquanto isso, ajuda o peixinho a fugir...</div>
+  <div class="jogo-area" id="jogoArea">
+    <div class="jogo-pontuacao" id="jogoPontuacao">0</div>
+    <div class="jogo-peixe" id="jogoPeixe">🐟</div>
+    <div class="jogo-mensagem" id="jogoMensagem">Toque ou aperte espaço pra começar</div>
+  </div>
+  <div class="jogo-offline-sub" id="jogoStatusRede"></div>
+</div>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -692,7 +728,7 @@ const AGENTES_IDX = {
   sereia: { nome:'SereIA', emoji:'🧜‍♀️', cor:'#FF2E88', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000004/SereIA.png' },
   okto:   { nome:'Okto',   emoji:'🐙',   cor:'#9333ea', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000005/Okto.png' },
   maya:   { nome:'Maya',   emoji:'🌙',   cor:'#2d6a4f', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000006/Maya.png' },
-  flux:   { nome:'Flux',   emoji:'🔦',   cor:'#0ea5e9', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux.png', fotoFala:['https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux-fala-1.png','https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux-fala-2.png'] },
+  flux:   { nome:'Flux',   emoji:'🔦',   cor:'#0ea5e9', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Flux.png' },
   luna:   { nome:'Luna',   emoji:'🐟',   cor:'#c58a1f', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Luna.png' },
   marlin: { nome:'Marlin', emoji:'🐟',   cor:'#1e5f8f', foto:'https://raw.githubusercontent.com/Magggessi/fizu-site/main/avatares-agentes/Marlin.png' },
 };
@@ -742,16 +778,8 @@ function iniciarAnimacaoAvatarFala(turnoId, agenteSlug){
   if(!wrap) return;
   wrap.classList.add('falando');
   _vozAvatarWrapAtual = wrap;
-  const ag = AGENTES_IDX[agenteSlug];
-  const img = document.getElementById('avatar-'+turnoId);
-  if(img && ag && ag.foto && ag.fotoFala && ag.fotoFala.length){
-    const frames = [ag.foto, ag.fotoFala[0], ag.foto, ag.fotoFala[1] || ag.fotoFala[0]];
-    let i = 0;
-    _vozAvatarTimer = setInterval(()=>{
-      i = (i+1) % frames.length;
-      img.src = frames[i];
-    }, 220);
-  }
+  // Troca de frames de boca (fotoFala) desativada por enquanto — deixado pra outro momento.
+  // Por ora todo agente usa só o anel de presença + respiração leve.
 }
 
 function pararAnimacaoAvatarFala(){
@@ -803,23 +831,36 @@ function narrarTurno(turnoId, btnEl){
 
 let _reconhecimentoVoz = null;
 let _gravandoVoz = false;
+let _vozSafetyTimeout = null;
 
 function iniciarReconhecimentoVoz(){
+  if(_gravandoVoz){ pararReconhecimentoVoz(); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){ showToast('Seu navegador não suporta busca por voz. Tente no Chrome ou Edge.'); return; }
-  if(_gravandoVoz){ pararReconhecimentoVoz(); return; }
   if(speechSynthesis?.speaking) speechSynthesis.cancel();
 
-  _reconhecimentoVoz = new SR();
-  _reconhecimentoVoz.lang = 'pt-BR';
-  _reconhecimentoVoz.interimResults = true;
-  _reconhecimentoVoz.maxAlternatives = 1;
+  try{
+    _reconhecimentoVoz = new SR();
+    _reconhecimentoVoz.lang = 'pt-BR';
+    _reconhecimentoVoz.interimResults = true;
+    _reconhecimentoVoz.maxAlternatives = 1;
+  }catch(e){
+    showToast('Não consegui acessar o microfone agora.');
+    _reconhecimentoVoz = null;
+    return;
+  }
 
   const inp = document.getElementById('barraInput');
   const btn = document.getElementById('btnMic');
   _gravandoVoz = true;
   if(btn){ btn.classList.add('gravando'); btn.title = 'Ouvindo... toque pra parar'; }
-  inp.placeholder = '🎙️ Pode falar...';
+  if(inp) inp.placeholder = '🎙️ Pode falar...';
+
+  // Segurança: alguns navegadores mobile nunca disparam onend/onerror em
+  // certos cenários (permissão ignorada, PWA standalone etc) — sem isso o
+  // microfone ficaria "travado" pra sempre. Força parar em 6s no máximo.
+  clearTimeout(_vozSafetyTimeout);
+  _vozSafetyTimeout = setTimeout(()=>{ if(_gravandoVoz) pararReconhecimentoVoz(); }, 6000);
 
   _reconhecimentoVoz.onresult = (ev) => {
     let texto = '';
@@ -828,7 +869,7 @@ function iniciarReconhecimentoVoz(){
       texto += ev.results[i][0].transcript;
       if(ev.results[i].isFinal) final = true;
     }
-    inp.value = texto;
+    if(inp) inp.value = texto;
     if(final){
       pararReconhecimentoVoz();
       buscar();
@@ -840,12 +881,16 @@ function iniciarReconhecimentoVoz(){
 }
 
 function pararReconhecimentoVoz(){
+  clearTimeout(_vozSafetyTimeout);
+  if(!_gravandoVoz && !_reconhecimentoVoz) return;
   _gravandoVoz = false;
   const btn = document.getElementById('btnMic');
   if(btn){ btn.classList.remove('gravando'); btn.title = 'Perguntar por voz'; }
   if(conversaAtiva) atualizarComposer();
   else { const inp = document.getElementById('barraInput'); if(inp) inp.placeholder = 'O que está acontecendo no Fizu...'; }
-  if(_reconhecimentoVoz){ try{ _reconhecimentoVoz.stop(); }catch(e){} }
+  const rec = _reconhecimentoVoz;
+  _reconhecimentoVoz = null;
+  if(rec){ rec.onresult = null; rec.onerror = null; rec.onend = null; try{ rec.stop(); }catch(e){} try{ rec.abort(); }catch(e){} }
 }
 
 let conversaHistorico = [];   // [{autor:'usuario'|'agente', texto, agente?}]
@@ -1455,13 +1500,20 @@ function escolherAnexoArquivo(tipo){
 async function onAnexoArquivoSelecionado(ev, tipo){
   const file = ev.target.files?.[0];
   if (!file) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session?.access_token){
+    showToast('Entre na sua conta pra anexar arquivos.');
+    ev.target.value = '';
+    return;
+  }
   setMode('postar');
   mostrarAnexoChip(`Enviando ${file.name}...`);
   try {
+    const token = session.access_token;
     const path = `idx/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
     const resp = await fetch(`${SUPA_URL}/storage/v1/object/posts/${path}`, {
       method: 'POST',
-      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': file.type || 'application/octet-stream' },
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': file.type || 'application/octet-stream' },
       body: file,
     });
     if (!resp.ok) throw new Error('Falha no upload');
@@ -1532,6 +1584,165 @@ function fecharSobre(){document.getElementById('overlay').classList.remove('show
 
 // TOAST
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ════════════════════════════════════════════════════════════
+// JOGUINHO OFFLINE — aparece quando cai a conexão, tipo o Dino
+// do Chrome, mas com o peixinho do Fizu fugindo de perigos do mar.
+// ════════════════════════════════════════════════════════════
+const JOGO_OBSTACULOS = ['🦈','🪸','🕸️','⚓','🪨'];
+let _jogoRAF = null;
+let _jogoRodando = false;
+let _jogoComecou = false;
+let _jogoY = 0;
+let _jogoVelY = 0;
+let _jogoNoAr = false;
+let _jogoObstaculos = [];
+let _jogoVelocidade = 3.2;
+let _jogoProximoSpawn = 0;
+let _jogoTempo = 0;
+let _jogoPontos = 0;
+let _jogoUltimoFrame = 0;
+
+const JOGO_GRAVIDADE = 0.62;
+const JOGO_IMPULSO = -11.5;
+
+function _jogoEls(){
+  return {
+    overlay: document.getElementById('jogoOfflineOverlay'),
+    area: document.getElementById('jogoArea'),
+    peixe: document.getElementById('jogoPeixe'),
+    pontuacao: document.getElementById('jogoPontuacao'),
+    mensagem: document.getElementById('jogoMensagem'),
+    status: document.getElementById('jogoStatusRede'),
+  };
+}
+
+function jogoMostrarOverlay(){
+  const { overlay, mensagem, status } = _jogoEls();
+  overlay.classList.add('show');
+  if(status) status.textContent = '';
+  jogoResetar();
+  mensagem.style.display = 'flex';
+  mensagem.textContent = 'Toque ou aperte espaço pra começar';
+}
+
+function jogoEsconderOverlay(){
+  const { overlay, status } = _jogoEls();
+  jogoParar();
+  if(status) status.textContent = '✅ Conexão de volta! Pode continuar no Fizu.';
+  setTimeout(()=>{ overlay.classList.remove('show'); }, 900);
+}
+
+function jogoResetar(){
+  jogoParar();
+  const { peixe, pontuacao, area } = _jogoEls();
+  _jogoObstaculos.forEach(o=>o.el.remove());
+  _jogoObstaculos = [];
+  _jogoY = 0; _jogoVelY = 0; _jogoNoAr = false;
+  _jogoVelocidade = 3.2; _jogoTempo = 0; _jogoPontos = 0; _jogoProximoSpawn = 60;
+  _jogoComecou = false;
+  if(peixe) peixe.style.bottom = '26px';
+  if(pontuacao) pontuacao.textContent = '0';
+}
+
+function jogoIniciarSeNecessario(){
+  if(_jogoRodando) { jogoPular(); return; }
+  const { mensagem } = _jogoEls();
+  if(mensagem) mensagem.style.display = 'none';
+  _jogoComecou = true;
+  _jogoRodando = true;
+  _jogoUltimoFrame = performance.now();
+  jogoPular();
+  _jogoRAF = requestAnimationFrame(jogoLoop);
+}
+
+function jogoPular(){
+  if(!_jogoComecou){ jogoIniciarSeNecessario(); return; }
+  if(!_jogoNoAr){ _jogoVelY = JOGO_IMPULSO; _jogoNoAr = true; }
+}
+
+function jogoParar(){
+  _jogoRodando = false;
+  if(_jogoRAF){ cancelAnimationFrame(_jogoRAF); _jogoRAF = null; }
+}
+
+function jogoLoop(agora){
+  if(!_jogoRodando) return;
+  const { peixe, area, pontuacao, mensagem } = _jogoEls();
+  const larguraArea = area.clientWidth;
+
+  // física do pulo
+  _jogoVelY += JOGO_GRAVIDADE;
+  _jogoY += _jogoVelY;
+  if(_jogoY >= 0){ _jogoY = 0; _jogoVelY = 0; _jogoNoAr = false; }
+  peixe.style.bottom = (26 - _jogoY) + 'px';
+
+  // dificuldade cresce com o tempo
+  _jogoTempo++;
+  _jogoPontos = Math.floor(_jogoTempo/6);
+  pontuacao.textContent = _jogoPontos;
+  if(_jogoTempo % 260 === 0) _jogoVelocidade += 0.45;
+
+  // spawn de obstáculos
+  _jogoProximoSpawn--;
+  if(_jogoProximoSpawn <= 0){
+    const emoji = JOGO_OBSTACULOS[Math.floor(Math.random()*JOGO_OBSTACULOS.length)];
+    const el = document.createElement('div');
+    el.className = 'jogo-obstaculo';
+    el.textContent = emoji;
+    el.style.left = larguraArea + 'px';
+    area.appendChild(el);
+    _jogoObstaculos.push({ el, x: larguraArea });
+    _jogoProximoSpawn = 70 + Math.random()*60 - Math.min(_jogoVelocidade*4, 40);
+  }
+
+  // move obstáculos e checa colisão
+  const peixeRect = { left: larguraArea*0.13, right: larguraArea*0.13+30, bottom: 26 - _jogoY, top: 26 - _jogoY + 30 };
+  for(let i=_jogoObstaculos.length-1; i>=0; i--){
+    const o = _jogoObstaculos[i];
+    o.x -= _jogoVelocidade;
+    o.el.style.left = o.x + 'px';
+    if(o.x < -40){ o.el.remove(); _jogoObstaculos.splice(i,1); continue; }
+
+    const obsLeft = o.x, obsRight = o.x + 26;
+    const colideX = obsRight > peixeRect.left && obsLeft < peixeRect.right;
+    const colideY = peixeRect.bottom < 30; // obstáculo fica no chão; só escapa se tiver pulado o suficiente
+    if(colideX && colideY){
+      jogoFimDeJogo();
+      return;
+    }
+  }
+
+  _jogoRAF = requestAnimationFrame(jogoLoop);
+}
+
+function jogoFimDeJogo(){
+  jogoParar();
+  const { mensagem } = _jogoEls();
+  mensagem.style.display = 'flex';
+  mensagem.innerHTML = `🐟💥 O peixinho foi pego! Pontuação: <strong>&nbsp;${_jogoPontos}</strong><br>Toque pra tentar de novo`;
+  _jogoComecou = false;
+}
+
+function _jogoHandlerClique(){ jogoIniciarSeNecessario(); }
+function _jogoHandlerTecla(ev){
+  if(ev.code === 'Space' && document.getElementById('jogoOfflineOverlay')?.classList.contains('show')){
+    ev.preventDefault();
+    jogoIniciarSeNecessario();
+  }
+}
+
+(function initJogoOfflineListeners(){
+  const area = document.getElementById('jogoArea');
+  if(area){
+    area.addEventListener('click', _jogoHandlerClique);
+    area.addEventListener('touchstart', (e)=>{ e.preventDefault(); _jogoHandlerClique(); }, { passive:false });
+  }
+  document.addEventListener('keydown', _jogoHandlerTecla);
+  window.addEventListener('offline', jogoMostrarOverlay);
+  window.addEventListener('online', jogoEsconderOverlay);
+  if(!navigator.onLine) jogoMostrarOverlay();
+})();
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
