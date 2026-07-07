@@ -385,11 +385,11 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 @keyframes ac-oc-nadar-fundo{0%{left:-10%}100%{left:104%}}
 
 .ac-peixinho{
-  position:absolute;bottom:14px;font-size:1.3rem;z-index:4;
+  position:absolute;bottom:14px;width:38px;height:23px;z-index:4;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
-  transform:scaleX(-1);
   animation:ac-nadar 4.2s linear infinite, ac-oc-bob 1.3s ease-in-out infinite;
 }
+.ac-peixinho svg{width:100%;height:100%;display:block}
 @keyframes ac-nadar{0%{left:-10%}100%{left:104%}}
 @keyframes ac-oc-bob{0%,100%{bottom:14px}50%{bottom:20px}}
 .ac-peixinho.pulando{animation:ac-nadar 4.2s linear infinite, ac-oc-pulo 4.2s ease-in-out infinite}
@@ -397,8 +397,6 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   0%{bottom:14px} 36%{bottom:14px} 46%{bottom:76px} 56%{bottom:14px} 100%{bottom:14px}
 }
 .ac-peixinho.fugindo{animation:ac-nadar 2.3s linear infinite, ac-oc-bob 1.3s ease-in-out infinite}
-  0%{bottom:10px} 36%{bottom:10px} 46%{bottom:58px} 56%{bottom:10px} 100%{bottom:10px}
-}
 
 .ac-loading-txt{margin-top:10px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
 .ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
@@ -407,6 +405,7 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;
   padding:16px 18px;backdrop-filter:blur(12px);
 }
+.ac-ent-extra{margin-bottom:10px;padding:12px 14px;opacity:.92}
 .ac-header{display:flex;align-items:center;gap:9px;margin-bottom:9px}
 .ac-nome{flex:1}
 .ac-avatar-wrap{position:relative;flex-shrink:0;border-radius:50%}
@@ -502,7 +501,8 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 }
 .jogo-area::after{content:'';position:absolute;left:0;right:0;bottom:26px;height:2px;background:rgba(255,255,255,.25)}
 .jogo-pontuacao{position:absolute;top:10px;right:14px;font-family:'Inter',sans-serif;font-weight:800;font-size:1rem;color:var(--text);opacity:.9;z-index:3}
-.jogo-peixe{position:absolute;left:13%;bottom:26px;font-size:1.8rem;transform:scaleX(-1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));z-index:2;will-change:bottom}
+.jogo-peixe{position:absolute;left:13%;bottom:26px;width:48px;height:29px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));z-index:2;will-change:bottom}
+.jogo-peixe svg{width:100%;height:100%;display:block}
 .jogo-obstaculo{position:absolute;bottom:26px;font-size:1.6rem;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));z-index:2;will-change:left}
 .jogo-mensagem{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -584,8 +584,8 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
         <button class="anexo-item" onclick="escolherAnexoArquivo('documento')">📄 Documento</button>
         <button class="anexo-item" onclick="escolherAnexoLink()">🔗 Link</button>
       </div>
-      <input type="file" id="anexoInputImagem" accept="image/*,video/*" style="display:none" onchange="onAnexoArquivoSelecionado(event,'imagem')">
-      <input type="file" id="anexoInputDocumento" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="onAnexoArquivoSelecionado(event,'documento')">
+      <input type="file" id="anexoInputImagem" style="display:none" onchange="onAnexoArquivoSelecionado(event,'imagem')">
+      <input type="file" id="anexoInputDocumento" style="display:none" onchange="onAnexoArquivoSelecionado(event,'documento')">
       <input class="barra-input" id="barraInput"
         placeholder="O que está acontecendo no Fizu..."
         autocomplete="off"
@@ -693,7 +693,7 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   <div class="jogo-offline-sub">Enquanto isso, ajuda o peixinho a fugir...</div>
   <div class="jogo-area" id="jogoArea">
     <div class="jogo-pontuacao" id="jogoPontuacao">0</div>
-    <div class="jogo-peixe" id="jogoPeixe">🐟</div>
+    <div class="jogo-peixe" id="jogoPeixe"></div>
     <div class="jogo-mensagem" id="jogoMensagem">Toque ou aperte espaço pra começar</div>
   </div>
   <div class="jogo-offline-sub" id="jogoStatusRede"></div>
@@ -740,6 +740,24 @@ function getVisitanteId(){
     }
   }catch(e){ /* segue como visitante anônimo */ }
 })();
+
+// Peixinho protagonista: SVG desenhado (não emoji), já virado pra direita —
+// mesma paleta de gradiente da marca. Reaproveitado no loading e no jogo offline.
+const SVG_PEIXE = `<svg viewBox="0 0 60 36" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="peixeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b9eff"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <path d="M6 18 L-3 5 L2 18 L-3 31 Z" fill="url(#peixeGrad)"/>
+  <ellipse cx="30" cy="18" rx="24" ry="13" fill="url(#peixeGrad)"/>
+  <path d="M25 6 L34 1 L36 8 Z" fill="url(#peixeGrad)" opacity=".9"/>
+  <path d="M25 30 L32 35 L34 28 Z" fill="url(#peixeGrad)" opacity=".9"/>
+  <path d="M17 10 Q30 5 43 11" stroke="rgba(255,255,255,.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="45" cy="15" r="3.4" fill="#fff"/>
+  <circle cx="46.1" cy="15" r="1.7" fill="#0d1628"/>
+</svg>`;
 
 const AGENTES_IDX = {
   zari:   { nome:'Zari',   emoji:'🐬',   cor:'#0088cc', foto:'https://tnwildfshzrvktrlfjhz.supabase.co/storage/v1/object/public/avatares/00000000-0000-0000-0000-000000000001/Zari.png' },
@@ -1066,7 +1084,7 @@ function renderCartaoAgenteLoading(){
         </svg>
       </div>
       <div class="ac-oceano">
-        <span class="ac-peixinho">🐟</span>
+        <span class="ac-peixinho">${SVG_PEIXE}</span>
         <span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>
       </div>
       <div class="ac-loading-txt">${FRASES_LOADING_OCEANO[0]}</div>
@@ -1144,7 +1162,7 @@ function explodirCoinsPublicar(btnEl){
   }
 }
 
-function atualizarCartaoAgente(el, resultado, query){
+function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
   pararLoadingOceano(el);
   const ag = AGENTES_IDX[resultado.agente] || { nome: resultado.agente || 'Agente', emoji:'🤖', cor:'#0055cc', foto:null };
   const turnoId = 't' + (++_turnoSeq);
@@ -1179,6 +1197,7 @@ function atualizarCartaoAgente(el, resultado, query){
     : `<div class="ac-avatar ac-avatar-emoji" id="avatar-${turnoId}" style="background:${ag.cor}22;color:${ag.cor}">${ag.emoji}</div>`;
 
   el.innerHTML = `
+    ${entidadeHtmlExtra || ''}
     <div class="ac-card-wrap" style="border-color:${ag.cor}33">
       <div class="ac-header"><div class="ac-avatar-wrap" id="avatarwrap-${turnoId}">${avatarHtml}</div><div class="ac-nome" style="color:${ag.cor}">${esc(ag.nome)}</div><button class="ac-play-btn" onclick="narrarTurno('${turnoId}', this)" title="Ouvir resposta">▶</button></div>
       <div class="ac-texto">${esc(resultado.resposta_curta||'')}</div>
@@ -1277,14 +1296,10 @@ async function buscarPostsIdx(query){
   return { count: posts.length, itens: posts.slice(0,5).map(p=>({...p, _autor: pm[p.autor_id]})) };
 }
 
-function atualizarCartaoComEntidades(el, resultado, formato, query){
-  pararLoadingOceano(el);
+function construirHtmlEntidades(resultado, formato, query){
   const { count, itens } = resultado;
-  if(!count){
-    el.innerHTML = `<div class="ac-vazio">Não encontrei nada no Fizu para "${esc(query)}" ainda.</div>`;
-    return;
-  }
-  const titulo = formato==='pessoa' ? '👤 Pessoas no Fizu' : formato==='produto' ? '🏪 No Marketplace' : '📝 Posts relacionados';
+  if(!count) return '';
+  const titulo = formato==='pessoa' ? '👤 Também encontrei no Fizu' : formato==='produto' ? '🏪 Também no Marketplace' : '📝 Posts relacionados no Fizu';
   const linhas = itens.map(it=>{
     if(formato==='pessoa'){
       const ini = (it.nome||'?').charAt(0).toUpperCase();
@@ -1303,10 +1318,10 @@ function atualizarCartaoComEntidades(el, resultado, formato, query){
     const trecho = (it.conteudo||'').substring(0,80);
     return `<div class="ac-ent-row" onclick="location.href='/feed#post-${it.id}'">${avatar}<div class="ac-ent-info"><div class="ac-ent-titulo">${esc(nome)}</div><div class="ac-ent-sub">${esc(trecho)}${(it.conteudo||'').length>80?'…':''}</div></div></div>`;
   }).join('');
-  el.innerHTML = `<div class="ac-card-wrap"><div class="ac-ent-titulo-secao">${titulo}</div>${linhas}</div>`;
+  return `<div class="ac-card-wrap ac-ent-extra"><div class="ac-ent-titulo-secao">${titulo}</div>${linhas}</div>`;
 }
 
-async function responderComAgente(loadingEl, query){
+async function responderComAgente(loadingEl, query, entidadeHtmlExtra){
   try{
     const { data:{ session } } = await sb.auth.getSession();
     const token = session?.access_token || SUPA_KEY;
@@ -1319,12 +1334,12 @@ async function responderComAgente(loadingEl, query){
     if(resultado?.erro) throw new Error(resultado.erro);
     conversaHistorico.push({ autor:'agente', texto: resultado.resposta_curta || '', agente: resultado.agente });
     agenteDaConversa = resultado.agente;
-    atualizarCartaoAgente(loadingEl, resultado, query);
+    atualizarCartaoAgente(loadingEl, resultado, query, entidadeHtmlExtra);
     atualizarComposer();
   }catch(e){
     console.error('agente-router-busca idx:', e);
     pararLoadingOceano(loadingEl);
-    loadingEl.innerHTML = `<div class="ac-erro">Não consegui responder agora. Tente de novo em instantes.</div>`;
+    loadingEl.innerHTML = `${entidadeHtmlExtra || ''}<div class="ac-erro">Não consegui completar a resposta agora. Tente de novo em instantes.</div>`;
   }
 }
 
@@ -1351,15 +1366,19 @@ async function processarBusca(query){
   }catch(e){ console.error('busca-magica idx:', e); }
 
   if(formato==='pessoa' || formato==='produto' || formato==='post'){
+    let entidadeHtmlExtra = '';
     try{
       const resultado = formato==='pessoa' ? await buscarPessoasIdx(query)
         : formato==='produto' ? await buscarMarketplaceIdx(query)
         : await buscarPostsIdx(query);
-      atualizarCartaoComEntidades(loadingEl, resultado, formato, query);
+      entidadeHtmlExtra = construirHtmlEntidades(resultado, formato, query);
     }catch(e){
       console.error('busca entidade idx:', e);
-      await responderComAgente(loadingEl, query);
     }
+    // Independente do que a busca interna encontrou, a resposta completa do
+    // agente (com busca na web) sempre vem junto — nunca deixa a primeira
+    // busca incompleta esperando a pessoa insistir de novo.
+    await responderComAgente(loadingEl, query, entidadeHtmlExtra);
     return;
   }
 
@@ -1821,6 +1840,8 @@ function _jogoOnOnline(){
 }
 
 (function initJogoOfflineListeners(){
+  const peixeEl = document.getElementById('jogoPeixe');
+  if(peixeEl) peixeEl.innerHTML = SVG_PEIXE;
   const area = document.getElementById('jogoArea');
   if(area){
     area.addEventListener('click', _jogoHandlerClique);
