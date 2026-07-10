@@ -320,6 +320,17 @@ html.dark .fizu-brand{color:#ffffff!important;-webkit-text-fill-color:#ffffff!im
       <p>Sua conta foi criada. Redirecionando para o seu feed...</p>
     </div>
 
+    <!-- MFA CHALLENGE -->
+    <div class="success-box" id="mfaPanel">
+      <h3>🔒 Verificação em duas etapas</h3>
+      <p style="margin-bottom:16px">Digite o código do seu app autenticador.</p>
+      <input type="text" id="mfaCodigo" maxlength="6" inputmode="numeric" placeholder="000000"
+        style="width:100%;max-width:220px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;
+        padding:12px;color:var(--white);font-size:1.2rem;letter-spacing:.3em;text-align:center;font-family:monospace;margin:0 auto 14px;display:block">
+      <button class="btn-submit" onclick="confirmarMfaLogin()" data-label="Confirmar" style="max-width:220px;margin:0 auto">Confirmar</button>
+      <p id="mfaErro" style="color:var(--error);margin-top:10px;font-size:.82rem;display:none"></p>
+    </div>
+
     <!-- LOGIN PANEL -->
     <div class="form-panel active" id="loginPanel">
       <button class="social-btn" onclick="socialLogin('Google')">
@@ -487,7 +498,68 @@ async function doLogin(){
     else showError(error.message);
     return;
   }
+
+  // Se a conta tiver MFA ativo, a senha só chega em aal1 — precisa
+  // completar o desafio do TOTP antes de liberar o acesso de verdade.
+  const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aalData && aalData.currentLevel === 'aal1' && aalData.nextLevel === 'aal2'){
+    await abrirDesafioMfa();
+    return;
+  }
+
   showSuccess('Login realizado! Redirecionando...', 'feed.html');
+}
+
+// ── Desafio de MFA (TOTP) após o login por senha ──
+let _mfaFactorId = null;
+
+function mostrarPainelMfa(){
+  document.querySelector('.form-box .tabs').style.display='none';
+  document.querySelectorAll('.form-panel').forEach(p=>p.style.display='none');
+  document.getElementById('mfaPanel').classList.add('show');
+  document.getElementById('mfaCodigo').focus();
+}
+
+async function abrirDesafioMfa(){
+  const { data: factors, error } = await sb.auth.mfa.listFactors();
+  if(error || !factors?.totp?.length){
+    showError('Não consegui iniciar a verificação em duas etapas. Tente novamente.');
+    return;
+  }
+  _mfaFactorId = factors.totp[0].id;
+  mostrarPainelMfa();
+}
+
+async function confirmarMfaLogin(){
+  const codigo = document.getElementById('mfaCodigo').value.trim();
+  const erroEl = document.getElementById('mfaErro');
+  erroEl.style.display = 'none';
+
+  if(!codigo || codigo.length !== 6){
+    erroEl.textContent = 'Digite o código de 6 dígitos.';
+    erroEl.style.display = 'block';
+    return;
+  }
+
+  const { data: challenge, error: errChallenge } = await sb.auth.mfa.challenge({ factorId: _mfaFactorId });
+  if(errChallenge){
+    erroEl.textContent = errChallenge.message;
+    erroEl.style.display = 'block';
+    return;
+  }
+
+  const { error: errVerify } = await sb.auth.mfa.verify({
+    factorId: _mfaFactorId, challengeId: challenge.id, code: codigo
+  });
+  if(errVerify){
+    erroEl.textContent = 'Código inválido, tenta de novo.';
+    erroEl.style.display = 'block';
+    document.getElementById('mfaCodigo').value = '';
+    return;
+  }
+
+  document.getElementById('mfaPanel').classList.remove('show');
+  showSuccess('Verificado! Redirecionando...', 'feed.html');
 }
 
 // ── Cadastro com e-mail ──
