@@ -385,18 +385,22 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 @keyframes ac-oc-nadar-fundo{0%{left:-10%}100%{left:104%}}
 
 .ac-peixinho{
-  position:absolute;bottom:14px;width:38px;height:23px;z-index:4;
+  position:absolute;bottom:14px;left:50%;width:38px;height:23px;z-index:4;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
-  animation:ac-nadar 4.2s linear infinite, ac-oc-bob 1.3s ease-in-out infinite;
+  animation:ac-oc-nade-no-lugar 2.6s ease-in-out infinite, ac-oc-bob 1.3s ease-in-out infinite;
 }
 .ac-peixinho svg{width:100%;height:100%;display:block}
 @keyframes ac-nadar{0%{left:-10%}100%{left:104%}}
+/* O peixinho agora é a âncora da câmera: fica centrado e balança no lugar
+   enquanto o cenário (corais, destroços, barco) desliza por baixo dele —
+   é isso que dá a sensação de câmera acompanhando o peixe continuamente. */
+@keyframes ac-oc-nade-no-lugar{0%,100%{transform:translateX(calc(-50% - 6px)) scaleX(1)}50%{transform:translateX(calc(-50% + 6px)) scaleX(1)}}
 @keyframes ac-oc-bob{0%,100%{bottom:14px}50%{bottom:20px}}
-.ac-peixinho.pulando{animation:ac-nadar 4.2s linear infinite, ac-oc-pulo 4.2s ease-in-out infinite}
+.ac-peixinho.pulando{animation:ac-oc-nade-no-lugar 2.6s ease-in-out infinite, ac-oc-pulo 4.2s ease-in-out infinite}
 @keyframes ac-oc-pulo{
   0%{bottom:14px} 36%{bottom:14px} 46%{bottom:76px} 56%{bottom:14px} 100%{bottom:14px}
 }
-.ac-peixinho.fugindo{animation:ac-nadar 2.3s linear infinite, ac-oc-bob 1.3s ease-in-out infinite}
+.ac-peixinho.fugindo{animation:ac-oc-nade-no-lugar .8s ease-in-out infinite, ac-oc-bob 1.3s ease-in-out infinite}
 
 .ac-loading-status{margin-top:10px;font-size:.68rem;font-weight:800;color:var(--aqua);text-transform:uppercase;letter-spacing:.06em;text-align:center}
 .ac-loading-txt{margin-top:3px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
@@ -978,8 +982,13 @@ const FRASES_LOADING_OCEANO = [
   'Organizando a maré de informações...',
 ];
 
-// ── Jornada do oceano: o peixinho atravessa vários cenários, câmera
-// acompanha ele o tempo todo, cenário muda a cada poucos segundos ──
+// ── Jornada do oceano: câmera contínua acompanhando o peixinho ──
+// O peixe fica centrado (é a âncora da câmera) e balança no lugar; a
+// cenografia passiva (corais, destroços, barco) nasce na borda direita,
+// desliza continuamente pra esquerda e morre na borda esquerda — nunca
+// para, nunca reseta, mesmo trocando de cenário. O "elenco" de cada cena
+// (espécie, predador, brilhos) continua com o crossfade de antes, já que
+// são bichos com vida própria por cena, não cenografia de fundo.
 function _embaralhar(arr){ return [...arr].sort(()=>Math.random()-0.5); }
 
 const CENAS_OCEANO = [
@@ -988,12 +997,15 @@ const CENAS_OCEANO = [
     fundo:'linear-gradient(180deg, rgba(45,212,191,.38) 0%, rgba(59,158,255,.18) 55%, rgba(8,16,32,.4) 100%)',
     legenda:'🪸 Cruzando o recife...',
     peixeClasse:'',
-    elementos(){
-      const slots = _embaralhar([16,66]);
+    props(){
+      return [
+        { emoji:'🪸', classe:'ac-oc-fundo', speed:.55 },
+        { emoji:'🌿', classe:'ac-oc-fundo', speed:.55, animDelay:'.6s' },
+      ];
+    },
+    extras(){
       const especie = _embaralhar(['🐢','🐡','⭐','🦀'])[0];
-      return `<span class="ac-oc-fundo" style="left:${slots[0]}%">🪸</span>`
-           + `<span class="ac-oc-fundo" style="left:${slots[1]}%;animation-delay:.6s">🌿</span>`
-           + `<span class="ac-oc-especie" style="animation-delay:${(Math.random()*1.2).toFixed(2)}s,0s">${especie}</span>`;
+      return `<span class="ac-oc-especie" style="animation-delay:${(Math.random()*1.2).toFixed(2)}s,0s">${especie}</span>`;
     }
   },
   {
@@ -1001,12 +1013,12 @@ const CENAS_OCEANO = [
     fundo:'linear-gradient(180deg, rgba(100,120,80,.32) 0%, rgba(59,90,80,.26) 55%, rgba(8,16,20,.48) 100%)',
     legenda:'⚓ Explorando o naufrágio...',
     peixeClasse:'',
-    elementos(){
+    props(){
       const achados = _embaralhar(['⚓','🏺','💎','🦴']).slice(0,2);
-      const slots = _embaralhar([14,44,72]);
-      let html = achados.map((e,i)=>`<span class="ac-oc-fundo" style="left:${slots[i]}%;animation-delay:${(i*.4).toFixed(2)}s">${e}</span>`).join('');
-      html += `<span class="ac-oc-especie" style="animation-delay:.3s,0s">🦑</span>`;
-      return html;
+      return achados.map((e,i)=>({ emoji:e, classe:'ac-oc-fundo', speed:.5, animDelay:(i*.4).toFixed(2)+'s' }));
+    },
+    extras(){
+      return `<span class="ac-oc-especie" style="animation-delay:.3s,0s">🦑</span>`;
     }
   },
   {
@@ -1014,17 +1026,20 @@ const CENAS_OCEANO = [
     fundo:'linear-gradient(180deg, rgba(29,78,216,.38) 0%, rgba(15,50,120,.3) 55%, rgba(4,10,26,.55) 100%)',
     legenda:'🦈 Fugindo de um predador!',
     peixeClasse:'fugindo',
-    elementos(){ return `<span class="ac-oc-predador">🦈</span>`; }
+    props(){ return []; },
+    extras(){ return `<span class="ac-oc-predador">🦈</span>`; }
   },
   {
     id:'superficie',
     fundo:'linear-gradient(180deg, rgba(147,197,253,.48) 0%, rgba(59,158,255,.2) 55%, rgba(10,20,40,.4) 100%)',
     legenda:"🌊 Pulando pra fora d'água...",
     peixeClasse:'pulando',
-    elementos(){
+    props(){
       const barco = Math.random()<0.5 ? '🚢' : '⛵';
-      return `<span class="ac-oc-superficie" style="left:${Math.round(Math.random()*60+15)}%">${barco}</span>`
-           + `<span class="ac-oc-brilho" style="width:64px;height:64px;top:-28px;left:${Math.round(Math.random()*50+20)}%"></span>`;
+      return [{ emoji:barco, classe:'ac-oc-superficie', speed:.4 }];
+    },
+    extras(){
+      return `<span class="ac-oc-brilho" style="width:64px;height:64px;top:-28px;left:${Math.round(Math.random()*50+20)}%"></span>`;
     }
   },
   {
@@ -1032,8 +1047,11 @@ const CENAS_OCEANO = [
     fundo:'linear-gradient(180deg, rgba(40,25,70,.35) 0%, rgba(12,10,32,.42) 55%, rgba(2,2,10,.68) 100%)',
     legenda:'🌑 Nas profundezas abissais...',
     peixeClasse:'',
-    elementos(){
-      let html = `<span class="ac-oc-fundo" style="left:50%">🗿</span><span class="ac-oc-especie" style="animation-delay:.2s,0s">🐙</span>`;
+    props(){
+      return [{ emoji:'🗿', classe:'ac-oc-fundo', speed:.35 }];
+    },
+    extras(){
+      let html = `<span class="ac-oc-especie" style="animation-delay:.2s,0s">🐙</span>`;
       for(let i=0;i<3;i++){
         html += `<span class="ac-oc-brilho" style="width:${4+Math.random()*4}px;height:${4+Math.random()*4}px;left:${Math.round(Math.random()*90+5)}%;top:${Math.round(Math.random()*55+15)}%;animation-delay:${(Math.random()*2).toFixed(2)}s"></span>`;
       }
@@ -1042,30 +1060,35 @@ const CENAS_OCEANO = [
   },
 ];
 
+const OCEANO_VELOCIDADE = 30; // px/s — ritmo do avanço contínuo da "câmera" pelo mundo
+
 function iniciarJornadaOceano(oceanoEl){
   const ordem = _embaralhar(CENAS_OCEANO);
-  let idx = 0;
+  const peixe = oceanoEl.querySelector('.ac-peixinho');
+  const legendaEl = oceanoEl.querySelector('.ac-oc-legenda');
+  const DURACAO_CENA = 2400;
 
-  function aplicarCena(cena){
+  let idxCena = 0;
+  let cenografia = []; // { el, x, speed } — nasce na direita, desliza, morre na esquerda
+  let ultimoTs = null;
+  let tempoNaCena = 0;
+  let ativo = true;
+
+  function aplicarTemaCena(cena){
     oceanoEl.style.background = cena.fundo;
-    const peixe = oceanoEl.querySelector('.ac-peixinho');
     if(peixe) peixe.className = 'ac-peixinho' + (cena.peixeClasse ? ' '+cena.peixeClasse : '');
 
-    const antiga = oceanoEl.querySelector('.ac-oc-camada');
-    if(antiga) antiga.classList.add('saindo');
+    // Elenco da cena (espécie/predador/brilhos) — crossfade como antes.
+    const antigo = oceanoEl.querySelector('.ac-oc-camada');
+    if(antigo) antigo.classList.add('saindo');
+    const novo = document.createElement('div');
+    novo.className = 'ac-oc-camada';
+    novo.style.opacity = '0';
+    novo.innerHTML = cena.extras ? cena.extras() : '';
+    oceanoEl.insertBefore(novo, peixe || oceanoEl.firstChild);
+    requestAnimationFrame(()=>{ novo.style.opacity = '1'; });
+    setTimeout(()=>{ if(antigo) antigo.remove(); }, 700);
 
-    const nova = document.createElement('div');
-    nova.className = 'ac-oc-camada';
-    nova.style.opacity = '0';
-    nova.innerHTML = cena.elementos();
-    oceanoEl.insertBefore(nova, peixe || oceanoEl.firstChild);
-    requestAnimationFrame(()=>{ nova.style.opacity = '1'; });
-
-    setTimeout(()=>{ if(antiga) antiga.remove(); }, 700);
-
-    // Legenda vive fora da camada que faz crossfade: troca sequencial
-    // (some → troca o texto → aparece), nunca duas legendas sobrepostas.
-    const legendaEl = oceanoEl.querySelector('.ac-oc-legenda');
     if(legendaEl){
       if(!legendaEl.textContent){
         legendaEl.textContent = cena.legenda;
@@ -1076,11 +1099,55 @@ function iniciarJornadaOceano(oceanoEl){
     }
   }
 
-  aplicarCena(ordem[0]);
-  return setInterval(()=>{
-    idx = (idx+1) % ordem.length;
-    aplicarCena(ordem[idx]);
-  }, 2400);
+  function spawnarCenografia(cena){
+    const largura = oceanoEl.clientWidth || 460;
+    const descs = cena.props ? cena.props() : [];
+    descs.forEach((d, i) => {
+      const el = document.createElement('span');
+      el.className = d.classe;
+      el.textContent = d.emoji;
+      if(d.animDelay) el.style.animationDelay = d.animDelay;
+      const xInicial = largura + 24 + i*46 + Math.random()*36;
+      el.style.left = xInicial + 'px';
+      oceanoEl.insertBefore(el, peixe || null);
+      cenografia.push({ el, x:xInicial, speed: d.speed||.5 });
+    });
+  }
+
+  function tick(ts){
+    if(!ativo) return;
+    if(ultimoTs == null) ultimoTs = ts;
+    const dt = Math.min((ts - ultimoTs)/1000, .1); // trava dt (ex: aba fora de foco)
+    ultimoTs = ts;
+
+    for(let i = cenografia.length-1; i>=0; i--){
+      const p = cenografia[i];
+      p.x -= OCEANO_VELOCIDADE * p.speed * dt;
+      p.el.style.left = p.x + 'px';
+      if(p.x < -60){ p.el.remove(); cenografia.splice(i,1); }
+    }
+
+    tempoNaCena += dt*1000;
+    if(tempoNaCena >= DURACAO_CENA){
+      tempoNaCena = 0;
+      idxCena = (idxCena+1) % ordem.length;
+      aplicarTemaCena(ordem[idxCena]);
+      spawnarCenografia(ordem[idxCena]);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  aplicarTemaCena(ordem[0]);
+  spawnarCenografia(ordem[0]);
+  requestAnimationFrame(tick);
+
+  // Retorna uma função de parada (não mais um ID de setInterval)
+  return () => {
+    ativo = false;
+    cenografia.forEach(p => p.el.remove());
+    cenografia = [];
+  };
 }
 
 function renderCartaoAgenteLoading(){
@@ -1109,7 +1176,7 @@ function renderCartaoAgenteLoading(){
   area.appendChild(div);
 
   const oceanoEl = div.querySelector('.ac-oceano');
-  div._jornadaTimer = iniciarJornadaOceano(oceanoEl);
+  div._jornadaParar = iniciarJornadaOceano(oceanoEl);
 
   const txtEl = div.querySelector('.ac-loading-txt');
   let i = 0;
@@ -1125,7 +1192,7 @@ function renderCartaoAgenteLoading(){
 
 function pararLoadingOceano(el){
   if(el && el._loadingTimer){ clearInterval(el._loadingTimer); el._loadingTimer = null; }
-  if(el && el._jornadaTimer){ clearInterval(el._jornadaTimer); el._jornadaTimer = null; }
+  if(el && el._jornadaParar){ el._jornadaParar(); el._jornadaParar = null; }
 }
 
 function scrollParaTurno(turnoEl){
