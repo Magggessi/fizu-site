@@ -398,7 +398,8 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 }
 .ac-peixinho.fugindo{animation:ac-nadar 2.3s linear infinite, ac-oc-bob 1.3s ease-in-out infinite}
 
-.ac-loading-txt{margin-top:10px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
+.ac-loading-status{margin-top:10px;font-size:.68rem;font-weight:800;color:var(--aqua);text-transform:uppercase;letter-spacing:.06em;text-align:center}
+.ac-loading-txt{margin-top:3px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
 .ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
 
 .ac-card-wrap{
@@ -456,17 +457,16 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-sugestoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .ac-chip{background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.25);color:var(--aqua);border-radius:16px;padding:7px 13px;font-size:.76rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .ac-chip:hover{background:rgba(59,158,255,.2)}
-.ac-publicar{
-  margin-top:13px;display:flex;align-items:center;gap:10px;cursor:pointer;
-  background:linear-gradient(135deg,#3b9eff,#7C3AED);border:none;border-radius:14px;
-  padding:12px 14px;transition:all .2s;box-shadow:0 4px 16px rgba(59,158,255,.35);
+.ac-publicar-wrap{margin-top:13px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ac-publicar-btn{
+  background:linear-gradient(120deg,#3b9eff,#7C3AED);color:#fff;border:none;border-radius:20px;
+  padding:10px 22px;font-size:.83rem;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;
+  box-shadow:0 4px 16px rgba(59,158,255,.35);transition:all .2s;
   animation:ac-publicar-glow 2.4s ease-in-out infinite;
 }
-.ac-publicar:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,.5)}
+.ac-publicar-btn:hover{transform:translateY(-1px) scale(1.02);box-shadow:0 6px 22px rgba(124,58,237,.5)}
 @keyframes ac-publicar-glow{0%,100%{box-shadow:0 4px 16px rgba(59,158,255,.35)}50%{box-shadow:0 4px 24px rgba(124,58,237,.55)}}
-.ac-publicar-ico{font-size:1.2rem}
-.ac-publicar-txt{font-size:.83rem;font-weight:800;color:#fff}
-.ac-publicar-sub{font-size:.71rem;color:rgba(255,255,255,.88);margin-top:1px}
+.ac-publicar-sub{font-size:.71rem;color:var(--muted)}
 .ac-publicar-login{margin-top:12px;text-align:center}
 .ac-login-link{font-size:.78rem;color:var(--aqua);text-decoration:none;font-weight:600}
 .ac-login-link:hover{text-decoration:underline}
@@ -935,6 +935,7 @@ let conversaHistorico = [];   // [{autor:'usuario'|'agente', texto, agente?}]
 let agenteDaConversa = null;  // slug do agente atual da thread
 let conversaAtiva = false;
 let _turnosAgenteMap = {};
+let _turnosOrdenados = [];   // ordem cronológica dos turnoIds, pra publicar a conversa inteira
 let _turnoSeq = 0;
 
 function ativarModoConversa(){
@@ -949,6 +950,8 @@ function resetParaHome(){
   conversaAtiva = false;
   conversaHistorico = [];
   agenteDaConversa = null;
+  _turnosAgenteMap = {};
+  _turnosOrdenados = [];
   document.body.classList.remove('modo-conversa');
   document.getElementById('areaConversa').innerHTML = '';
   const tb = document.getElementById('conversaToolbar');
@@ -1054,11 +1057,23 @@ function iniciarJornadaOceano(oceanoEl){
     const nova = document.createElement('div');
     nova.className = 'ac-oc-camada';
     nova.style.opacity = '0';
-    nova.innerHTML = cena.elementos() + `<div class="ac-oc-legenda">${cena.legenda}</div>`;
+    nova.innerHTML = cena.elementos();
     oceanoEl.insertBefore(nova, peixe || oceanoEl.firstChild);
     requestAnimationFrame(()=>{ nova.style.opacity = '1'; });
 
     setTimeout(()=>{ if(antiga) antiga.remove(); }, 700);
+
+    // Legenda vive fora da camada que faz crossfade: troca sequencial
+    // (some → troca o texto → aparece), nunca duas legendas sobrepostas.
+    const legendaEl = oceanoEl.querySelector('.ac-oc-legenda');
+    if(legendaEl){
+      if(!legendaEl.textContent){
+        legendaEl.textContent = cena.legenda;
+      } else {
+        legendaEl.style.opacity = '0';
+        setTimeout(()=>{ legendaEl.textContent = cena.legenda; legendaEl.style.opacity = '1'; }, 300);
+      }
+    }
   }
 
   aplicarCena(ordem[0]);
@@ -1086,7 +1101,9 @@ function renderCartaoAgenteLoading(){
       <div class="ac-oceano">
         <span class="ac-peixinho">${SVG_PEIXE}</span>
         <span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>
+        <div class="ac-oc-legenda"></div>
       </div>
+      <div class="ac-loading-status">⏳ Gerando sua resposta</div>
       <div class="ac-loading-txt">${FRASES_LOADING_OCEANO[0]}</div>
     </div>`;
   area.appendChild(div);
@@ -1134,9 +1151,9 @@ function continuarConversa(sugestao){
 
 function renderBotaoPublicar(turnoId){
   if(usuarioAtual){
-    return `<div class="ac-publicar" id="pub-${turnoId}" onclick="explodirCoinsPublicar(this);publicarInteracaoIdx('${turnoId}')">
-      <span class="ac-publicar-ico">📢</span>
-      <div><div class="ac-publicar-txt">${esc(mensagemPublicarIdx())}</div><div class="ac-publicar-sub">Ganhe Fizu Coins e apareça no feed</div></div>
+    return `<div class="ac-publicar-wrap" id="pub-${turnoId}">
+      <button type="button" class="ac-publicar-btn" onclick="explodirCoinsPublicar(this);publicarInteracaoIdx('${turnoId}')">📢 ${esc(mensagemPublicarIdx())}</button>
+      <div class="ac-publicar-sub">Ganhe Fizu Coins e apareça no feed com a conversa completa</div>
     </div>`;
   }
   return `<div class="ac-publicar-login"><a class="ac-login-link" href="/login.html">Entre pra publicar essa resposta no feed — e ganhe 50 Fizu Coins de boas-vindas</a></div>`;
@@ -1167,6 +1184,7 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
   const ag = AGENTES_IDX[resultado.agente] || { nome: resultado.agente || 'Agente', emoji:'🤖', cor:'#0055cc', foto:null };
   const turnoId = 't' + (++_turnoSeq);
   _turnosAgenteMap[turnoId] = { resultado, query, agente: ag };
+  _turnosOrdenados.push(turnoId);
 
   const detalhada = (resultado.resposta_detalhada || '').trim();
   const detalhadaHtml = detalhada
@@ -1220,15 +1238,48 @@ function toggleDetalhada(turnoId){
 }
 
 async function publicarInteracaoIdx(turnoId){
-  const dados = _turnosAgenteMap[turnoId];
-  if(!dados || !usuarioAtual) return;
-  const { resultado, query, agente } = dados;
-  const btnEl = document.getElementById('pub-'+turnoId);
-  if(btnEl) btnEl.innerHTML = `<span style="font-size:.83rem;color:#fff;font-weight:700">Publicando...</span>`;
+  if(!usuarioAtual) return;
 
-  const conteudo = `🔎 Pesquisei: "${query}"\n\n${agente.emoji} ${agente.nome} respondeu:\n${resultado.resposta_curta||''}${resultado.ponto_de_vista?`\n\n💭 ${resultado.ponto_de_vista}`:''}`;
-  const fontesStrings = (resultado.fontes||[]).map(f=>`${f.nome||f.dominio}: ${f.link}`);
-  const primeiraImagem = (resultado.cards||[]).find(c=>c.imagem)?.imagem || null;
+  // Publica a conversa na íntegra: todos os turnos até este (não só o último clicado)
+  const idxClicado = _turnosOrdenados.indexOf(turnoId);
+  const turnosPublicar = idxClicado >= 0 ? _turnosOrdenados.slice(0, idxClicado + 1) : [turnoId];
+  const dadosTurnos = turnosPublicar.map(id => _turnosAgenteMap[id]).filter(Boolean);
+  if(!dadosTurnos.length) return;
+
+  const btnEl = document.getElementById('pub-'+turnoId);
+  if(btnEl) btnEl.innerHTML = `<button type="button" class="ac-publicar-btn" style="cursor:default;opacity:.85">Publicando...</button>`;
+
+  // Um bloco de texto por turno, na ordem em que aconteceram
+  const blocos = dadosTurnos.map(({ resultado, query, agente }) => {
+    let bloco = `🔎 Pesquisei: "${query}"\n\n${agente.emoji} ${agente.nome} respondeu:\n${resultado.resposta_curta || ''}`;
+    if(resultado.ponto_de_vista) bloco += `\n\n💭 ${resultado.ponto_de_vista}`;
+    return bloco;
+  });
+  const conteudo = blocos.join('\n\n— — —\n\n');
+
+  // Fontes de todos os turnos, sem duplicar
+  const linksVistos = new Set();
+  const fontesStrings = [];
+  dadosTurnos.forEach(({ resultado }) => {
+    (resultado.fontes || []).forEach(f => {
+      if(!linksVistos.has(f.link)){ linksVistos.add(f.link); fontesStrings.push(`${f.nome || f.dominio}: ${f.link}`); }
+    });
+  });
+
+  // Primeira imagem disponível em qualquer turno da conversa
+  let primeiraImagem = null;
+  for(const { resultado } of dadosTurnos){
+    const achada = (resultado.cards || []).find(c => c.imagem)?.imagem;
+    if(achada){ primeiraImagem = achada; break; }
+  }
+
+  // Selo do(s) agente(s) que participaram — usa o último a responder como selo principal
+  const agentesUnicos = [];
+  const nomesVistos = new Set();
+  dadosTurnos.forEach(({ agente }) => {
+    if(agente?.nome && !nomesVistos.has(agente.nome)){ nomesVistos.add(agente.nome); agentesUnicos.push(agente); }
+  });
+  const agentePrincipal = agentesUnicos[agentesUnicos.length - 1] || null;
 
   try{
     const { data: novoPost, error } = await sb.from('posts').insert({
@@ -1239,6 +1290,8 @@ async function publicarInteracaoIdx(turnoId){
       fontes: fontesStrings,
       gerado_ia: true,
       ia_modelo: 'claude-sonnet-4-6',
+      agente_nome: agentePrincipal?.nome || null,
+      agente_emoji: agentePrincipal?.emoji || null,
       criado_em: new Date().toISOString(),
     }).select('id').single();
     if(error) throw error;
@@ -1252,7 +1305,7 @@ async function publicarInteracaoIdx(turnoId){
   }catch(e){
     console.error('publicarInteracaoIdx:', e);
     showToast('Não consegui publicar agora. Tente de novo.');
-    if(btnEl) btnEl.innerHTML = `<span class="ac-publicar-ico">📢</span><div><div class="ac-publicar-txt">Publicar</div></div>`;
+    if(btnEl) btnEl.innerHTML = `<button type="button" class="ac-publicar-btn" onclick="explodirCoinsPublicar(this);publicarInteracaoIdx('${turnoId}')">📢 Publicar</button>`;
   }
 }
 

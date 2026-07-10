@@ -2685,7 +2685,7 @@ async function inserirParaVoce() {
     // Busca posts recentes que mencionam esses temas (fora dos já visíveis no topo do feed)
     const orConditions = todosTemas.slice(0, 4).map(t => `conteudo.ilike.%${t}%`).join(',');
     const { data: relevantes } = await sb.from('posts')
-      .select('id,autor_id,conteudo,tipo,midia_url,curtidas_count,comentarios_count,criado_em,gerado_ia')
+      .select('id,autor_id,conteudo,tipo,midia_url,curtidas_count,comentarios_count,criado_em,gerado_ia,agente_nome,agente_emoji')
       .or(orConditions)
       .order('curtidas_count', { ascending: false })
       .limit(3);
@@ -2716,7 +2716,7 @@ async function _buscarPosts(offset) {
   try {
     const { data, error } = await sb
       .from('posts')
-      .select('id,autor_id,conteudo,tipo,midia_url,fontes,reacoes,curtidas_count,comentarios_count,complementos_count,criado_em,status,is_ritual,ritual_agente_nome,ritual_agente_emoji,gerado_ia,ia_modelo')
+      .select('id,autor_id,conteudo,tipo,midia_url,fontes,reacoes,curtidas_count,comentarios_count,complementos_count,criado_em,status,is_ritual,ritual_agente_nome,ritual_agente_emoji,gerado_ia,ia_modelo,agente_nome,agente_emoji')
       .neq('status', 'removido')
       .order('criado_em', { ascending: false })
       .range(offset, offset + POSTS_POR_PAGINA - 1);
@@ -2793,7 +2793,7 @@ function _renderPost(post, perfisMap) {
       ${post.is_ritual && post.ritual_agente_nome
         ? `<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);border-radius:20px;padding:3px 9px;font-size:.68rem;font-weight:700;color:var(--aqua)">${post.ritual_agente_emoji||'🌊'} Ritual · ${post.ritual_agente_nome}</div>`
         : '<div class="eternal-pill">⚓ eterno</div>'}
-      ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ''}
+      ${_seloAgenteIA(post)}
     </div>
     <div class="post-body">${linkify(post.conteudo)}</div>
     ${renderMidia(post)}
@@ -3182,7 +3182,7 @@ async function abrirPerfilPublico(userId) {
           ${avatarPerfil}
           <div class="post-meta"><div class="post-name">${escapeHtml(nome)}</div><div class="post-time">${formatarTempo(post.criado_em)}</div></div>
           <div class="eternal-pill">⚓ eterno</div>
-          ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
+          ${_seloAgenteIA(post)}
         </div>
         <div class="post-body">${linkify(post.conteudo)}</div>
         ${renderMidia(post)}
@@ -3564,7 +3564,7 @@ async function renderizarPosts(posts, feedEl) {
           <div class="post-time">${formatarTempo(post.criado_em)}</div>
         </div>
         <div class="eternal-pill">⚓ eterno</div>
-        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
+        ${_seloAgenteIA(post)}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -5424,7 +5424,7 @@ function iniciarRealtime() {
             <div class="post-time">agora</div>
           </div>
           <div class="eternal-pill">⚓ eterno</div>
-          ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
+          ${_seloAgenteIA(post)}
         </div>
         <div class="post-body">${linkify(post.conteudo)}</div>
         ${renderMidia(post)}
@@ -10229,7 +10229,7 @@ async function explorarPosts(el) {
           <div class="post-time">${formatarTempo(post.criado_em)}</div>
         </div>
         <div class="eternal-pill">⚓ eterno</div>
-        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
+        ${_seloAgenteIA(post)}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -10308,7 +10308,7 @@ async function explorarRecentes(el) {
           <div class="post-time">${formatarTempo(post.criado_em)}</div>
         </div>
         <div class="eternal-pill">⚓ eterno</div>
-        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
+        ${_seloAgenteIA(post)}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -11574,7 +11574,7 @@ async function buscarPosts(query) {
       <div class="post-header">${avatarHtml}
         <div class="post-meta"><div class="post-name">${nome}</div><div class="post-time">${tempo}</div></div>
         <div class="eternal-pill">⚓ eterno</div>
-        ${post.gerado_ia ? `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">🧜‍♀️ SereIA</div>` : ""}
+        ${_seloAgenteIA(post)}
       </div>
       <div class="post-body">${linkify(post.conteudo)}</div>
       ${renderMidia(post)}
@@ -12043,6 +12043,16 @@ async function enviarComentario(postId) {
   if (empty) empty.remove();
 
   await carregarComentarios(postId);
+}
+
+// Selo do agente IA que participou do post. Usa o agente real gravado no post
+// (agente_nome/agente_emoji); cai pra SereIA só em posts antigos que não têm
+// esses campos preenchidos (era a única fonte de posts com IA antes).
+function _seloAgenteIA(post) {
+  if (!post || !post.gerado_ia) return '';
+  const emoji = post.agente_emoji || '🧜‍♀️';
+  const nome  = post.agente_nome  || 'SereIA';
+  return `<div style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(120deg,rgba(16,185,129,.15),rgba(124,58,237,.15));border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:3px 9px;font-size:.65rem;font-weight:700;color:#10b981;margin-left:4px">${emoji} ${nome}</div>`;
 }
 
 function formatarTempo(iso) {
