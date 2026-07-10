@@ -2383,6 +2383,82 @@ function mostrarPopupAgente(agente, mensagem, tipo) {
   }, 12000);
 }
 
+// ── Gate de segurança: exige o desafio de MFA (TOTP) se a sessão ainda
+// estiver em aal1 mas a conta já tiver o fator ativo. O login.html só cobre
+// esse desafio no fluxo de senha — login social (Google/OAuth), magic link
+// e sessões restauradas chegam direto aqui no feed.html, então o gate
+// precisa viver no ponto único por onde toda sessão logada passa.
+async function exigirStepUpMfaSeNecessario() {
+  let aal;
+  try {
+    const { data } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    aal = data;
+  } catch (e) { return; }
+  if (!aal || aal.currentLevel !== 'aal1' || aal.nextLevel !== 'aal2') return;
+
+  let factorId;
+  try {
+    const { data: factors } = await sb.auth.mfa.listFactors();
+    factorId = factors?.totp?.[0]?.id;
+  } catch (e) {}
+  if (!factorId) return; // sem fator TOTP enrolado — não há o que desafiar
+
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.id = 'mfaStepUpOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--bg,#0b0f14);display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = `
+      <div style="max-width:360px;width:100%;background:var(--bg2,#12181f);border:1px solid var(--border,#232b33);border-radius:16px;padding:28px 24px;text-align:center">
+        <div style="font-size:1.6rem;margin-bottom:8px">🔒</div>
+        <div style="font-weight:800;font-size:1.05rem;color:var(--text,#fff);margin-bottom:6px">Verificação em duas etapas</div>
+        <div style="font-size:.85rem;color:var(--muted,#9aa5b1);margin-bottom:18px">Digite o código do seu app autenticador pra continuar.</div>
+        <input id="mfaStepUpCodigo" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000"
+          style="width:100%;box-sizing:border-box;text-align:center;letter-spacing:.3em;font-size:1.2rem;padding:12px;border-radius:10px;border:1.5px solid var(--border,#232b33);background:var(--bg,#0b0f14);color:var(--text,#fff);outline:none;font-family:inherit;margin-bottom:10px">
+        <div id="mfaStepUpErro" style="display:none;color:#ef4444;font-size:.8rem;margin-bottom:10px"></div>
+        <button id="mfaStepUpBtn" style="width:100%;background:var(--aqua,#3b9eff);color:#fff;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit">Confirmar</button>
+        <button id="mfaStepUpSair" style="width:100%;background:none;color:var(--muted,#9aa5b1);border:none;padding:10px;font-size:.8rem;cursor:pointer;font-family:inherit;margin-top:4px">Sair da conta</button>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector('#mfaStepUpCodigo');
+    const erroEl = overlay.querySelector('#mfaStepUpErro');
+    input.focus();
+
+    const confirmar = async () => {
+      const codigo = input.value.trim();
+      erroEl.style.display = 'none';
+      if (!codigo || codigo.length !== 6) {
+        erroEl.textContent = 'Digite o código de 6 dígitos.';
+        erroEl.style.display = 'block';
+        return;
+      }
+      const { data: challenge, error: errChallenge } = await sb.auth.mfa.challenge({ factorId });
+      if (errChallenge) {
+        erroEl.textContent = errChallenge.message;
+        erroEl.style.display = 'block';
+        return;
+      }
+      const { error: errVerify } = await sb.auth.mfa.verify({ factorId, challengeId: challenge.id, code: codigo });
+      if (errVerify) {
+        erroEl.textContent = 'Código inválido, tenta de novo.';
+        erroEl.style.display = 'block';
+        input.value = '';
+        input.focus();
+        return;
+      }
+      overlay.remove();
+      resolve();
+    };
+
+    overlay.querySelector('#mfaStepUpBtn').onclick = confirmar;
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') confirmar(); });
+    overlay.querySelector('#mfaStepUpSair').onclick = async () => {
+      await sb.auth.signOut();
+      window.location.href = 'login.html';
+    };
+  });
+}
+
 // ── Inicializa sessão ──
 async function iniciarSessao() {
   // Renovar token PRIMEIRO — antes de qualquer query
@@ -2463,6 +2539,10 @@ async function iniciarSessao() {
     setTimeout(carregarSidebarDireito, 200);
     return;
   }
+
+  // Fecha o gap do login social/OAuth: se a conta tiver MFA ativo e a sessão
+  // ainda estiver em aal1, bloqueia aqui até o desafio de TOTP ser confirmado
+  await exigirStepUpMfaSeNecessario();
 
   // Busca perfil
   const { data: perfil } = await sb.from('perfis').select('*').eq('id', usuarioAtual.id).single();
