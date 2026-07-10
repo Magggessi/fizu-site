@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Fizu — Segurança da conta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#080c14;--deep:#0d1628;--mid:#162140;
+  --aqua:#3b9eff;--aqua-glow:rgba(59,158,255,.35);
+  --white:#eef4ff;--muted:#6b8aad;--border:rgba(59,158,255,.15);
+  --error:#ff6b6b;--ok:#10b981;
+}
+body{background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:460px;background:var(--deep);border:1px solid var(--border);border-radius:20px;padding:28px 26px}
+h1{font-family:'Inter',sans-serif;font-size:1.25rem;font-weight:800;margin-bottom:6px}
+.sub{color:var(--muted);font-size:.85rem;line-height:1.5;margin-bottom:22px}
+.linha{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted);padding:9px 0;border-bottom:1px solid var(--border)}
+.linha:last-child{border-bottom:none}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:800}
+.pill.ok{background:rgba(16,185,129,.15);color:var(--ok);border:1px solid rgba(16,185,129,.4)}
+.pill.no{background:rgba(255,107,107,.12);color:var(--error);border:1px solid rgba(255,107,107,.35)}
+.btn{width:100%;background:linear-gradient(120deg,#3b9eff,#7C3AED);color:#fff;border:none;border-radius:14px;
+  padding:12px;font-size:.88rem;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:18px}
+.btn:hover{opacity:.92}
+.btn.secundario{background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.btn.perigo{background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.4);color:var(--error)}
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin:18px 0;padding:18px;
+  background:rgba(255,255,255,.03);border-radius:14px}
+.qr-wrap img{width:180px;height:180px;background:#fff;border-radius:8px;padding:8px}
+.secret-txt{font-family:monospace;font-size:.72rem;color:var(--muted);word-break:break-all;text-align:center}
+input.codigo{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;
+  padding:12px;color:var(--white);font-size:1.1rem;letter-spacing:.3em;text-align:center;font-family:monospace;margin-top:14px}
+input.codigo:focus{outline:none;border-color:var(--aqua)}
+.msg{font-size:.8rem;margin-top:10px;text-align:center}
+.msg.erro{color:var(--error)}
+.msg.sucesso{color:var(--ok)}
+.oculto{display:none}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🔒 Segurança da conta</h1>
+  <div class="sub">Acesso restrito à conta fundadora do Fizu. Ative a verificação em duas etapas (MFA) pra proteger o canal administrativo.</div>
+
+  <div id="bloqueado" class="oculto">
+    <div class="linha">Esta página só é relevante pra conta fundadora do Fizu.</div>
+  </div>
+
+  <div id="carregando">Verificando sua sessão...</div>
+
+  <div id="painel" class="oculto">
+    <div class="linha"><span>Conta</span><span id="linhaEmail" style="margin-left:auto;color:var(--white)"></span></div>
+    <div class="linha"><span>MFA (TOTP)</span><span id="pillMfa" class="pill no" style="margin-left:auto">verificando...</span></div>
+
+    <div id="areaEnroll" class="oculto">
+      <div class="qr-wrap">
+        <img id="qrImg" alt="QR code do MFA">
+        <div class="secret-txt" id="secretTxt"></div>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);text-align:center">
+        Escaneie com Google Authenticator, Authy ou 1Password, depois digite o código de 6 dígitos:
+      </div>
+      <input class="codigo" id="inputCodigo" maxlength="6" inputmode="numeric" placeholder="000000">
+      <button class="btn" onclick="confirmarCodigo()">Confirmar e ativar</button>
+      <div id="msgEnroll" class="msg"></div>
+    </div>
+
+    <button id="btnIniciarEnroll" class="btn oculto" onclick="iniciarEnroll()">Ativar MFA agora</button>
+    <button id="btnDesativar" class="btn perigo oculto" onclick="desativarMfa()">Desativar MFA</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://tnwildfshzrvktrlfjhz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const EMAIL_FUNDADOR = 'rodolfomaggessi@hotmail.com';
+let _factorIdPendente = null;
+
+async function iniciar(){
+  const { data: { session } } = await sb.auth.getSession();
+  document.getElementById('carregando').classList.add('oculto');
+
+  if(!session || session.user.email !== EMAIL_FUNDADOR){
+    document.getElementById('bloqueado').classList.remove('oculto');
+    return;
+  }
+
+  document.getElementById('painel').classList.remove('oculto');
+  document.getElementById('linhaEmail').textContent = session.user.email;
+  await atualizarStatusMfa();
+}
+
+async function atualizarStatusMfa(){
+  const { data, error } = await sb.auth.mfa.listFactors();
+  const pill = document.getElementById('pillMfa');
+  const btnIniciar = document.getElementById('btnIniciarEnroll');
+  const btnDesativar = document.getElementById('btnDesativar');
+
+  if(error){ pill.textContent = 'erro ao checar'; return; }
+
+  const verificado = (data.totp || []).find(f => f.status === 'verified');
+  if(verificado){
+    pill.textContent = '✅ ativo';
+    pill.className = 'pill ok';
+    btnIniciar.classList.add('oculto');
+    btnDesativar.classList.remove('oculto');
+    btnDesativar.dataset.factorId = verificado.id;
+  } else {
+    pill.textContent = 'não ativado';
+    pill.className = 'pill no';
+    btnIniciar.classList.remove('oculto');
+    btnDesativar.classList.add('oculto');
+  }
+}
+
+async function iniciarEnroll(){
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Fizu Admin - ' + Date.now() });
+  if(error){ alert('Não consegui iniciar o cadastro: ' + error.message); return; }
+
+  _factorIdPendente = data.id;
+  document.getElementById('qrImg').src = data.totp.qr_code;
+  document.getElementById('secretTxt').textContent = data.totp.secret;
+  document.getElementById('areaEnroll').classList.remove('oculto');
+  document.getElementById('btnIniciarEnroll').classList.add('oculto');
+}
+
+async function confirmarCodigo(){
+  const codigo = document.getElementById('inputCodigo').value.trim();
+  const msgEl = document.getElementById('msgEnroll');
+  if(!codigo || codigo.length !== 6){ msgEl.textContent = 'Digite o código de 6 dígitos.'; msgEl.className='msg erro'; return; }
+
+  const { data: challenge, error: errChallenge } = await sb.auth.mfa.challenge({ factorId: _factorIdPendente });
+  if(errChallenge){ msgEl.textContent = errChallenge.message; msgEl.className='msg erro'; return; }
+
+  const { error: errVerify } = await sb.auth.mfa.verify({
+    factorId: _factorIdPendente, challengeId: challenge.id, code: codigo
+  });
+  if(errVerify){ msgEl.textContent = 'Código inválido, tenta de novo.'; msgEl.className='msg erro'; return; }
+
+  msgEl.textContent = '🎉 MFA ativado! Sua sessão atual já está elevada.';
+  msgEl.className = 'msg sucesso';
+  document.getElementById('areaEnroll').classList.add('oculto');
+  await atualizarStatusMfa();
+}
+
+async function desativarMfa(){
+  const factorId = document.getElementById('btnDesativar').dataset.factorId;
+  if(!confirm('Tem certeza que quer desativar o MFA da conta fundadora? Isso reduz a segurança do canal administrativo.')) return;
+  const { error } = await sb.auth.mfa.unenroll({ factorId });
+  if(error){ alert('Erro ao desativar: ' + error.message); return; }
+  await atualizarStatusMfa();
+}
+
+iniciar();
+</script>
+</body>
+</html>
