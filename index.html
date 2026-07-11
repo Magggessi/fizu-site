@@ -528,6 +528,27 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
   .ac-card-img-wrap,.ac-card-icon{height:100px}
   body.modo-conversa .centro{padding-top:64px}
 }
+
+/* comando-dev — canal de comando do fundador */
+.ac-dev-wrap{background:var(--card);border:1px solid rgba(124,58,237,.35);border-radius:18px 18px 18px 4px;padding:16px 18px}
+.ac-dev-header{display:flex;align-items:center;gap:8px;font-size:.86rem;font-weight:800;color:#7c3aed;margin-bottom:2px}
+.ac-dev-arquivo{font-size:.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:10px}
+.ac-dev-resumo{font-size:.88rem;line-height:1.55;color:var(--text);margin-bottom:12px}
+.ac-dev-diff{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.ac-dev-diff-linha{padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.ac-dev-diff-antes{background:rgba(239,68,68,.08);color:#f87171;border-bottom:1px solid var(--border)}
+.ac-dev-diff-depois{background:rgba(34,197,94,.08);color:#4ade80}
+.ac-dev-diff-tag{font-weight:700;margin-right:6px;opacity:.8}
+.ac-dev-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ac-dev-btn{border-radius:16px;padding:8px 15px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1px solid transparent}
+.ac-dev-btn-aplicar{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.3);color:#7c3aed}
+.ac-dev-btn-descartar{background:none;border-color:var(--border);color:var(--muted)}
+.ac-dev-pat-wrap{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ac-dev-pat-input{flex:1;min-width:200px;background:rgba(8,12,20,.6);border:1px solid var(--border);border-radius:12px;padding:9px 12px;color:var(--text);font-size:.8rem;font-family:'JetBrains Mono',monospace}
+.ac-dev-pat-input::placeholder{color:var(--muted);font-family:'DM Sans',sans-serif}
+.ac-dev-status{font-size:.78rem;color:var(--muted);margin-top:10px}
+.ac-dev-status.ok{color:#4ade80}
+.ac-dev-status.erro{color:#f87171}
 </style>
 </head>
 <body>
@@ -941,6 +962,7 @@ let conversaAtiva = false;
 let _turnosAgenteMap = {};
 let _turnosOrdenados = [];   // ordem cronológica dos turnoIds, pra publicar a conversa inteira
 let _turnoSeq = 0;
+let _devPropostas = {};      // devId -> { proposta_id } — canal de comando do fundador (/dev)
 
 function ativarModoConversa(){
   if(conversaAtiva) return;
@@ -1466,6 +1488,19 @@ async function responderComAgente(loadingEl, query, entidadeHtmlExtra){
 async function processarBusca(query){
   query = (query||'').trim();
   if(!query) return;
+
+  // Canal de comando do fundador: "/dev <descrição da mudança>" nunca passa
+  // pelo roteador de busca normal — vira uma proposta de patch cirúrgico.
+  const matchDev = query.match(/^\/dev\s+(.+)/is);
+  if(matchDev){
+    ativarModoConversa();
+    const turnoEl = renderTurnoUsuario(query);
+    conversaHistorico.push({ autor:'usuario', texto: query });
+    scrollParaTurno(turnoEl);
+    await processarComandoDev(matchDev[1].trim());
+    return;
+  }
+
   ativarModoConversa();
   const turnoEl = renderTurnoUsuario(query);
   const loadingEl = renderCartaoAgenteLoading();
@@ -1503,6 +1538,124 @@ async function processarBusca(query){
   }
 
   await responderComAgente(loadingEl, query);
+}
+
+// ── comando-dev: canal de comando do fundador (prefixo "/dev ") ──
+// Nunca aplica sozinho: gera uma proposta de patch cirúrgico, mostra o
+// antes/depois, e só grava no GitHub se o fundador confirmar com um PAT de
+// escrita temporário colado na hora. Acesso é revalidado no backend a cada
+// chamada (admin-status: identidade do fundador + MFA aal2 + sessão fresca).
+async function processarComandoDev(comando){
+  const loadingEl = renderCartaoAgenteLoading();
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session?.access_token){
+      pararLoadingOceano(loadingEl);
+      renderCartaoDevErro(loadingEl, 'Entre com a conta do fundador pra usar o /dev.');
+      return;
+    }
+    const r = await fetch(`${SUPA_URL}/functions/v1/comando-dev`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, apikey:SUPA_KEY },
+      body: JSON.stringify({ modo:'propor', comando }),
+    });
+    const d = await r.json();
+    pararLoadingOceano(loadingEl);
+    if(!d.ok){
+      const msg = d.erro === 'acesso_negado'
+        ? 'Acesso negado — o canal de comando exige login do fundador, com MFA ativo e sessão recente.'
+        : (d.erro || 'Não consegui gerar uma proposta agora.');
+      renderCartaoDevErro(loadingEl, msg);
+      return;
+    }
+    renderCartaoDevProposta(loadingEl, d);
+  }catch(e){
+    console.error('comando-dev propor:', e);
+    pararLoadingOceano(loadingEl);
+    renderCartaoDevErro(loadingEl, 'Falha de conexão ao gerar a proposta.');
+  }
+}
+
+function renderCartaoDevErro(el, msg){
+  el.innerHTML = `<div class="ac-dev-wrap"><div class="ac-dev-header">🛠️ comando-dev</div><div class="ac-dev-status erro">${esc(msg)}</div></div>`;
+}
+
+function renderCartaoDevProposta(el, d){
+  const devId = 'dev' + (++_turnoSeq);
+  _devPropostas[devId] = { proposta_id: d.proposta_id };
+  el.innerHTML = `
+    <div class="ac-dev-wrap" id="${devId}">
+      <div class="ac-dev-header">🛠️ comando-dev</div>
+      <div class="ac-dev-arquivo">${esc(d.arquivo||'')}</div>
+      ${d.resumo ? `<div class="ac-dev-resumo">${esc(d.resumo)}</div>` : ''}
+      <div class="ac-dev-diff">
+        <div class="ac-dev-diff-linha ac-dev-diff-antes"><span class="ac-dev-diff-tag">− antes</span>${esc(d.preview_antes||'')}</div>
+        <div class="ac-dev-diff-linha ac-dev-diff-depois"><span class="ac-dev-diff-tag">+ depois</span>${esc(d.preview_depois||'')}</div>
+      </div>
+      <div class="ac-dev-actions" id="${devId}-actions">
+        <button class="ac-dev-btn ac-dev-btn-aplicar" onclick="revelarPatAplicar('${devId}')">✅ Aplicar</button>
+        <button class="ac-dev-btn ac-dev-btn-descartar" onclick="descartarPropostaDev('${devId}')">✕ Descartar</button>
+      </div>
+      <div id="${devId}-pat"></div>
+      <div class="ac-dev-status" id="${devId}-status"></div>
+    </div>`;
+}
+
+function revelarPatAplicar(devId){
+  const wrap = document.getElementById(devId+'-pat');
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <div class="ac-dev-pat-wrap">
+      <input type="password" class="ac-dev-pat-input" id="${devId}-patinput" placeholder="Cole aqui o PAT de escrita temporário do GitHub" autocomplete="off">
+      <button class="ac-dev-btn ac-dev-btn-aplicar" onclick="confirmarAplicarDev('${devId}')">Confirmar e aplicar</button>
+    </div>`;
+  document.getElementById(devId+'-patinput')?.focus();
+}
+
+async function confirmarAplicarDev(devId){
+  const info = _devPropostas[devId];
+  const input = document.getElementById(devId+'-patinput');
+  const statusEl = document.getElementById(devId+'-status');
+  const pat = (input?.value || '').trim();
+  if(!pat){ if(statusEl){ statusEl.textContent='Cola o PAT de escrita pra continuar.'; statusEl.className='ac-dev-status erro'; } return; }
+  if(statusEl){ statusEl.textContent='Aplicando no GitHub...'; statusEl.className='ac-dev-status'; }
+
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const r = await fetch(`${SUPA_URL}/functions/v1/comando-dev`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, apikey:SUPA_KEY },
+      body: JSON.stringify({ modo:'aplicar', proposta_id: info.proposta_id, pat_escrita: pat }),
+    });
+    const d = await r.json();
+    if(input) input.value = '';
+    if(d.ok){
+      if(statusEl){ statusEl.textContent = `✅ Aplicado — commit ${(d.commit_sha||'').slice(0,7)}. O Netlify publica em instantes.`; statusEl.className='ac-dev-status ok'; }
+      document.getElementById(devId+'-actions')?.remove();
+      const patWrap = document.getElementById(devId+'-pat'); if(patWrap) patWrap.innerHTML='';
+    } else {
+      if(statusEl){ statusEl.textContent = d.erro || 'Não consegui aplicar.'; statusEl.className='ac-dev-status erro'; }
+    }
+  }catch(e){
+    console.error('comando-dev aplicar:', e);
+    if(statusEl){ statusEl.textContent = 'Falha de conexão ao aplicar.'; statusEl.className='ac-dev-status erro'; }
+  }
+}
+
+async function descartarPropostaDev(devId){
+  const info = _devPropostas[devId];
+  const statusEl = document.getElementById(devId+'-status');
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    await fetch(`${SUPA_URL}/functions/v1/comando-dev`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}`, apikey:SUPA_KEY },
+      body: JSON.stringify({ modo:'descartar', proposta_id: info.proposta_id }),
+    });
+  }catch(e){ console.error('comando-dev descartar:', e); }
+  document.getElementById(devId+'-actions')?.remove();
+  const patWrap = document.getElementById(devId+'-pat'); if(patWrap) patWrap.innerHTML='';
+  if(statusEl){ statusEl.textContent='Proposta descartada.'; statusEl.className='ac-dev-status'; }
 }
 
 // TEMA
