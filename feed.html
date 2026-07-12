@@ -4581,7 +4581,142 @@ function renderCofreUpload(feedEl) {
       </button>
       <div style="font-size:.75rem;color:var(--muted);margin-top:8px">Suas memórias são privadas. Só você pode ver.</div>
     </div>
+
+    <div style="font-size:.82rem;font-weight:700;color:var(--text);margin:24px 0 10px">📷 Não tenho mais acesso à conta original</div>
+    <div class="cofre-upload-card" id="card-print" onclick="document.getElementById('input-print').click()" style="max-width:100%;padding:16px 20px;border-style:dashed">
+      <input type="file" id="input-print" class="cofre-input" accept="image/*" onchange="cofreEscolherPrint(event)">
+      <div style="display:flex;align-items:center;gap:14px;text-align:left">
+        <div style="font-size:1.8rem;flex-shrink:0">📷</div>
+        <div style="flex:1">
+          <div class="cofre-net-name" style="margin-bottom:2px">Colar um print / captura de tela</div>
+          <div class="cofre-net-hint">Pra quando a rede fechou ou você perdeu o acesso e o único registro que sobrou é uma imagem. Entra no Cofre com um selo deixando claro que é um relato seu — o Fizu não finge verificar o que não pode verificar.</div>
+        </div>
+      </div>
+    </div>
   </div>`;
+}
+
+// ── Print / captura de tela (sem export oficial disponível) ──
+// Nunca finge verificar autenticidade: guarda a imagem original (visível
+// pra qualquer um julgar), pede a rede/data/link de quem enviou, e marca
+// fonte_tipo:'print_colado' — selo que acompanha o item mesmo se publicado.
+let _cofrePrintArquivo = null;
+
+function cofreEscolherPrint(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  _cofrePrintArquivo = file;
+  renderCofrePrintForm(file);
+}
+
+function renderCofrePrintForm(file) {
+  const feedEl = document.getElementById('feedPostsReais');
+  const urlPreview = URL.createObjectURL(file);
+  feedEl.innerHTML = `
+  <div class="cofre-wrap">
+    <div class="cofre-hero" style="padding:22px 24px">
+      <div class="cofre-hero-icon">📷</div>
+      <h2 style="font-size:1.15rem">Guardar este print no Cofre</h2>
+      <p>Como a rede original não existe mais (ou você perdeu o acesso), o Fizu não tem como confirmar esse conteúdo — por isso ele entra com o selo <strong style="color:#f59e0b">"print colado, relato pessoal"</strong>, não como dado verificado. A imagem original fica guardada do jeito que você mandou, pra qualquer um poder ver com os próprios olhos.</p>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px">
+      <img src="${urlPreview}" style="max-width:100%;max-height:320px;border-radius:10px;display:block;margin:0 auto 18px;object-fit:contain">
+      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">De qual rede é esse print?</label>
+      <select id="printRede" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);margin-bottom:14px;font-family:inherit">
+        <option value="twitter">Twitter / X</option>
+        <option value="instagram">Instagram</option>
+        <option value="facebook">Facebook</option>
+        <option value="outra">Outra rede</option>
+      </select>
+      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">Data aproximada (se lembrar)</label>
+      <input type="date" id="printData" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);margin-bottom:14px;font-family:inherit">
+      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">Link original, se ainda existir em algum lugar (opcional)</label>
+      <input type="url" id="printLink" placeholder="https://..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);margin-bottom:14px;font-family:inherit">
+      <div style="font-size:.7rem;color:var(--muted);margin:-8px 0 14px">Se você colar um link, checamos automaticamente se existe uma cópia arquivada no Wayback Machine.</div>
+      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">O que o print diz? (opcional, ajuda a buscar depois)</label>
+      <textarea id="printLegenda" rows="3" placeholder="Transcreva ou resuma o conteúdo..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
+    </div>
+    <div style="text-align:center">
+      <button onclick="cofreSalvarPrint()" id="btnSalvarPrint" style="background:linear-gradient(135deg,#7c3aed,#3b9eff);color:#fff;border:none;border-radius:12px;padding:13px 36px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">📷 Guardar no Cofre com o selo de print</button>
+      <div style="margin-top:10px"><button onclick="_cofrePrintArquivo=null;renderCofreUpload(document.getElementById('feedPostsReais'))" style="background:none;border:none;color:var(--muted);font-size:.82rem;cursor:pointer;font-family:inherit">Cancelar</button></div>
+    </div>
+  </div>`;
+}
+
+async function cofreSalvarPrint() {
+  const file = _cofrePrintArquivo;
+  if (!file || !usuarioAtual) return;
+  const btn = document.getElementById('btnSalvarPrint');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  const rede = document.getElementById('printRede').value;
+  const dataInput = document.getElementById('printData').value;
+  const link = document.getElementById('printLink').value.trim();
+  const legenda = document.getElementById('printLegenda').value.trim();
+
+  try {
+    // Dimensões da imagem — metadado honesto do arquivo, não finge ser EXIF de câmera.
+    const dims = await new Promise((res) => {
+      const img = new Image();
+      img.onload = () => res({ largura: img.naturalWidth, altura: img.naturalHeight });
+      img.onerror = () => res({});
+      img.src = URL.createObjectURL(file);
+    });
+
+    // Upload da imagem original — é o que permite qualquer um julgar com os próprios olhos.
+    const path = `cofre/${usuarioAtual.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
+    const { data: { session } } = await sb.auth.getSession();
+    const up = await fetch(`${SUPA_URL}/storage/v1/object/posts/${path}`, {
+      method: 'POST',
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${session?.access_token}`, 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    });
+    if (!up.ok) throw new Error('Falha no upload da imagem');
+    const midiaUrl = `${SUPA_URL}/storage/v1/object/public/posts/${path}`;
+
+    // Checagem opcional no Wayback Machine — só roda se um link original foi informado,
+    // e só entra como corroboração se de fato bater um snapshot arquivado.
+    let waybackUrl = null;
+    if (link) {
+      try {
+        const wb = await fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(link)}`);
+        const wbData = await wb.json();
+        waybackUrl = wbData?.archived_snapshots?.closest?.url || null;
+      } catch (e) { console.error('wayback check:', e); }
+    }
+
+    const metadata = {
+      arquivo_nome: file.name,
+      arquivo_tamanho: file.size,
+      arquivo_modificado_em: file.lastModified ? new Date(file.lastModified).toISOString() : null,
+      ...dims,
+      link_original: link || null,
+      wayback_url: waybackUrl,
+      legenda_usuario: legenda || null,
+    };
+
+    const { error } = await sb.from('cofre_memorias').insert({
+      usuario_id: usuarioAtual.id,
+      rede,
+      tipo: 'print',
+      conteudo: legenda || '',
+      midia_url: midiaUrl,
+      data_original: dataInput ? new Date(dataInput).toISOString() : null,
+      fonte_tipo: 'print_colado',
+      metadata,
+    });
+    if (error) throw error;
+
+    mostrarToast(waybackUrl ? 'Print guardado — e achamos uma cópia arquivada no Wayback Machine! 🎉' : 'Print guardado no Cofre.', 'success');
+    _cofrePrintArquivo = null;
+    await renderCofreTimeline(document.getElementById('feedPostsReais'));
+  } catch (e) {
+    console.error('cofre print:', e);
+    mostrarToast('Não consegui guardar esse print agora.', 'error');
+    btn.disabled = false;
+    btn.textContent = '📷 Guardar no Cofre com o selo de print';
+  }
 }
 
 // ── Drag & Drop ──
@@ -4964,8 +5099,8 @@ async function renderCofreTimeline(feedEl) {
   });
   const anosOrdenados = Object.keys(porAno).sort((a, b) => b - a);
 
-  const netIcon = { instagram:'📸', facebook:'👥', twitter:'🐦' };
-  const netColor = { instagram:'#d44494', facebook:'#1877f2', twitter:'#1da1f2' };
+  const netIcon = { instagram:'📸', facebook:'👥', twitter:'🐦', outra:'📌' };
+  const netColor = { instagram:'#d44494', facebook:'#1877f2', twitter:'#1da1f2', outra:'var(--aqua)' };
 
   let html = `<div class="cofre-wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -4990,13 +5125,27 @@ async function renderCofreTimeline(feedEl) {
       const cor = netColor[m.rede] || 'var(--aqua)';
       const preview = (m.conteudo || '').substring(0, 280);
       const jaPublicou = m.publicado_fizu;
+      const ehPrint = m.fonte_tipo === 'print_colado';
+      const selo = ehPrint
+        ? `<span style="font-size:.62rem;font-weight:800;color:#f59e0b;background:rgba(245,158,11,.12);padding:2px 8px;border-radius:8px;border:1px solid rgba(245,158,11,.3);white-space:nowrap">📷 Print colado — não verificado</span>`
+        : `<span style="font-size:.62rem;font-weight:800;color:#10b981;background:rgba(16,185,129,.12);padding:2px 8px;border-radius:8px;border:1px solid rgba(16,185,129,.3);white-space:nowrap">🗝️ Importação oficial</span>`;
+      const imagemHtml = m.midia_url
+        ? `<div class="cofre-mem-img"><img src="${m.midia_url}" loading="lazy" alt="Imagem anexada"></div>`
+        : '';
+      const waybackUrl = m.metadata?.wayback_url;
+      const waybackHtml = waybackUrl
+        ? `<a href="${waybackUrl}" target="_blank" rel="noopener" style="font-size:.72rem;color:var(--aqua);display:block;margin-top:8px">🕰️ Ver cópia arquivada no Wayback Machine</a>`
+        : '';
       html += `<div class="cofre-memory-card" style="--cm-color:${cor}">
-        <div class="cofre-mem-header">
+        <div class="cofre-mem-header" style="flex-wrap:wrap">
           <span class="cofre-mem-net ${m.rede}">${netIcon[m.rede]||'📌'} ${m.rede}</span>
           ${dt ? `<span class="cofre-mem-date">${dt}</span>` : ''}
           ${m.tipo === 'retweet' ? '<span style="font-size:.65rem;color:var(--muted);background:var(--bg3);padding:2px 7px;border-radius:8px">RT</span>' : ''}
+          ${selo}
         </div>
         ${preview ? `<div class="cofre-mem-text">${escapeHtml(preview)}${m.conteudo.length > 280 ? '<span style="color:var(--muted)">...</span>' : ''}</div>` : '<div class="cofre-mem-text" style="color:var(--muted);font-style:italic">Memória sem texto</div>'}
+        ${imagemHtml}
+        ${waybackHtml}
         <div class="cofre-mem-actions">
           ${!jaPublicou
             ? `<button class="cofre-mem-btn primary" onclick="cofrePublicarNoFizu('${m.id}', this)">🐟 Publicar no Fizu</button>`
@@ -5016,9 +5165,11 @@ async function cofrePublicarNoFizu(memoriaId, btn) {
   const { data: mem } = await sb.from('cofre_memorias').select('*').eq('id', memoriaId).single();
   if (!mem) return;
 
-  const netLabel = { instagram:'Instagram', facebook:'Facebook', twitter:'Twitter/X' };
+  const netLabel = { instagram:'Instagram', facebook:'Facebook', twitter:'Twitter/X', outra:'outra rede' };
   const dt = mem.data_original ? new Date(mem.data_original).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' }) : '';
-  const textoFinal = `[Memória do ${netLabel[mem.rede]||mem.rede}${dt ? ' · '+dt : ''}]\n\n${mem.conteudo}`;
+  const ehPrint = mem.fonte_tipo === 'print_colado';
+  const seloTexto = ehPrint ? ' · 📷 print colado, relato pessoal — não verificado pelo Fizu' : '';
+  const textoFinal = `[Memória do ${netLabel[mem.rede]||mem.rede}${dt ? ' · '+dt : ''}${seloTexto}]\n\n${mem.conteudo}`;
 
   btn.disabled = true;
   btn.textContent = 'Publicando...';
@@ -5027,6 +5178,7 @@ async function cofrePublicarNoFizu(memoriaId, btn) {
     autor_id: usuarioAtual.id,
     conteudo: textoFinal.substring(0, 500),
     tipo: 'memoria_importada',
+    midia_url: mem.midia_url || null,
     criado_em: new Date().toISOString()
   }).select().single();
 
