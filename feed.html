@@ -12286,6 +12286,17 @@ function formatarTempo(iso) {
   const data  = new Date(iso);
   const agora = new Date();
   const diff  = Date.now() - data.getTime();
+
+  // Se o relógio do dispositivo estiver atrasado/adiantado, o cálculo pode
+  // dar negativo (post "no futuro"). Nesse caso não faz sentido mostrar um
+  // rótulo relativo (viraria "agora" pra tudo) — mostra a data/hora absoluta.
+  if (diff < -90000) {
+    const hora = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const d = String(data.getDate()).padStart(2,'0');
+    const m = String(data.getMonth()+1).padStart(2,'0');
+    return `${d}/${m} ${hora}`;
+  }
+
   const min   = Math.floor(diff / 60000);
   if (min < 1)  return 'agora';
   if (min < 60) return `há ${min} min`;
