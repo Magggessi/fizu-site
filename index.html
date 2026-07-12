@@ -623,6 +623,11 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
       <div class="sugs" id="sugs"></div>
     </div>
 
+    <div class="anexo-chip" id="anexoBuscaChip" style="display:none">
+      <span id="anexoBuscaChipTxt"></span>
+      <button onclick="removerAnexoBusca()" title="Remover anexo">✕</button>
+    </div>
+
     <div class="conversa-toolbar" id="conversaToolbar">
       <span id="conversaContinuarTxt">💬 Continue a conversa</span>
       <button class="conversa-nova-btn" onclick="resetParaHome()">✕ Nova busca</button>
@@ -987,11 +992,14 @@ function resetParaHome(){
   inp.focus();
 }
 
-function renderTurnoUsuario(query){
+function renderTurnoUsuario(query, anexo){
   const area = document.getElementById('areaConversa');
   const div = document.createElement('div');
   div.className = 'turno-usuario';
-  div.innerHTML = `<div class="tu-bolha">${esc(query)}</div>`;
+  const seloAnexo = anexo
+    ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:.76rem;opacity:.85">${anexo.tipo === 'imagem' ? '📷' : anexo.tipo === 'pdf' ? '📕' : '📄'} ${esc(anexo.nome)}</div>`
+    : '';
+  div.innerHTML = `<div class="tu-bolha">${seloAnexo}${esc(query)}</div>`;
   area.appendChild(div);
   return div;
 }
@@ -1463,14 +1471,14 @@ function construirHtmlEntidades(resultado, formato, query){
   return `<div class="ac-card-wrap ac-ent-extra"><div class="ac-ent-titulo-secao">${titulo}</div>${linhas}</div>`;
 }
 
-async function responderComAgente(loadingEl, query, entidadeHtmlExtra){
+async function responderComAgente(loadingEl, query, entidadeHtmlExtra, anexo){
   try{
     const { data:{ session } } = await sb.auth.getSession();
     const token = session?.access_token || SUPA_KEY;
     const r = await fetch(`${SUPA_URL}/functions/v1/agente-router-busca`, {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}`, apikey:SUPA_KEY },
-      body: JSON.stringify({ pergunta: query, usuario_id: perfilAtual?.id || usuarioAtual?.id || null, visitante_id: usuarioAtual ? null : getVisitanteId(), historico: conversaHistorico.slice(-6) }),
+      body: JSON.stringify({ pergunta: query, usuario_id: perfilAtual?.id || usuarioAtual?.id || null, visitante_id: usuarioAtual ? null : getVisitanteId(), historico: conversaHistorico.slice(-6), anexo: anexo || null }),
     });
     const resultado = await r.json();
     if(resultado?.erro) throw new Error(resultado.erro);
@@ -1496,15 +1504,18 @@ async function processarBusca(query){
     ativarModoConversa();
     const turnoEl = renderTurnoUsuario(query);
     conversaHistorico.push({ autor:'usuario', texto: query });
+    removerAnexoBusca();
     scrollParaTurno(turnoEl);
     await processarComandoDev(matchDev[1].trim());
     return;
   }
 
   ativarModoConversa();
-  const turnoEl = renderTurnoUsuario(query);
+  const anexoParaEnvio = anexoBusca;
+  const turnoEl = renderTurnoUsuario(query, anexoParaEnvio);
   const loadingEl = renderCartaoAgenteLoading();
-  conversaHistorico.push({ autor:'usuario', texto: query });
+  conversaHistorico.push({ autor:'usuario', texto: anexoParaEnvio ? `${query}\n[anexou o arquivo: ${anexoParaEnvio.nome}]` : query });
+  removerAnexoBusca();
   scrollParaTurno(turnoEl);
 
   let formato = 'pergunta';
@@ -1533,11 +1544,11 @@ async function processarBusca(query){
     // Independente do que a busca interna encontrou, a resposta completa do
     // agente (com busca na web) sempre vem junto — nunca deixa a primeira
     // busca incompleta esperando a pessoa insistir de novo.
-    await responderComAgente(loadingEl, query, entidadeHtmlExtra);
+    await responderComAgente(loadingEl, query, entidadeHtmlExtra, anexoParaEnvio);
     return;
   }
 
-  await responderComAgente(loadingEl, query);
+  await responderComAgente(loadingEl, query, null, anexoParaEnvio);
 }
 
 // ── comando-dev: canal de comando do fundador (prefixo "/dev ") ──
@@ -1847,7 +1858,8 @@ async function publicarIdx(){
 }
 
 // ANEXO (+ foto/vídeo, documento, link) — a SereIA lê/usa isso ao criar o post
-let anexoAtual = null; // { tipo: 'imagem'|'documento'|'link', url, nome }
+let anexoAtual = null; // { tipo: 'imagem'|'documento'|'link', url, nome } — usado no modo Postar (SereIA)
+let anexoBusca = null; // { tipo: 'texto'|'imagem'|'pdf', nome, mime, conteudo? , base64? } — usado no modo Buscar (agentes)
 
 function toggleAnexoMenu(){
   document.getElementById('anexoMenu').classList.toggle('show');
@@ -1866,6 +1878,14 @@ function escolherAnexoArquivo(tipo){
 async function onAnexoArquivoSelecionado(ev, tipo){
   const file = ev.target.files?.[0];
   if (!file) return;
+
+  // Modo Buscar: o arquivo vira contexto pra pergunta ao agente, não um post.
+  if (modo === 'buscar') {
+    await processarAnexoParaBusca(file);
+    ev.target.value = '';
+    return;
+  }
+
   const { data:{ session } } = await sb.auth.getSession();
   if(!session?.access_token){
     showToast('Entre na sua conta pra anexar arquivos.');
@@ -1893,10 +1913,80 @@ async function onAnexoArquivoSelecionado(ev, tipo){
   }
 }
 
+// ── Anexo no modo Buscar: lido no navegador, nunca sobe pro storage —
+// vira conteúdo de verdade (texto, imagem ou PDF) enviado junto da pergunta
+// pro agente, que lê o arquivo nativamente (sem OCR/parsing só nosso).
+const ANEXO_BUSCA_TAMANHO_MAX_MB = 8;
+const ANEXO_BUSCA_EXT_TEXTO = /\.(txt|md|markdown|csv|json|js|jsx|ts|tsx|py|log|html|htm|css|xml|yaml|yml|sql)$/i;
+const ANEXO_BUSCA_MIME_TEXTO = ['text/plain','text/markdown','text/csv','application/json','text/x-python','application/javascript','text/javascript','text/html','text/css','application/xml','text/xml'];
+
+function lerArquivoComoTexto(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result || ''));
+    r.onerror = () => reject(r.error);
+    r.readAsText(file);
+  });
+}
+function lerArquivoComoBase64(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result || '').split(',')[1] || '');
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
+}
+
+async function processarAnexoParaBusca(file){
+  const tamanhoMB = file.size / (1024 * 1024);
+  if (tamanhoMB > ANEXO_BUSCA_TAMANHO_MAX_MB) {
+    showToast(`Arquivo muito grande (máx. ${ANEXO_BUSCA_TAMANHO_MAX_MB}MB) pra eu conseguir ler agora.`);
+    return;
+  }
+
+  mostrarAnexoBuscaChip(`Lendo ${file.name}...`);
+  try {
+    if (file.type === 'application/pdf') {
+      const base64 = await lerArquivoComoBase64(file);
+      anexoBusca = { tipo: 'pdf', nome: file.name, mime: file.type, base64 };
+    } else if (file.type.startsWith('image/')) {
+      const base64 = await lerArquivoComoBase64(file);
+      anexoBusca = { tipo: 'imagem', nome: file.name, mime: file.type, base64 };
+    } else if (ANEXO_BUSCA_MIME_TEXTO.includes(file.type) || ANEXO_BUSCA_EXT_TEXTO.test(file.name)) {
+      let texto = await lerArquivoComoTexto(file);
+      if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+      anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'text/plain', conteudo: texto };
+    } else {
+      removerAnexoBusca();
+      showToast('Ainda não consigo ler esse tipo de arquivo — tenta .txt, .md, .csv, .json, .pdf ou uma imagem.');
+      return;
+    }
+    mostrarAnexoBuscaChip(`${anexoBusca.tipo === 'imagem' ? '📷' : anexoBusca.tipo === 'pdf' ? '📕' : '📄'} ${file.name}`);
+  } catch (e) {
+    console.error('anexo busca:', e);
+    removerAnexoBusca();
+    showToast('Não consegui ler esse arquivo agora.');
+  }
+}
+
+function mostrarAnexoBuscaChip(texto){
+  document.getElementById('anexoBuscaChipTxt').textContent = texto;
+  document.getElementById('anexoBuscaChip').style.display = 'flex';
+}
+function removerAnexoBusca(){
+  anexoBusca = null;
+  document.getElementById('anexoBuscaChip').style.display = 'none';
+}
+
 function escolherAnexoLink(){
   document.getElementById('anexoMenu').classList.remove('show');
-  const url = prompt('Cole o link que você quer que a SereIA leia:');
+  const url = prompt(modo === 'buscar' ? 'Cole o link que você quer que o agente considere:' : 'Cole o link que você quer que a SereIA leia:');
   if (!url || !url.trim()) return;
+  if (modo === 'buscar') {
+    anexoBusca = { tipo: 'link', nome: url.trim(), conteudo: url.trim() };
+    mostrarAnexoBuscaChip(`🔗 ${url.trim()}`);
+    return;
+  }
   setMode('postar');
   anexoAtual = { tipo: 'link', url: url.trim(), nome: url.trim() };
   mostrarAnexoChip(`🔗 ${url.trim()}`);
