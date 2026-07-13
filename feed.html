@@ -2628,9 +2628,11 @@ async function iniciarSessao() {
       carregarMeusCírculos(),
       verificarStreak(),
     ]);
+    sincronizarBotoesInteracao();
     iniciarRealtime();
   }catch(e){
     console.error('Erro ao carregar dados do usuário:', e);
+    sincronizarBotoesInteracao();
     iniciarRealtime();
   }
 
@@ -2641,6 +2643,30 @@ async function iniciarSessao() {
   setTimeout(() => {
     if (Notification.permission === 'default') inscreverPushNotification();
   }, 8000);
+}
+
+// ── Corrige o estado visual de curtir/salvar após o feed já ter renderizado ──
+// (o feed prioriza velocidade e renderiza os posts antes de saber o que o
+// usuário já curtiu/salvou; sem isso, posts já salvos/curtidos em sessões
+// anteriores aparecem como "não salvos", e clicar de novo tenta duplicar o
+// registro no banco — que rejeita por já existir. Isso fazia o botão
+// "não funcionar".)
+function sincronizarBotoesInteracao() {
+  document.querySelectorAll('[data-curtir-id]').forEach(btn => {
+    const id = btn.getAttribute('data-curtir-id');
+    if (curtidosIds.has(id) && !btn.classList.contains('liked')) {
+      btn.classList.add('liked');
+      const c = btn.querySelector('.curtidas-count');
+      btn.innerHTML = `❤️ <span class="curtidas-count">${c ? c.textContent : '0'}</span>`;
+    }
+  });
+  document.querySelectorAll('[data-salvar-id]').forEach(btn => {
+    const id = btn.getAttribute('data-salvar-id');
+    if (salvosIds.has(id) && !btn.classList.contains('active')) {
+      btn.classList.add('active');
+      btn.innerHTML = '🔖 Salvo';
+    }
+  });
 }
 
 // ── Carrega curtidas do usuário ──
@@ -2673,7 +2699,16 @@ async function toggleSalvo(postId, btn) {
     mostrarToast('Removido dos salvos', 'info');
   } else {
     const { error } = await sb.from('salvos').insert({ post_id: postId, user_id: usuarioAtual.id });
-    if (error) { console.error('Erro ao salvar:', error); mostrarToast('Erro ao salvar.','error'); return; }
+    if (error) {
+      // 23505 = já estava salvo (estado local desatualizado) — autocorrige em vez de dar erro
+      if (String(error.code) === '23505') {
+        salvosIds.add(postId);
+        btn.classList.add('active');
+        btn.innerHTML = '🔖 Salvo';
+        return;
+      }
+      console.error('Erro ao salvar:', error); mostrarToast('Erro ao salvar.','error'); return;
+    }
     salvosIds.add(postId);
     btn.classList.add('active');
     btn.innerHTML = '✅';
@@ -2967,7 +3002,16 @@ async function curtir(postId, btn) {
     btn.innerHTML = `♡ <span class="curtidas-count">${Math.max(0, count - 1)}</span>`;
   } else {
     const { error } = await sb.from('curtidas').insert({ post_id: postId, usuario_id: usuarioAtual.id });
-    if (error) { console.error('Erro curtir:', error); return; }
+    if (error) {
+      // 23505 = já tinha curtido (estado local desatualizado) — autocorrige em vez de travar
+      if (String(error.code) === '23505') {
+        curtidosIds.add(postId);
+        btn.classList.add('liked');
+        btn.innerHTML = `❤️ <span class="curtidas-count">${count}</span>`;
+        return;
+      }
+      console.error('Erro curtir:', error); return;
+    }
     await sb.from('posts').update({ curtidas_count: count + 1 }).eq('id', postId);
     curtidosIds.add(postId);
     btn.classList.add('liked');
@@ -3644,10 +3688,10 @@ async function renderizarPosts(posts, feedEl) {
       ${renderMidia(post)}
       ${renderFontes(post)}
       <div class="post-actions">
-        <button class="post-action ${curtido?'liked':''}" onclick="curtir('${post.id}',this)">${curtido?'❤️':'♡'} <span class="curtidas-count">${post.curtidas_count||0}</span></button>
+        <button class="post-action ${curtido?'liked':''}" data-curtir-id="${post.id}" onclick="curtir('${post.id}',this)">${curtido?'❤️':'♡'} <span class="curtidas-count">${post.curtidas_count||0}</span></button>
         <button class="post-action" onclick="toggleComentarios('${post.id}',this)">💬 <span class="coment-count">${post.comentarios_count||0}</span></button>
         <button onclick="compartilharPost('${post.id}','${escapeHtml(post.conteudo).substring(0,60).replace(/'/g,"\'")}...')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px">↗ Compartilhar</button>
-        <button class="post-action ${salvosIds.has(post.id)?'active':''}" onclick="toggleSalvo('${post.id}',this)" title="Salvar" style="margin-left:auto">${salvosIds.has(post.id)?'🔖 Salvo':'🔖'}</button>
+        <button class="post-action ${salvosIds.has(post.id)?'active':''}" data-salvar-id="${post.id}" onclick="toggleSalvo('${post.id}',this)" title="Salvar" style="margin-left:auto">${salvosIds.has(post.id)?'🔖 Salvo':'🔖'}</button>
       </div>
       <div class="comments-section" id="comments-${post.id}">
         <div class="comments-loading">Nenhum comentário ainda.</div>
