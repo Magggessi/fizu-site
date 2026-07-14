@@ -306,7 +306,7 @@ html.light .link-btn.outline{background:rgba(255,255,255,.8);border-color:rgba(0
   .fizu-icon svg{width:36px;height:36px}
   .logo-txts .nome{font-size:2.6rem}
   .logo-wrap{margin-bottom:32px;gap:12px}
-  .barra-input{font-size:.92rem;padding:16px 96px 16px 16px}
+  .barra-input{font-size:.92rem;padding:16px 96px 16px 52px}
   .search-wrap{max-width:100%}
   .links-row{gap:8px}
   .footer-inner{flex-direction:column;align-items:flex-start;gap:10px}
@@ -1858,7 +1858,13 @@ function ativarSereia(){document.getElementById('postBox').classList.add('sereia
 async function publicarIdx(){
   const t=document.getElementById('postTa').value.trim();
   if(!t){showToast('Escreva algo para publicar');return;}
-  sessionStorage.setItem('sereia_post',JSON.stringify({texto:t,midia:''}));
+  let midia = '', midiaTipo = null;
+  if (anexoAtual?.url) {
+    midia = anexoAtual.url;
+    midiaTipo = (anexoAtual.mime || '').startsWith('video/') ? 'video'
+              : (anexoAtual.tipo === 'imagem' ? 'foto' : anexoAtual.tipo);
+  }
+  sessionStorage.setItem('sereia_post',JSON.stringify({texto:t, midia, midiaTipo}));
   window.location.href='/feed#sereia-post';
 }
 
@@ -1909,8 +1915,9 @@ async function onAnexoArquivoSelecionado(ev, tipo){
     });
     if (!resp.ok) throw new Error('Falha no upload');
     const url = `${SUPA_URL}/storage/v1/object/public/posts/${path}`;
-    anexoAtual = { tipo, url, nome: file.name };
-    mostrarAnexoChip(`${tipo === 'imagem' ? '📷' : '📄'} ${file.name}`);
+    anexoAtual = { tipo, url, nome: file.name, mime: file.type || '' };
+    const ehVideo = tipo === 'imagem' && (file.type || '').startsWith('video/');
+    mostrarAnexoChip(`${ehVideo ? '🎬' : tipo === 'imagem' ? '📷' : '📄'} ${file.name}`);
   } catch (e) {
     console.error('anexo upload:', e);
     showToast('Não consegui enviar o arquivo agora.');
@@ -2035,7 +2042,7 @@ async function gerarSereia(){
 function descartarSereia(){sPost='';sImg='';document.getElementById('sPrev').classList.remove('show');document.getElementById('postTa').value='';}
 async function publicarSereia(){
   if(!sPost)return;
-  sessionStorage.setItem('sereia_post',JSON.stringify({texto:sPost,midia:sImg}));
+  sessionStorage.setItem('sereia_post',JSON.stringify({texto:sPost, midia:sImg||'', midiaTipo: sImg ? 'foto' : null}));
   window.location.href='/feed#sereia-post';
 }
 

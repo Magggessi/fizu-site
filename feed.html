@@ -3878,6 +3878,58 @@ async function inicializarOGDinamico() {
     }, 900);
     return;
   }
+  // Tratar #sereia-post (vindo da homepage — composer "Postar" ou SereIA)
+  // Sem este handler, o handoff da home (sessionStorage + redirect) nunca
+  // era lido aqui: clicar em "Publicar" na tela inicial não criava post
+  // nenhum, com ou sem foto/vídeo anexado.
+  if (hash === '#sereia-post') {
+    setTimeout(async () => {
+      if (!usuarioAtual) { pedirLogin('postar'); return; }
+      const raw = sessionStorage.getItem('sereia_post');
+      if (!raw) { window.location.hash = ''; return; }
+      sessionStorage.removeItem('sereia_post');
+      window.location.hash = '';
+      try {
+        const { texto, midia, midiaTipo } = JSON.parse(raw);
+        if (!texto || !texto.trim()) return;
+
+        const analise = analisarTexto(texto);
+        if (analise.status === 'bloqueado') {
+          mostrarToast('Não foi possível publicar: conteúdo viola nossas políticas de uso.', 'error');
+          return;
+        }
+
+        let tipoPost = 'texto';
+        if (midia) tipoPost = midiaTipo === 'video' ? 'video' : 'foto';
+
+        const { data: novoPost, error } = await sb.from('posts').insert({
+          autor_id: usuarioAtual.id,
+          conteudo: texto,
+          tipo: tipoPost,
+          midia_url: midia || null,
+          criado_em: new Date().toISOString()
+        }).select('id').single();
+
+        if (error) { mostrarToast('Erro ao publicar: ' + error.message, 'error'); return; }
+
+        if (novoPost?.id) {
+          notificarMencoes(texto, novoPost.id, 'post');
+          ganharCoinsSeDedupe('post', novoPost.id);
+          const agenteDetectado = detectarAgenteParaPost(texto);
+          if (agenteDetectado) {
+            agenteComentar(novoPost.id, agenteDetectado, texto);
+          } else if (Math.random() < 0.70) {
+            const keys = Object.keys(AGENTES);
+            agenteComentar(novoPost.id, keys[Math.floor(Math.random() * keys.length)], texto);
+          }
+        }
+
+        mostrarToast('Publicado! ✨', 'success');
+        if (typeof carregarPosts === 'function') carregarPosts();
+      } catch (e) { mostrarToast('Erro ao publicar: ' + e.message, 'error'); }
+    }, 900);
+    return;
+  }
   if (!hash.startsWith('#post-')) return;
   const postId = hash.replace('#post-', '').trim();
   if (!postId) return;
