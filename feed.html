@@ -13708,6 +13708,160 @@ async function mktInit() {
   await Promise.all([mktCarregarDestaques(), mktCarregarRecentes()]);
 }
 
+// ══════════════════════════════════════════════════════════════
+// EASTER EGG — "família fizu" 🐟✨
+// Digitar a frase exata em QUALQUER campo de texto do site
+// dispara som + chuva de peixinhos + mensagem de um agente + coins.
+// (mesmo bloco existe no index.html — se mudar aqui, replicar lá também)
+// ══════════════════════════════════════════════════════════════
+(function easterEggFamiliaFizu(){
+  const FRASE_SECRETA = 'familia fizu'; // já normalizada (sem acento, minúsculo)
+  let ultimoValorCelebrado = null;
+  let celebrando = false;
+
+  function normalizar(txt){
+    return (txt||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  }
+
+  function tocarSom(){
+    try{
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      const notas = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6 — arpejo alegre
+      notas.forEach((freq, i) => {
+        const t0 = ctx.currentTime + i*0.12;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.16, t0+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0+0.55);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0); osc.stop(t0+0.6);
+      });
+    }catch(e){}
+  }
+
+  function garantirEstilos(){
+    if(document.getElementById('easterEggEstilos')) return;
+    const style = document.createElement('style');
+    style.id = 'easterEggEstilos';
+    style.textContent = `
+      @keyframes eeCair{0%{transform:translateY(0) rotate(0deg);opacity:.95}100%{transform:translateY(112vh) rotate(var(--eeRot,360deg));opacity:0}}
+      @keyframes eeModalIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function chuvaDePeixinhos(){
+    garantirEstilos();
+    const emojis = ['🐟','🐬','🫧','✨','🐠','💙','🌊'];
+    const container = document.createElement('div');
+    container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99998;overflow:hidden;';
+    document.body.appendChild(container);
+    const qtd = 70;
+    for(let i=0;i<qtd;i++){
+      const span = document.createElement('span');
+      span.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      const startX = Math.random()*100;
+      const duration = (2.2 + Math.random()*2.2).toFixed(2);
+      const delay = (Math.random()*0.7).toFixed(2);
+      const size = Math.round(16 + Math.random()*22);
+      const rot = Math.round(Math.random()*720-360);
+      span.style.cssText = `position:absolute;left:${startX}vw;top:-40px;font-size:${size}px;animation:eeCair ${duration}s ${delay}s ease-in forwards;`;
+      span.style.setProperty('--eeRot', rot+'deg');
+      container.appendChild(span);
+    }
+    setTimeout(()=>container.remove(), 5200);
+  }
+
+  function mensagemDeAgente(){
+    const opcoes = [
+      { emoji:'🐬', nome:'Zari', txt:'Vocês são a razão de tudo isso existir. Bem-vindos à família Fizu — pra sempre.' },
+      { emoji:'🐋', nome:'Anthos', txt:'Pouquíssimos encontram esse segredo. Agora vocês fazem parte da história permanente do Fizu.' },
+      { emoji:'🌙', nome:'Maya', txt:'Que bom ter vocês aqui. Esse momento também vai ficar guardado, para sempre, com carinho.' },
+      { emoji:'🔦', nome:'Flux', txt:'Achou o segredo escondido no código! Isso é raro — bem-vindos à família Fizu.' },
+    ];
+    return opcoes[Math.floor(Math.random()*opcoes.length)];
+  }
+
+  async function darCoinsSePossivel(){
+    try{
+      if(typeof usuarioAtual === 'undefined' || !usuarioAtual || !usuarioAtual.id) return null;
+      if(typeof sb === 'undefined') return null;
+      const chave = 'fizu_easter_egg_familia_' + usuarioAtual.id;
+      if(localStorage.getItem(chave)) return null;
+      const { data, error } = await sb.rpc('dar_coins', {
+        p_usuario_id: usuarioAtual.id,
+        p_valor: 100,
+        p_tipo: 'easter_egg',
+        p_descricao: 'Encontrou o segredo "Família Fizu" 🎉',
+        p_ref_id: null
+      });
+      if(!error){
+        localStorage.setItem(chave, '1');
+        if(typeof _coinSaldo !== 'undefined'){ _coinSaldo = data; if(typeof renderCoinNav === 'function') renderCoinNav(); }
+        return 100;
+      }
+    }catch(e){}
+    return null;
+  }
+
+  async function mostrarModal(coinsGanhos){
+    if(document.getElementById('easterEggModal')) return;
+    garantirEstilos();
+    const ag = mensagemDeAgente();
+    const modal = document.createElement('div');
+    modal.id = 'easterEggModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(5,10,20,.75);backdrop-filter:blur(6px);padding:20px;';
+    modal.innerHTML = `
+      <div style="animation:eeModalIn .35s ease;background:linear-gradient(160deg,#0f1f3a,#0a1428);border:1px solid rgba(59,158,255,.4);border-radius:24px;padding:36px 30px;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);font-family:'DM Sans',sans-serif;">
+        <div style="font-size:52px;margin-bottom:6px;">${ag.emoji}</div>
+        <div style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:4px;">Você encontrou o segredo!</div>
+        <div style="color:#3b9eff;font-weight:700;font-size:.85rem;margin-bottom:14px;">— ${ag.nome}</div>
+        <div style="color:rgba(255,255,255,.85);font-size:.95rem;line-height:1.5;margin-bottom:18px;">${ag.txt}</div>
+        ${coinsGanhos ? `<div style="color:#ffd166;font-weight:700;font-size:.9rem;margin-bottom:18px;">+${coinsGanhos} 🪙 Fizu Coins!</div>` : ''}
+        <button id="easterEggFechar" style="background:#3b9eff;color:#fff;border:none;padding:12px 28px;border-radius:14px;font-weight:700;cursor:pointer;font-size:.95rem;">Que demais! 🎉</button>
+      </div>`;
+    document.body.appendChild(modal);
+    const btn = document.getElementById('easterEggFechar');
+    if(btn) btn.onclick = () => modal.remove();
+  }
+
+  async function celebrar(){
+    if(celebrando) return;
+    celebrando = true;
+    tocarSom();
+    chuvaDePeixinhos();
+    const coins = await darCoinsSePossivel();
+    mostrarModal(coins);
+    setTimeout(()=>{ celebrando = false; }, 4000);
+  }
+
+  function verificarCampo(el){
+    if(!el) return;
+    const valor = el.value !== undefined ? el.value : el.textContent;
+    const norm = normalizar(valor);
+    if(norm === FRASE_SECRETA){
+      if(ultimoValorCelebrado !== norm){
+        ultimoValorCelebrado = norm;
+        celebrar();
+      }
+    } else {
+      ultimoValorCelebrado = null;
+    }
+  }
+
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if(!el) return;
+    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable){
+      verificarCampo(el);
+    }
+  }, true);
+})();
+
 </script>
 
 <div id="pwa-float-btn" onclick="instalarPWA()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:8888;background:linear-gradient(135deg,#0088a8,#7c3aed);color:#fff;border:none;border-radius:30px;padding:12px 20px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;align-items:center;gap:8px;box-shadow:0 4px 24px rgba(0,136,168,0.4)">
