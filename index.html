@@ -35,7 +35,12 @@ html.light{
   --aqua:#0055cc;--text:#0d1628;--muted:#5a7090;
   --border:rgba(0,85,204,.15);--card-solid:#ffffff;
 }
-html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;overscroll-behavior-y:contain}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overscroll-behavior-y:contain}
+/* overflow-x só no body (nunca no html) — aplicar no <html> muda qual elemento
+   "dono" o navegador usa pra rolagem da página, e em alguns casos isso quebra
+   a rolagem via roda do mouse (mas não via scrollbar/teclado) — era a causa
+   do bug "rodinha do mouse não rola" só no index.html. */
+body{overflow-x:hidden}
 
 /* ── FUNDO ── */
 .bg-grad{
