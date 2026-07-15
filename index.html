@@ -447,6 +447,8 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-nome{font-size:.86rem;font-weight:800}
 .ac-texto{font-size:.92rem;line-height:1.6;color:var(--text)}
 .ac-opiniao{margin-top:9px;font-size:.85rem;line-height:1.55;color:var(--muted);font-style:italic;padding-left:11px;border-left:2px solid var(--aqua)}
+.ac-imagem-gerada-wrap{margin-top:14px;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:rgba(255,255,255,.02)}
+.ac-imagem-gerada{width:100%;display:block;max-height:440px;object-fit:cover}
 .ac-vermais-btn{margin-top:10px;background:none;border:none;color:var(--aqua);font-size:.78rem;font-weight:700;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif}
 .ac-vermais-btn:hover{text-decoration:underline}
 .ac-detalhada{margin-top:10px;font-size:.87rem;line-height:1.65;color:var(--text);border-top:1px solid var(--border);padding-top:12px}
@@ -1302,6 +1304,10 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
        <button class="ac-vermais-btn" id="verbtn-${turnoId}" onclick="toggleDetalhada('${turnoId}')">Ver resposta completa ↓</button>`
     : '';
 
+  const imagemGeradaHtml = resultado.imagem_gerada
+    ? `<div class="ac-imagem-gerada-wrap"><img class="ac-imagem-gerada" src="${resultado.imagem_gerada}" loading="lazy" alt="Imagem criada pelo agente" onerror="this.parentElement.style.display='none'"></div>`
+    : '';
+
   const cardsHtml = (resultado.cards||[]).slice(0,4).map(c=>{
     const isVideo = c.tipo === 'video';
     const imgInner = c.imagem
@@ -1330,6 +1336,7 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
       <div class="ac-header"><div class="ac-avatar-wrap" id="avatarwrap-${turnoId}">${avatarHtml}</div><div class="ac-nome" style="color:${ag.cor}">${esc(ag.nome)}</div><button class="ac-play-btn" onclick="narrarTurno('${turnoId}', this)" title="Ouvir resposta">▶</button></div>
       <div class="ac-texto">${esc(resultado.resposta_curta||'')}</div>
       ${resultado.ponto_de_vista ? `<div class="ac-opiniao">💭 ${esc(resultado.ponto_de_vista)}</div>` : ''}
+      ${imagemGeradaHtml}
       ${detalhadaHtml}
       ${cardsHtml ? `<div class="ac-cards-wrap"><div class="ac-cards-scroll">${cardsHtml}</div></div>` : ''}
       ${fontesHtml ? `<div class="ac-fontes">${fontesHtml}</div>` : ''}
