@@ -1308,6 +1308,10 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
     ? `<div class="ac-imagem-gerada-wrap"><img class="ac-imagem-gerada" src="${resultado.imagem_gerada}" loading="lazy" alt="Imagem criada pelo agente" onerror="this.parentElement.style.display='none'"></div>`
     : '';
 
+  const videoGeradoHtml = resultado.video_gerado
+    ? `<div class="ac-imagem-gerada-wrap"><video class="ac-imagem-gerada" src="${resultado.video_gerado}" controls playsinline preload="metadata" onerror="this.parentElement.style.display='none'"></video></div>`
+    : '';
+
   const cardsHtml = (resultado.cards||[]).slice(0,4).map(c=>{
     const isVideo = c.tipo === 'video';
     const imgInner = c.imagem
@@ -1337,6 +1341,7 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
       <div class="ac-texto">${esc(resultado.resposta_curta||'')}</div>
       ${resultado.ponto_de_vista ? `<div class="ac-opiniao">💭 ${esc(resultado.ponto_de_vista)}</div>` : ''}
       ${imagemGeradaHtml}
+      ${videoGeradoHtml}
       ${detalhadaHtml}
       ${cardsHtml ? `<div class="ac-cards-wrap"><div class="ac-cards-scroll">${cardsHtml}</div></div>` : ''}
       ${fontesHtml ? `<div class="ac-fontes">${fontesHtml}</div>` : ''}
