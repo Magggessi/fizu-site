@@ -259,6 +259,8 @@ html.dark{
 .audio-bubble { display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;min-width:190px }
 .audio-bubble.mine { background:var(--aqua) }
 .audio-bubble.theirs { background:var(--card);border:1px solid var(--border) }
+.audio-transcricao { font-size:.76rem;font-style:italic;color:var(--muted);margin-top:3px;max-width:220px;line-height:1.35 }
+.audio-transcricao.mine { text-align:right;margin-left:auto }
 .audio-play-btn { width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0 }
 .audio-play-btn.mine { background:rgba(255,255,255,0.25);color:#fff }
 .audio-play-btn.theirs { background:var(--aqua);color:#fff }
@@ -9197,6 +9199,42 @@ async function cutucar(convId, outroId, outroNome) {
 let _mediaRecorder = null, _mediaChunks = [], _mediaType = null, _recTimer = null, _recSecs = 0;
 
 // Detectar melhor formato suportado pelo browser/dispositivo
+// ── Transcrição automática de voz (Web Speech API, nativa do navegador,
+// zero custo) — roda em paralelo à gravação de áudio, sem gastar com IA.
+let _reconhecimentoVoz = null;
+let _transcricaoAtual = '';
+
+function _iniciarTranscricao() {
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  _transcricaoAtual = '';
+  if (!SpeechRecognitionAPI) return; // navegador sem suporte — segue sem transcrição
+  try {
+    _reconhecimentoVoz = new SpeechRecognitionAPI();
+    _reconhecimentoVoz.lang = 'pt-BR';
+    _reconhecimentoVoz.continuous = true;
+    _reconhecimentoVoz.interimResults = true;
+    _reconhecimentoVoz.onresult = (ev) => {
+      let textoFinal = '';
+      for (let i = 0; i < ev.results.length; i++) {
+        if (ev.results[i].isFinal) textoFinal += ev.results[i][0].transcript + ' ';
+      }
+      if (textoFinal.trim()) _transcricaoAtual = textoFinal.trim();
+    };
+    _reconhecimentoVoz.onerror = (e) => console.warn('Transcrição de voz:', e.error);
+    _reconhecimentoVoz.start();
+  } catch(e) {
+    console.warn('SpeechRecognition indisponível:', e);
+    _reconhecimentoVoz = null;
+  }
+}
+
+function _pararTranscricao() {
+  if (_reconhecimentoVoz) {
+    try { _reconhecimentoVoz.stop(); } catch(e) {}
+    _reconhecimentoVoz = null;
+  }
+}
+
 function _getMimeType(tipo) {
   if (tipo === 'audio') {
     const tipos = [
@@ -9262,12 +9300,13 @@ async function iniciarGravacao(tipo, convId, outroId) {
     };
     _mediaRecorder.onstop = () => {
       stream.getTracks().forEach(t => t.stop());
+      if (tipo === 'audio') _pararTranscricao();
       if (_mediaChunks.length === 0) {
         mostrarToast('Nenhum dado gravado. Tente novamente.', 'error');
         return;
       }
       const blob = new Blob(_mediaChunks, { type: mimeUsado || 'audio/webm' });
-      uploadEEnviarMidia(blob, tipo, convId, outroId, mimeUsado);
+      uploadEEnviarMidia(blob, tipo, convId, outroId, mimeUsado, tipo === 'audio' ? _transcricaoAtual : '');
     };
     _mediaRecorder.onerror = (e) => {
       console.error('MediaRecorder error:', e);
@@ -9276,6 +9315,7 @@ async function iniciarGravacao(tipo, convId, outroId) {
     };
 
     _mediaRecorder.start(250); // chunk a cada 250ms
+    if (tipo === 'audio') _iniciarTranscricao();
 
     // UI
     const btn = document.getElementById('btnRecord');
@@ -9309,7 +9349,7 @@ function pararGravacao() {
   if (dur) dur.textContent = '';
 }
 
-async function uploadEEnviarMidia(blob, tipo, convId, outroId, mimeType) {
+async function uploadEEnviarMidia(blob, tipo, convId, outroId, mimeType, transcricao) {
   mostrarToast('Enviando ' + (tipo==='audio'?'áudio':'vídeo') + '...', 'info');
   try {
     // Renovar sessão antes de fazer upload (evita "exp claim" error)
@@ -9331,7 +9371,7 @@ async function uploadEEnviarMidia(blob, tipo, convId, outroId, mimeType) {
     const url = urlData?.publicUrl;
     if (!url) throw new Error('URL inválida');
 
-    await enviarMsgMobile(convId, outroId, null, url, tipo);
+    await enviarMsgMobile(convId, outroId, transcricao || null, url, tipo);
   } catch(e) {
     mostrarToast('Erro ao enviar mídia: ' + (e.message||'tente novamente'), 'error');
     console.error('uploadMidia:', e);
@@ -9368,6 +9408,7 @@ function renderBolha(msg, mine) {
 
   if (tipoEfetivo === 'audio' && midiaEfetiva) {
     const bars = Array.from({length:20},(_,i)=>`<span style="height:${4+Math.sin(i*.8+1)*10}px;background:${mine?'rgba(255,255,255,0.7)':'var(--aqua)'};animation:none"></span>`).join('');
+    const transcricaoHtml = msg.conteudo ? `<div class="audio-transcricao ${cls}">${esc(msg.conteudo)}</div>` : '';
     return `<div class="chat-msg-row ${cls}">
       <div class="audio-bubble ${cls}">
         <button class="audio-play-btn ${cls}" onclick="toggleAudio('audio-${msg.id}','${midiaEfetiva}',this)">▶</button>
@@ -9375,6 +9416,7 @@ function renderBolha(msg, mine) {
         <span class="audio-dur ${cls}" id="adur-${msg.id}">0:${Math.floor(Math.random()*30+5).toString().padStart(2,'0')}</span>
         <audio id="audio-${msg.id}" src="${midiaEfetiva}" style="display:none"></audio>
       </div>
+      ${transcricaoHtml}
       <div class="chat-meta ${cls}">${tempo} ${ticks}</div>
     </div>`;
   }
