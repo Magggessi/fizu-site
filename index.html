@@ -747,6 +747,8 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const SUPA_URL='https://tnwildfshzrvktrlfjhz.supabase.co';
 const SUPA_KEY='sb_publishable_wGUZQpVa2MWcpC2gupBC4Q_JrtWFeKN';
@@ -1951,6 +1953,10 @@ async function onAnexoArquivoSelecionado(ev, tipo){
 const ANEXO_BUSCA_TAMANHO_MAX_MB = 8;
 const ANEXO_BUSCA_EXT_TEXTO = /\.(txt|md|markdown|csv|json|js|jsx|ts|tsx|py|log|html|htm|css|xml|yaml|yml|sql)$/i;
 const ANEXO_BUSCA_MIME_TEXTO = ['text/plain','text/markdown','text/csv','application/json','text/x-python','application/javascript','text/javascript','text/html','text/css','application/xml','text/xml'];
+const ANEXO_BUSCA_EXT_DOCX = /\.docx$/i;
+const ANEXO_BUSCA_MIME_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const ANEXO_BUSCA_EXT_PLANILHA = /\.(xlsx|xls)$/i;
+const ANEXO_BUSCA_MIME_PLANILHA = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
 
 function lerArquivoComoTexto(file){
   return new Promise((resolve, reject) => {
@@ -1968,6 +1974,24 @@ function lerArquivoComoBase64(file){
     r.readAsDataURL(file);
   });
 }
+function lerArquivoComoArrayBuffer(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+    r.readAsArrayBuffer(file);
+  });
+}
+async function extrairTextoDocx(file){
+  const buffer = await lerArquivoComoArrayBuffer(file);
+  const resultado = await mammoth.extractRawText({ arrayBuffer: buffer });
+  return resultado.value || '';
+}
+async function extrairTextoPlanilha(file){
+  const buffer = await lerArquivoComoArrayBuffer(file);
+  const wb = XLSX.read(buffer, { type: 'array' });
+  return wb.SheetNames.map(nome => `--- Planilha: ${nome} ---\n${XLSX.utils.sheet_to_csv(wb.Sheets[nome])}`).join('\n\n');
+}
 
 async function processarAnexoParaBusca(file){
   const tamanhoMB = file.size / (1024 * 1024);
@@ -1984,13 +2008,23 @@ async function processarAnexoParaBusca(file){
     } else if (file.type.startsWith('image/')) {
       const base64 = await lerArquivoComoBase64(file);
       anexoBusca = { tipo: 'imagem', nome: file.name, mime: file.type, base64 };
+    } else if (file.type === ANEXO_BUSCA_MIME_DOCX || ANEXO_BUSCA_EXT_DOCX.test(file.name)) {
+      let texto = await extrairTextoDocx(file);
+      if (!texto.trim()) throw new Error('docx vazio ou ilegível');
+      if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+      anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'docx', conteudo: texto };
+    } else if (ANEXO_BUSCA_MIME_PLANILHA.includes(file.type) || ANEXO_BUSCA_EXT_PLANILHA.test(file.name)) {
+      let texto = await extrairTextoPlanilha(file);
+      if (!texto.trim()) throw new Error('planilha vazia ou ilegível');
+      if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+      anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'xlsx', conteudo: texto };
     } else if (ANEXO_BUSCA_MIME_TEXTO.includes(file.type) || ANEXO_BUSCA_EXT_TEXTO.test(file.name)) {
       let texto = await lerArquivoComoTexto(file);
       if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
       anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'text/plain', conteudo: texto };
     } else {
       removerAnexoBusca();
-      showToast('Ainda não consigo ler esse tipo de arquivo — tenta .txt, .md, .csv, .json, .pdf ou uma imagem.');
+      showToast('Ainda não consigo ler esse tipo de arquivo — tenta .docx, .xlsx, .csv, .txt, .md, .json, .pdf ou uma imagem.');
       return;
     }
     mostrarAnexoBuscaChip(`${anexoBusca.tipo === 'imagem' ? '📷' : anexoBusca.tipo === 'pdf' ? '📕' : '📄'} ${file.name}`);
