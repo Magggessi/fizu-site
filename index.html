@@ -417,6 +417,30 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 
 .ac-loading-status{margin-top:10px;font-size:.68rem;font-weight:800;color:var(--aqua);text-transform:uppercase;letter-spacing:.06em;text-align:center}
 .ac-loading-txt{margin-top:3px;font-size:.78rem;color:var(--muted);text-align:center;min-height:1.1em;transition:opacity .3s}
+
+/* ── Cabeçalho do card de espera: dá controle (fechar) sem cancelar a busca ── */
+.ac-loading-top{width:100%;display:flex;justify-content:flex-end;margin-bottom:-6px}
+.ac-loading-min-btn{background:none;border:none;color:var(--muted);font-size:.95rem;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1;font-family:inherit}
+.ac-loading-min-btn:hover{color:var(--text);background:rgba(255,255,255,.06)}
+
+/* ── Barra de progresso estimado: nunca é exata, mas dá uma noção de "falta pouco" ── */
+.ac-progress-track{width:100%;max-width:460px;height:4px;border-radius:4px;background:rgba(255,255,255,.08);margin:12px auto 0;overflow:hidden}
+.ac-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#3b9eff,#7C3AED);width:4%;transition:width 1s cubic-bezier(.22,1,.36,1)}
+
+/* ── Ação "jogar enquanto espera" ── */
+.ac-loading-actions{margin-top:12px}
+.ac-jogar-btn{background:rgba(59,158,255,.1);border:1px solid rgba(59,158,255,.28);color:var(--aqua);font-size:.78rem;font-weight:700;padding:7px 16px;border-radius:20px;cursor:pointer;font-family:inherit}
+.ac-jogar-btn:hover{background:rgba(59,158,255,.18)}
+
+/* ── Estado minimizado: some com a cena, mantém só uma pílula compacta pra reabrir ── */
+.ac-loading.minimizado .ac-oceano,
+.ac-loading.minimizado .ac-loading-actions,
+.ac-loading.minimizado .ac-loading-logo{display:none}
+.ac-loading.minimizado{flex-direction:row;align-items:center;justify-content:space-between;padding:10px 16px;gap:10px}
+.ac-loading.minimizado .ac-loading-status,
+.ac-loading.minimizado .ac-loading-txt{margin-top:0;text-align:left}
+.ac-loading.minimizado .ac-progress-track{margin:0;max-width:80px}
+
 .ac-erro{background:var(--card);border:1px solid var(--border);border-radius:18px 18px 18px 4px;padding:16px 18px;font-size:.86rem;color:var(--muted)}
 
 .ac-card-wrap{
@@ -734,9 +758,9 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 
 <!-- Joguinho offline: aparece quando cai a conexão, tipo o Dino do Chrome -->
 <div class="jogo-offline-overlay" id="jogoOfflineOverlay">
-  <button class="jogo-fechar-btn" onclick="jogoEsconderOverlay()" title="Fechar">✕</button>
-  <div class="jogo-offline-titulo">📡 Sem conexão com o Fizu</div>
-  <div class="jogo-offline-sub">Enquanto isso, ajuda o peixinho a fugir...</div>
+  <button class="jogo-fechar-btn" onclick="_jogoModoEspera ? jogoFecharModoEspera() : jogoEsconderOverlay()" title="Fechar">✕</button>
+  <div class="jogo-offline-titulo" id="jogoTitulo">📡 Sem conexão com o Fizu</div>
+  <div class="jogo-offline-sub" id="jogoSubtitulo">Enquanto isso, ajuda o peixinho a fugir...</div>
   <div class="jogo-area" id="jogoArea">
     <div class="jogo-pontuacao" id="jogoPontuacao">0</div>
     <div class="jogo-peixe" id="jogoPeixe"></div>
@@ -1204,6 +1228,9 @@ function renderCartaoAgenteLoading(){
   div.className = 'turno-agente';
   div.innerHTML = `
     <div class="ac-loading">
+      <div class="ac-loading-top">
+        <button class="ac-loading-min-btn" onclick="toggleMinimizarLoading(this)" title="Minimizar">─</button>
+      </div>
       <div class="ac-loading-logo">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g transform="rotate(-12 50 50)">
@@ -1218,8 +1245,12 @@ function renderCartaoAgenteLoading(){
         <span class="ac-bolha b1"></span><span class="ac-bolha b2"></span><span class="ac-bolha b3"></span><span class="ac-bolha b4"></span>
         <div class="ac-oc-legenda"></div>
       </div>
+      <div class="ac-progress-track"><div class="ac-progress-fill"></div></div>
       <div class="ac-loading-status">⏳ Gerando sua resposta</div>
       <div class="ac-loading-txt">${FRASES_LOADING_OCEANO[0]}</div>
+      <div class="ac-loading-actions">
+        <button class="ac-jogar-btn" onclick="jogoAbrirParaEspera()">🎮 Jogar enquanto espera</button>
+      </div>
     </div>`;
   area.appendChild(div);
 
@@ -1235,12 +1266,41 @@ function renderCartaoAgenteLoading(){
       setTimeout(()=>{ txtEl.textContent = FRASES_LOADING_OCEANO[i]; txtEl.style.opacity = '1'; }, 250);
     }
   }, 2300);
+
+  // Progresso estimado: nunca afirma um número exato, só dá uma sensação
+  // honesta de "andando" — sobe rápido no início e desacelera (curva de
+  // retornos decrescentes), nunca chega a 100% sozinho. Some quando a
+  // resposta real chegar (pararLoadingOceano completa a barra de verdade).
+  const fillEl = div.querySelector('.ac-progress-fill');
+  let progresso = 4;
+  div._progressTimer = setInterval(()=>{
+    const restante = 92 - progresso;
+    progresso += restante * 0.09;
+    if(fillEl) fillEl.style.width = Math.min(progresso, 92).toFixed(0) + '%';
+  }, 400);
+
+  window._loadingAtivoEl = div; // referência pro botão de jogo saber onde reabrir o progresso
   return div;
+}
+
+function toggleMinimizarLoading(btn){
+  const card = btn.closest('.ac-loading');
+  if(!card) return;
+  const minimizando = !card.classList.contains('minimizado');
+  card.classList.toggle('minimizado');
+  btn.textContent = minimizando ? '▢' : '─';
+  btn.title = minimizando ? 'Reabrir' : 'Minimizar';
 }
 
 function pararLoadingOceano(el){
   if(el && el._loadingTimer){ clearInterval(el._loadingTimer); el._loadingTimer = null; }
   if(el && el._jornadaParar){ el._jornadaParar(); el._jornadaParar = null; }
+  if(el && el._progressTimer){
+    clearInterval(el._progressTimer); el._progressTimer = null;
+    const fillEl = el.querySelector && el.querySelector('.ac-progress-fill');
+    if(fillEl) fillEl.style.width = '100%';
+  }
+  if(_jogoModoEspera) jogoFecharModoEspera();
 }
 
 function scrollParaTurno(turnoEl){
@@ -2156,6 +2216,35 @@ function jogoEsconderOverlay(){
   jogoParar();
   if(status) status.textContent = '✅ Conexão de volta! Pode continuar no Fizu.';
   setTimeout(()=>{ overlay.classList.remove('show'); }, 900);
+}
+
+// ── Reaproveita o mesmo joguinho do peixinho enquanto uma resposta de IA
+// está sendo gerada — em vez de ficar só olhando a animação, a pessoa pode
+// jogar; a resposta continua chegando em segundo plano normalmente.
+let _jogoModoEspera = false;
+function jogoAbrirParaEspera(){
+  const titulo = document.getElementById('jogoTitulo');
+  const sub = document.getElementById('jogoSubtitulo');
+  if(titulo) titulo.textContent = '🎮 Jogando enquanto a resposta chega';
+  if(sub) sub.textContent = 'Sem pressa — a resposta aparece assim que ficar pronta';
+  const { overlay, mensagem, status } = _jogoEls();
+  overlay.classList.add('show');
+  if(status) status.textContent = '';
+  jogoResetar();
+  mensagem.style.display = 'flex';
+  mensagem.textContent = 'Toque ou aperte espaço pra começar';
+  _jogoModoEspera = true;
+}
+function jogoFecharModoEspera(){
+  jogoParar();
+  const { overlay, status } = _jogoEls();
+  if(status) status.textContent = '';
+  overlay.classList.remove('show');
+  const titulo = document.getElementById('jogoTitulo');
+  const sub = document.getElementById('jogoSubtitulo');
+  if(titulo) titulo.textContent = '📡 Sem conexão com o Fizu';
+  if(sub) sub.textContent = 'Enquanto isso, ajuda o peixinho a fugir...';
+  _jogoModoEspera = false;
 }
 
 function jogoResetar(){

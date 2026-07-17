@@ -1280,6 +1280,7 @@ html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#005
   <script async defer src="https://www.instagram.com/embed.js"></script>
   <script src="cookie-consent.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.umd.min.js"></script>
 </head>
 <body>
 
@@ -4569,6 +4570,170 @@ async function abrirCofre(el) {
   }
 }
 
+// ── Segurança do Cofre: Face ID/Touch ID (WebAuthn) + código por e-mail ──
+// O Fizu nunca vê nem guarda rosto/digital — o dispositivo confirma a
+// identidade e só devolve uma chave pública assinada pro backend conferir.
+async function abrirSegurancaCofre() {
+  const feedEl = document.getElementById('feedPostsReais');
+  mostrarAnthosChatBtn(false);
+  feedEl.innerHTML = `<div class="cofre-wrap"><div style="text-align:center;padding:32px;color:var(--muted)">Carregando...</div></div>`;
+
+  const { data: credenciais } = await sb.from('cofre_webauthn_credentials')
+    .select('id, nome_dispositivo, device_type, criado_em, ultimo_uso_em')
+    .eq('usuario_id', usuarioAtual.id)
+    .order('criado_em', { ascending: false });
+
+  const suportaWebauthn = typeof window.SimpleWebAuthnBrowser !== 'undefined' && window.PublicKeyCredential;
+
+  const listaDispositivos = (credenciais || []).length
+    ? credenciais.map(c => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px">
+        <div>
+          <div style="font-size:.86rem;font-weight:700;color:var(--text)">🔑 ${escapeHtml(c.nome_dispositivo || 'Dispositivo')}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Cadastrado em ${new Date(c.criado_em).toLocaleDateString('pt-BR')}${c.ultimo_uso_em ? ` · último uso em ${new Date(c.ultimo_uso_em).toLocaleDateString('pt-BR')}` : ''}</div>
+        </div>
+        <button onclick="cofreRemoverDispositivo('${c.id}')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:.75rem;color:var(--coral);cursor:pointer;font-family:inherit">Remover</button>
+      </div>`).join('')
+    : `<div style="font-size:.82rem;color:var(--muted);padding:16px;text-align:center">Nenhum dispositivo cadastrado ainda.</div>`;
+
+  feedEl.innerHTML = `<div class="cofre-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="renderCofreTimeline(document.getElementById('feedPostsReais'))" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px">←</button>
+      <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--text)">🔒 Segurança do Cofre</div>
+    </div>
+    <div class="cofre-anthos-msg" style="margin-bottom:20px">O Fizu nunca vê nem guarda seu rosto ou digital — o próprio aparelho confirma quem é você e só devolve uma "senha assinada" pro Fizu conferir. Isso é o mesmo padrão de segurança do Face ID/Touch ID de bancos e do próprio iPhone.</div>
+
+    <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:10px">Dispositivos com Face ID / Touch ID / Windows Hello</div>
+    ${listaDispositivos}
+    ${suportaWebauthn
+      ? `<button onclick="cofreAtivarBiometria()" id="btnAtivarBiometria" style="width:100%;background:linear-gradient(135deg,#7c3aed,#3b9eff);color:#fff;border:none;border-radius:12px;padding:13px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">🔐 Ativar neste dispositivo</button>`
+      : `<div style="font-size:.78rem;color:var(--muted);padding:10px 0">Esse navegador/dispositivo não suporta biometria — use o código por e-mail abaixo.</div>`}
+    ${suportaWebauthn && credenciais?.length
+      ? `<button onclick="cofreTestarDesbloqueio()" id="btnTestarDesbloqueio" style="width:100%;background:none;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:.82rem;color:var(--text);cursor:pointer;font-family:inherit;margin-top:8px">🔓 Testar desbloqueio agora</button>`
+      : ''}
+
+    <div style="font-size:.85rem;font-weight:700;color:var(--text);margin:24px 0 10px">Alternativa: código por e-mail</div>
+    <div class="cofre-anthos-msg" style="margin-bottom:12px">Pra quando você não estiver no seu dispositivo cadastrado — enviamos um código de 6 dígitos pro seu e-mail, válido por 10 minutos.</div>
+    <button onclick="cofreEnviarCodigoEmail()" id="btnEnviarOtp" style="background:none;border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:.82rem;color:var(--text);cursor:pointer;font-family:inherit">✉️ Enviar código de teste por e-mail</button>
+    <div id="areaCodigoOtp" style="margin-top:14px;display:none">
+      <input type="text" id="inputCodigoOtp" maxlength="6" placeholder="000000" style="width:140px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;font-size:1.1rem;letter-spacing:.15em;text-align:center">
+      <button onclick="cofreVerificarCodigoEmail()" style="background:var(--aqua);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;margin-left:8px">Verificar</button>
+    </div>
+  </div>`;
+}
+
+async function cofreAtivarBiometria() {
+  const btn = document.getElementById('btnAtivarBiometria');
+  if (btn) { btn.disabled = true; btn.textContent = 'Aguardando confirmação do dispositivo...'; }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    const r1 = await fetch(`${SUPA_URL}/functions/v1/cofre-webauthn-registro-iniciar`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, apikey: SUPA_KEY },
+    });
+    const d1 = await r1.json();
+    if (!d1.ok) throw new Error(d1.error || 'Não consegui iniciar o cadastro.');
+
+    const attResp = await window.SimpleWebAuthnBrowser.startRegistration({ optionsJSON: d1.options });
+
+    const nomeDisp = (prompt('Dá um nome pra esse dispositivo (ex: "Meu iPhone")', navigator.platform || 'Meu dispositivo') || 'Dispositivo').substring(0, 60);
+
+    const r2 = await fetch(`${SUPA_URL}/functions/v1/cofre-webauthn-registro-verificar`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: SUPA_KEY },
+      body: JSON.stringify({ response: attResp, nome_dispositivo: nomeDisp }),
+    });
+    const d2 = await r2.json();
+    if (!d2.ok) throw new Error(d2.error || 'Não consegui confirmar o dispositivo.');
+
+    mostrarToast('Dispositivo ativado! 🔒', 'success');
+    abrirSegurancaCofre();
+  } catch (e) {
+    console.error('cofreAtivarBiometria:', e);
+    const cancelado = e?.name === 'NotAllowedError';
+    mostrarToast(cancelado ? 'Cadastro cancelado.' : `Não consegui ativar: ${e.message || e}`, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '🔐 Ativar neste dispositivo'; }
+  }
+}
+
+async function cofreTestarDesbloqueio() {
+  const btn = document.getElementById('btnTestarDesbloqueio');
+  if (btn) { btn.disabled = true; btn.textContent = 'Aguardando confirmação do dispositivo...'; }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    const r1 = await fetch(`${SUPA_URL}/functions/v1/cofre-webauthn-login-iniciar`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, apikey: SUPA_KEY },
+    });
+    const d1 = await r1.json();
+    if (!d1.ok) throw new Error(d1.error || 'Não consegui iniciar o desbloqueio.');
+
+    const authResp = await window.SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: d1.options });
+
+    const r2 = await fetch(`${SUPA_URL}/functions/v1/cofre-webauthn-login-verificar`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, apikey: SUPA_KEY },
+      body: JSON.stringify({ response: authResp }),
+    });
+    const d2 = await r2.json();
+    if (!d2.ok) throw new Error(d2.error || 'Não foi possível confirmar.');
+
+    mostrarToast('Desbloqueio confirmado! 🔓 Funcionou de ponta a ponta.', 'success');
+  } catch (e) {
+    console.error('cofreTestarDesbloqueio:', e);
+    const cancelado = e?.name === 'NotAllowedError';
+    mostrarToast(cancelado ? 'Cancelado.' : `Não consegui confirmar: ${e.message || e}`, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔓 Testar desbloqueio agora'; }
+  }
+}
+
+async function cofreRemoverDispositivo(id) {
+  if (!confirm('Remover esse dispositivo do desbloqueio do Cofre?')) return;
+  const { error } = await sb.from('cofre_webauthn_credentials').delete().eq('id', id).eq('usuario_id', usuarioAtual.id);
+  if (error) { mostrarToast('Não consegui remover agora.', 'error'); return; }
+  mostrarToast('Dispositivo removido.', 'success');
+  abrirSegurancaCofre();
+}
+
+async function cofreEnviarCodigoEmail() {
+  const btn = document.getElementById('btnEnviarOtp');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(`${SUPA_URL}/functions/v1/cofre-email-otp-enviar`, {
+      method: 'POST', headers: { Authorization: `Bearer ${session?.access_token}`, apikey: SUPA_KEY },
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error('Falha ao enviar');
+    mostrarToast('Código enviado — confira seu e-mail.', 'success');
+    const area = document.getElementById('areaCodigoOtp');
+    if (area) area.style.display = 'block';
+  } catch (e) {
+    console.error('cofreEnviarCodigoEmail:', e);
+    mostrarToast('Não consegui enviar o código agora.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✉️ Enviar código de teste por e-mail'; }
+  }
+}
+
+async function cofreVerificarCodigoEmail() {
+  const input = document.getElementById('inputCodigoOtp');
+  const codigo = (input?.value || '').trim();
+  if (!/^\d{6}$/.test(codigo)) { mostrarToast('Digite os 6 dígitos do código.', 'error'); return; }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(`${SUPA_URL}/functions/v1/cofre-email-otp-verificar`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}`, apikey: SUPA_KEY },
+      body: JSON.stringify({ codigo }),
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Código inválido.');
+    mostrarToast('Código confirmado! ✅', 'success');
+  } catch (e) {
+    console.error('cofreVerificarCodigoEmail:', e);
+    mostrarToast(e.message || 'Código inválido ou expirado.', 'error');
+  }
+}
+
 // ── Tela de Upload ──
 function renderCofreUpload(feedEl) {
   mostrarAnthosChatBtn(true);
@@ -4682,12 +4847,12 @@ function renderCofreUpload(feedEl) {
 
     <div style="font-size:.82rem;font-weight:700;color:var(--text);margin:24px 0 10px">📷 Não tenho mais acesso à conta original</div>
     <div class="cofre-upload-card" id="card-print" onclick="document.getElementById('input-print').click()" style="max-width:100%;padding:16px 20px;border-style:dashed">
-      <input type="file" id="input-print" class="cofre-input" accept="image/*" onchange="cofreEscolherPrint(event)">
+      <input type="file" id="input-print" class="cofre-input" accept="image/*" multiple onchange="cofreEscolherPrint(event)">
       <div style="display:flex;align-items:center;gap:14px;text-align:left">
         <div style="font-size:1.8rem;flex-shrink:0">📷</div>
         <div style="flex:1">
-          <div class="cofre-net-name" style="margin-bottom:2px">Colar um print / captura de tela</div>
-          <div class="cofre-net-hint">Pra quando a rede fechou ou você perdeu o acesso e o único registro que sobrou é uma imagem. Entra no Cofre com um selo deixando claro que é um relato seu — o Fizu não finge verificar o que não pode verificar.</div>
+          <div class="cofre-net-name" style="margin-bottom:2px">Colar um ou vários prints / capturas de tela</div>
+          <div class="cofre-net-hint">Pra quando a rede fechou ou você perdeu o acesso e o único registro que sobrou são imagens. Pode selecionar várias de uma vez. Entram no Cofre com um selo deixando claro que é um relato seu — o Fizu não finge verificar o que não pode verificar.</div>
         </div>
       </div>
     </div>
@@ -4698,28 +4863,35 @@ function renderCofreUpload(feedEl) {
 // Nunca finge verificar autenticidade: guarda a imagem original (visível
 // pra qualquer um julgar), pede a rede/data/link de quem enviou, e marca
 // fonte_tipo:'print_colado' — selo que acompanha o item mesmo se publicado.
-let _cofrePrintArquivo = null;
+// Suporta selecionar vários prints de uma vez — todos entram com os mesmos
+// metadados (rede/data/link/legenda), pra não ter que repetir o formulário.
+let _cofrePrintArquivos = [];
 
 function cofreEscolherPrint(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  _cofrePrintArquivo = file;
-  renderCofrePrintForm(file);
+  const arquivos = Array.from(event.target.files || []);
+  if (!arquivos.length) return;
+  _cofrePrintArquivos = arquivos;
+  renderCofrePrintForm(arquivos);
 }
 
-function renderCofrePrintForm(file) {
+function renderCofrePrintForm(arquivos) {
   const feedEl = document.getElementById('feedPostsReais');
-  const urlPreview = URL.createObjectURL(file);
+  const grid = arquivos.map((file) => {
+    const url = URL.createObjectURL(file);
+    return `<img src="${url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;display:block">`;
+  }).join('');
+  const contagem = arquivos.length === 1 ? '1 imagem selecionada' : `${arquivos.length} imagens selecionadas`;
   feedEl.innerHTML = `
   <div class="cofre-wrap">
     <div class="cofre-hero" style="padding:22px 24px">
       <div class="cofre-hero-icon">📷</div>
-      <h2 style="font-size:1.15rem">Guardar este print no Cofre</h2>
-      <p>Como a rede original não existe mais (ou você perdeu o acesso), o Fizu não tem como confirmar esse conteúdo — por isso ele entra com o selo <strong style="color:#f59e0b">"print colado, relato pessoal"</strong>, não como dado verificado. A imagem original fica guardada do jeito que você mandou, pra qualquer um poder ver com os próprios olhos.</p>
+      <h2 style="font-size:1.15rem">Guardar ${arquivos.length > 1 ? 'estes prints' : 'este print'} no Cofre</h2>
+      <p>Como a rede original não existe mais (ou você perdeu o acesso), o Fizu não tem como confirmar esse conteúdo — por isso ${arquivos.length > 1 ? 'eles entram' : 'ele entra'} com o selo <strong style="color:#f59e0b">"print colado, relato pessoal"</strong>, não como dado verificado. A imagem original fica guardada do jeito que você mandou, pra qualquer um poder ver com os próprios olhos.</p>
     </div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px">
-      <img src="${urlPreview}" style="max-width:100%;max-height:320px;border-radius:10px;display:block;margin:0 auto 18px;object-fit:contain">
-      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">De qual rede é esse print?</label>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin-bottom:8px">${grid}</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:16px">${contagem}${arquivos.length > 1 ? ' — as informações abaixo valem para todas' : ''}</div>
+      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">De qual rede ${arquivos.length > 1 ? 'são esses prints' : 'é esse print'}?</label>
       <select id="printRede" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);margin-bottom:14px;font-family:inherit">
         <option value="twitter">Twitter / X</option>
         <option value="instagram">Instagram</option>
@@ -4731,89 +4903,100 @@ function renderCofrePrintForm(file) {
       <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">Link original, se ainda existir em algum lugar (opcional)</label>
       <input type="url" id="printLink" placeholder="https://..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);margin-bottom:14px;font-family:inherit">
       <div style="font-size:.7rem;color:var(--muted);margin:-8px 0 14px">Se você colar um link, checamos automaticamente se existe uma cópia arquivada no Wayback Machine.</div>
-      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">O que o print diz? (opcional, ajuda a buscar depois)</label>
+      <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px">O que ${arquivos.length > 1 ? 'esses prints dizem' : 'o print diz'}? (opcional, ajuda a buscar depois)</label>
       <textarea id="printLegenda" rows="3" placeholder="Transcreva ou resuma o conteúdo..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
     </div>
     <div style="text-align:center">
-      <button onclick="cofreSalvarPrint()" id="btnSalvarPrint" style="background:linear-gradient(135deg,#7c3aed,#3b9eff);color:#fff;border:none;border-radius:12px;padding:13px 36px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">📷 Guardar no Cofre com o selo de print</button>
-      <div style="margin-top:10px"><button onclick="_cofrePrintArquivo=null;renderCofreUpload(document.getElementById('feedPostsReais'))" style="background:none;border:none;color:var(--muted);font-size:.82rem;cursor:pointer;font-family:inherit">Cancelar</button></div>
+      <button onclick="cofreSalvarPrint()" id="btnSalvarPrint" style="background:linear-gradient(135deg,#7c3aed,#3b9eff);color:#fff;border:none;border-radius:12px;padding:13px 36px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">📷 Guardar ${arquivos.length > 1 ? `${arquivos.length} prints` : 'no Cofre'} com o selo de print</button>
+      <div style="margin-top:10px"><button onclick="_cofrePrintArquivos=[];renderCofreUpload(document.getElementById('feedPostsReais'))" style="background:none;border:none;color:var(--muted);font-size:.82rem;cursor:pointer;font-family:inherit">Cancelar</button></div>
     </div>
   </div>`;
 }
 
 async function cofreSalvarPrint() {
-  const file = _cofrePrintArquivo;
-  if (!file || !usuarioAtual) return;
+  const arquivos = _cofrePrintArquivos;
+  if (!arquivos.length || !usuarioAtual) return;
   const btn = document.getElementById('btnSalvarPrint');
   btn.disabled = true;
-  btn.textContent = 'Guardando...';
 
   const rede = document.getElementById('printRede').value;
   const dataInput = document.getElementById('printData').value;
   const link = document.getElementById('printLink').value.trim();
   const legenda = document.getElementById('printLegenda').value.trim();
 
-  try {
-    // Dimensões da imagem — metadado honesto do arquivo, não finge ser EXIF de câmera.
-    const dims = await new Promise((res) => {
-      const img = new Image();
-      img.onload = () => res({ largura: img.naturalWidth, altura: img.naturalHeight });
-      img.onerror = () => res({});
-      img.src = URL.createObjectURL(file);
-    });
+  // Checagem no Wayback Machine é a mesma pra todo o lote (o link informado
+  // é um só), então roda uma vez só em vez de repetir por arquivo.
+  let waybackUrl = null;
+  if (link) {
+    try {
+      const wb = await fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(link)}`);
+      const wbData = await wb.json();
+      waybackUrl = wbData?.archived_snapshots?.closest?.url || null;
+    } catch (e) { console.error('wayback check:', e); }
+  }
 
-    // Upload da imagem original — é o que permite qualquer um julgar com os próprios olhos.
-    const path = `cofre/${usuarioAtual.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
-    const { data: { session } } = await sb.auth.getSession();
-    const up = await fetch(`${SUPA_URL}/storage/v1/object/posts/${path}`, {
-      method: 'POST',
-      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${session?.access_token}`, 'Content-Type': file.type || 'application/octet-stream' },
-      body: file,
-    });
-    if (!up.ok) throw new Error('Falha no upload da imagem');
-    const midiaUrl = `${SUPA_URL}/storage/v1/object/public/posts/${path}`;
+  let sucesso = 0;
+  let falhas = 0;
 
-    // Checagem opcional no Wayback Machine — só roda se um link original foi informado,
-    // e só entra como corroboração se de fato bater um snapshot arquivado.
-    let waybackUrl = null;
-    if (link) {
-      try {
-        const wb = await fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(link)}`);
-        const wbData = await wb.json();
-        waybackUrl = wbData?.archived_snapshots?.closest?.url || null;
-      } catch (e) { console.error('wayback check:', e); }
+  for (let i = 0; i < arquivos.length; i++) {
+    const file = arquivos[i];
+    btn.textContent = arquivos.length > 1 ? `Guardando ${i + 1} de ${arquivos.length}...` : 'Guardando...';
+    try {
+      const dims = await new Promise((res) => {
+        const img = new Image();
+        img.onload = () => res({ largura: img.naturalWidth, altura: img.naturalHeight });
+        img.onerror = () => res({});
+        img.src = URL.createObjectURL(file);
+      });
+
+      const path = `cofre/${usuarioAtual.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
+      const { data: { session } } = await sb.auth.getSession();
+      const up = await fetch(`${SUPA_URL}/storage/v1/object/posts/${path}`, {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: `Bearer ${session?.access_token}`, 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      });
+      if (!up.ok) throw new Error('Falha no upload da imagem');
+      const midiaUrl = `${SUPA_URL}/storage/v1/object/public/posts/${path}`;
+
+      const metadata = {
+        arquivo_nome: file.name,
+        arquivo_tamanho: file.size,
+        arquivo_modificado_em: file.lastModified ? new Date(file.lastModified).toISOString() : null,
+        ...dims,
+        link_original: link || null,
+        wayback_url: waybackUrl,
+        legenda_usuario: legenda || null,
+      };
+
+      const { error } = await sb.from('cofre_memorias').insert({
+        usuario_id: usuarioAtual.id,
+        rede,
+        tipo: 'print',
+        conteudo: legenda || '',
+        midia_url: midiaUrl,
+        data_original: dataInput ? new Date(dataInput).toISOString() : null,
+        fonte_tipo: 'print_colado',
+        metadata,
+      });
+      if (error) throw error;
+      sucesso++;
+    } catch (e) {
+      console.error('cofre print:', file.name, e);
+      falhas++;
     }
+  }
 
-    const metadata = {
-      arquivo_nome: file.name,
-      arquivo_tamanho: file.size,
-      arquivo_modificado_em: file.lastModified ? new Date(file.lastModified).toISOString() : null,
-      ...dims,
-      link_original: link || null,
-      wayback_url: waybackUrl,
-      legenda_usuario: legenda || null,
-    };
-
-    const { error } = await sb.from('cofre_memorias').insert({
-      usuario_id: usuarioAtual.id,
-      rede,
-      tipo: 'print',
-      conteudo: legenda || '',
-      midia_url: midiaUrl,
-      data_original: dataInput ? new Date(dataInput).toISOString() : null,
-      fonte_tipo: 'print_colado',
-      metadata,
-    });
-    if (error) throw error;
-
-    mostrarToast(waybackUrl ? 'Print guardado — e achamos uma cópia arquivada no Wayback Machine! 🎉' : 'Print guardado no Cofre.', 'success');
-    _cofrePrintArquivo = null;
+  if (sucesso > 0) {
+    const msgBase = sucesso === 1 ? 'Print guardado no Cofre.' : `${sucesso} prints guardados no Cofre.`;
+    const msgFalha = falhas > 0 ? ` (${falhas} não deu pra guardar agora, tenta de novo depois)` : '';
+    mostrarToast((waybackUrl ? `${msgBase} E achamos uma cópia arquivada no Wayback Machine! 🎉` : msgBase) + msgFalha, falhas > 0 ? 'warning' : 'success');
+    _cofrePrintArquivos = [];
     await renderCofreTimeline(document.getElementById('feedPostsReais'));
-  } catch (e) {
-    console.error('cofre print:', e);
-    mostrarToast('Não consegui guardar esse print agora.', 'error');
+  } else {
+    mostrarToast('Não consegui guardar esses prints agora.', 'error');
     btn.disabled = false;
-    btn.textContent = '📷 Guardar no Cofre com o selo de print';
+    btn.textContent = arquivos.length > 1 ? `📷 Guardar ${arquivos.length} prints com o selo de print` : '📷 Guardar no Cofre com o selo de print';
   }
 }
 
@@ -5206,7 +5389,10 @@ async function renderCofreTimeline(feedEl) {
         <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--text)">🗝️ Seu Cofre</div>
         <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${mems.length} memórias · ${anos_set.size} anos de história</div>
       </div>
-      <button onclick="renderCofreUpload(document.getElementById('feedPostsReais'))" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">+ Importar mais</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="abrirSegurancaCofre()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">🔒 Segurança</button>
+        <button onclick="renderCofreUpload(document.getElementById('feedPostsReais'))" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">+ Importar mais</button>
+      </div>
     </div>
 
     <div class="cofre-stats-bar">
