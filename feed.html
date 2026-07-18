@@ -1053,15 +1053,38 @@ html:not(.dark) .fizu-brand{color:#0055a8!important;-webkit-text-fill-color:#005
 .cofre-mem-net.instagram { background:rgba(214,68,148,0.12); color:#d44494 }
 .cofre-mem-net.facebook { background:rgba(24,119,242,0.12); color:#1877f2 }
 .cofre-mem-net.twitter { background:rgba(29,161,242,0.12); color:#1da1f2 }
+/* ── Aba de rede com "logo": pílula com ícone de marca + nome, clicável quando há link original ── */
+.cofre-rede-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border-radius:20px;font-size:.7rem;font-weight:800;letter-spacing:.02em;text-decoration:none;border:1px solid transparent}
+.cofre-rede-chip.rc-twitter{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.14)}
+.cofre-rede-chip.rc-instagram{background:rgba(214,68,148,.12);color:#e774b0;border-color:rgba(214,68,148,.25)}
+.cofre-rede-chip.rc-facebook{background:rgba(24,119,242,.12);color:#4b9bff;border-color:rgba(24,119,242,.25)}
+.cofre-rede-chip.rc-outra{background:var(--bg3);color:var(--muted);border-color:var(--border)}
+.cofre-rede-chip .rc-logo{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cofre-rede-chip.rc-twitter .rc-logo{background:#000}
+.cofre-rede-chip.rc-instagram .rc-logo{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}
+.cofre-rede-chip.rc-facebook .rc-logo{background:#1877f2}
+.cofre-rede-chip.rc-outra .rc-logo{background:var(--border)}
+.cofre-rede-chip .rc-logo svg{width:9px;height:9px}
+a.cofre-rede-chip{cursor:pointer}
+a.cofre-rede-chip:hover{filter:brightness(1.25)}
+span.cofre-rede-chip{cursor:default}
 .cofre-mem-date { font-size:.72rem; color:var(--muted) }
 .cofre-mem-text { font-size:.88rem; color:var(--text); line-height:1.65 }
 .cofre-mem-img { margin-top:10px; border-radius:10px; overflow:hidden; max-height:200px }
 .cofre-mem-img img { width:100%; height:100%; object-fit:cover; display:block }
+.cofre-mem-thumb{width:96px;height:96px;border-radius:10px;overflow:hidden;margin-top:10px;cursor:zoom-in;border:1px solid var(--border);flex-shrink:0}
+.cofre-mem-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
+.cofre-mem-thumb:hover img{transform:scale(1.05)}
 .cofre-mem-actions { display:flex; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid var(--border) }
 .cofre-mem-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:.75rem; color:var(--muted); cursor:pointer; font-family:inherit; transition:all .2s }
 .cofre-mem-btn:hover { border-color:var(--aqua); color:var(--aqua) }
 .cofre-mem-btn.primary { background:var(--aqua); border-color:var(--aqua); color:#fff }
 .cofre-mem-btn.primary:hover { opacity:.85 }
+.cofre-tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:.85rem;font-weight:700;padding:6px 4px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.cofre-tab-btn:hover{color:var(--text)}
+.cofre-tab-btn.active{color:var(--aqua);border-bottom-color:var(--aqua)}
+.cofre-tab-count{background:var(--bg3);color:var(--muted);border-radius:10px;padding:1px 7px;font-size:.68rem;font-weight:800}
+.cofre-tab-btn.active .cofre-tab-count{background:rgba(59,158,255,.18);color:var(--aqua)}
 .cofre-stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:20px }
 .cofre-stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center }
 .cofre-stat-num { font-family:'Fraunces',serif; font-size:1.4rem; font-weight:700; color:var(--aqua) }
@@ -4959,6 +4982,22 @@ async function cofreSalvarPrint() {
       if (!up.ok) throw new Error('Falha no upload da imagem');
       const midiaUrl = `${SUPA_URL}/storage/v1/object/public/posts/${path}`;
 
+      // Transcreve o texto do print automaticamente (visão do Claude) — assim
+      // a memória não fica "sem texto" pra sempre só porque é uma imagem.
+      btn.textContent = arquivos.length > 1 ? `Lendo o texto ${i + 1} de ${arquivos.length}...` : 'Lendo o texto do print...';
+      let transcricao = '';
+      try {
+        const rTrans = await fetch(`${SUPA_URL}/functions/v1/cofre-transcrever-print`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY },
+          body: JSON.stringify({ imagem_url: midiaUrl }),
+        });
+        const dTrans = await rTrans.json();
+        if (dTrans?.ok && dTrans?.texto) transcricao = dTrans.texto;
+      } catch (e) { console.error('cofre-transcrever-print:', e); }
+
+      const conteudoFinal = legenda && transcricao ? `${legenda}\n\n${transcricao}` : (legenda || transcricao || '');
+
       const metadata = {
         arquivo_nome: file.name,
         arquivo_tamanho: file.size,
@@ -4967,13 +5006,14 @@ async function cofreSalvarPrint() {
         link_original: link || null,
         wayback_url: waybackUrl,
         legenda_usuario: legenda || null,
+        transcricao_automatica: transcricao || null,
       };
 
       const { error } = await sb.from('cofre_memorias').insert({
         usuario_id: usuarioAtual.id,
         rede,
         tipo: 'print',
-        conteudo: legenda || '',
+        conteudo: conteudoFinal,
         midia_url: midiaUrl,
         data_original: dataInput ? new Date(dataInput).toISOString() : null,
         fonte_tipo: 'print_colado',
@@ -5350,38 +5390,80 @@ async function cofresProcessar() {
 }
 
 // ── Renderiza a timeline ──
+// ── Ícone de marca por rede — representação simples e genérica (não é o
+// arquivo oficial do logotipo), só pra dar a sensação de "aba certa" ──
+const REDE_LOGO_SVG = {
+  twitter: '<svg viewBox="0 0 24 24" fill="#fff"><path d="M18.3 3H21l-6.7 7.6L22 21h-6.2l-4.9-6.4L5.3 21H2.6l7.2-8.2L2 3h6.3l4.4 5.9L18.3 3zm-1.1 16.2h1.7L7.9 4.7H6.1l11.1 14.5z"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff" stroke="none"/></svg>',
+  facebook: '<svg viewBox="0 0 24 24" fill="#fff"><path d="M15 4h-2.5C10.6 4 9 5.6 9 7.9V10H7v3h2v7h3v-7h2.3l.4-3H12V8.2c0-.7.4-1.2 1.2-1.2H15V4z"/></svg>',
+  outra: '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="3"/></svg>',
+};
+const REDE_LABEL = { twitter: 'Twitter / X', instagram: 'Instagram', facebook: 'Facebook', outra: 'Outra rede' };
+
+function redeChipHtml(rede, linkOriginal) {
+  const chave = REDE_LOGO_SVG[rede] ? rede : 'outra';
+  const logo = REDE_LOGO_SVG[chave];
+  const label = REDE_LABEL[chave];
+  const conteudo = `<span class="rc-logo">${logo}</span>${label}`;
+  return linkOriginal
+    ? `<a class="cofre-rede-chip rc-${chave}" href="${linkOriginal}" target="_blank" rel="noopener" title="Abrir original">${conteudo}</a>`
+    : `<span class="cofre-rede-chip rc-${chave}" title="Sem link original salvo">${conteudo}</span>`;
+}
+
+let _cofreMemsCache = [];
+let _cofreFiltroAtivo = 'todos';
+
 async function renderCofreTimeline(feedEl) {
   mostrarAnthosChatBtn(true);
   feedEl.innerHTML = `<div class="cofre-wrap"><div style="text-align:center;padding:32px;color:var(--muted)"><div style="font-size:2rem">🐋</div><div style="margin-top:8px;font-size:.88rem">Carregando suas memórias...</div></div></div>`;
 
-  const { data: mems, error } = await sb.from('cofre_memorias')
-    .select('*')
-    .eq('usuario_id', usuarioAtual.id)
-    .order('data_original', { ascending: false })
-    .limit(200);
+  const [{ data: mems, error }, { count: arquivadasCount }] = await Promise.all([
+    sb.from('cofre_memorias').select('*')
+      .eq('usuario_id', usuarioAtual.id)
+      .eq('oculto', false)
+      .order('data_original', { ascending: false })
+      .limit(200),
+    sb.from('cofre_memorias').select('*', { count: 'exact', head: true })
+      .eq('usuario_id', usuarioAtual.id)
+      .eq('oculto', true),
+  ]);
+
+  const introHtml = `
+    <div class="cofre-hero" style="padding:18px 22px;text-align:left;margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="font-size:1.6rem;flex-shrink:0">🐋</div>
+        <div>
+          <div style="font-weight:700;color:var(--text);font-size:.95rem;margin-bottom:4px">Por que guardar suas memórias aqui?</div>
+          <p style="font-size:.82rem;color:var(--text2);line-height:1.6;margin:0">Redes sociais fecham, contas somem, prints se perdem no rolo da câmera. O Cofre é o único lugar que promete nunca apagar o que você já viveu — sua história guardada a sete chaves, só sua até você decidir o que compartilhar.</p>
+        </div>
+      </div>
+    </div>
+    <div class="cofre-upload-card" id="card-print-timeline" onclick="document.getElementById('input-print-timeline').click()" style="max-width:100%;padding:14px 18px;border-style:dashed;margin-bottom:20px">
+      <input type="file" id="input-print-timeline" class="cofre-input" accept="image/*" multiple onchange="cofreEscolherPrint(event)">
+      <div style="display:flex;align-items:center;gap:12px;text-align:left">
+        <div style="font-size:1.4rem;flex-shrink:0">📎</div>
+        <div style="flex:1">
+          <div class="cofre-net-name" style="margin-bottom:1px">Adicionar mais fotos ou prints</div>
+          <div class="cofre-net-hint">Clique aqui ou arraste — pode selecionar várias de uma vez</div>
+        </div>
+      </div>
+    </div>`;
 
   if (error || !mems?.length) {
-    feedEl.innerHTML = `<div class="cofre-wrap"><div class="cofre-empty"><div style="font-size:2.5rem">🗝️</div><div style="margin-top:12px;font-weight:700">Cofre vazio</div><div style="margin-top:8px;font-size:.85rem">Importe seus dados para começar.</div><button onclick="renderCofreUpload(document.getElementById('feedPostsReais'))" style="margin-top:16px;background:var(--aqua);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit">+ Importar memórias</button></div></div>`;
+    const avisoArquivadas = arquivadasCount > 0
+      ? `<div style="font-size:.82rem;color:var(--muted);margin-top:14px">Você tem ${arquivadasCount} memória${arquivadasCount > 1 ? 's' : ''} arquivada${arquivadasCount > 1 ? 's' : ''}. <button onclick="cofreVerArquivados()" style="background:none;border:none;color:var(--aqua);cursor:pointer;font-family:inherit;font-size:.82rem;text-decoration:underline">Ver arquivados</button></div>`
+      : '';
+    feedEl.innerHTML = `<div class="cofre-wrap">${introHtml}<div class="cofre-empty"><div style="font-size:2.5rem">🗝️</div><div style="margin-top:12px;font-weight:700">${arquivadasCount > 0 ? 'Nada por aqui no momento' : 'Cofre vazio'}</div><div style="margin-top:8px;font-size:.85rem">${arquivadasCount > 0 ? 'Tudo que você tinha está arquivado.' : 'Importe seus dados para começar.'}</div>${avisoArquivadas}</div></div>`;
     return;
   }
 
-  // Stats
-  const redes = {};
-  mems.forEach(m => { redes[m.rede] = (redes[m.rede] || 0) + 1; });
+  _cofreMemsCache = mems;
+  _cofreFiltroAtivo = 'todos';
+
   const anos_set = new Set(mems.filter(m => m.data_original).map(m => new Date(m.data_original).getFullYear()));
   const publicadas = mems.filter(m => m.publicado_fizu).length;
-
-  // Agrupa por ano
-  const porAno = {};
-  mems.forEach(m => {
-    const ano = m.data_original ? new Date(m.data_original).getFullYear() : 'Sem data';
-    if (!porAno[ano]) porAno[ano] = [];
-    porAno[ano].push(m);
-  });
-  const anosOrdenados = Object.keys(porAno).sort((a, b) => b - a);
-
-  const netIcon = { instagram:'📸', facebook:'👥', twitter:'🐦', outra:'📌' };
-  const netColor = { instagram:'#d44494', facebook:'#1877f2', twitter:'#1da1f2', outra:'var(--aqua)' };
+  const redes = {};
+  mems.forEach(m => { redes[m.rede] = (redes[m.rede] || 0) + 1; });
 
   let html = `<div class="cofre-wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -5391,17 +5473,70 @@ async function renderCofreTimeline(feedEl) {
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="abrirSegurancaCofre()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">🔒 Segurança</button>
-        <button onclick="renderCofreUpload(document.getElementById('feedPostsReais'))" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">+ Importar mais</button>
+        ${arquivadasCount > 0 ? `<button onclick="cofreVerArquivados()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">🗄️ Arquivados (${arquivadasCount})</button>` : ''}
+        ${mems.some(m => !m.conteudo && m.midia_url) ? `<button id="btnTranscreverTodos" onclick="cofreTranscreverTodos()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:7px 16px;font-size:.8rem;color:var(--muted);cursor:pointer;font-family:inherit">🔎 Ler texto de todos</button>` : ''}
       </div>
     </div>
-
+    ${introHtml}
     <div class="cofre-stats-bar">
       <div class="cofre-stat"><div class="cofre-stat-num">${mems.length}</div><div class="cofre-stat-lbl">Memórias</div></div>
       <div class="cofre-stat"><div class="cofre-stat-num">${anos_set.size}</div><div class="cofre-stat-lbl">Anos</div></div>
       <div class="cofre-stat"><div class="cofre-stat-num">${Object.keys(redes).length}</div><div class="cofre-stat-lbl">Redes</div></div>
       <div class="cofre-stat"><div class="cofre-stat-num">${publicadas}</div><div class="cofre-stat-lbl">No Fizu</div></div>
-    </div>`;
+    </div>
+    <div id="cofreTabsContainer"></div>
+    <div id="cofreListaContainer"></div>
+  </div>`;
 
+  feedEl.innerHTML = html;
+  renderCofreTabs();
+  renderCofreLista();
+}
+
+// ── Abas por rede: filtra o que já foi carregado (sem refazer a consulta) ──
+function renderCofreTabs() {
+  const el = document.getElementById('cofreTabsContainer');
+  if (!el) return;
+  const redes = {};
+  _cofreMemsCache.forEach(m => { redes[m.rede] = (redes[m.rede] || 0) + 1; });
+  const netLabel = { twitter: 'Twitter / X', instagram: 'Instagram', facebook: 'Facebook', outra: 'Outra' };
+  const abas = [{ chave: 'todos', label: 'Todos', count: _cofreMemsCache.length }]
+    .concat(Object.keys(redes).map(r => ({ chave: r, label: netLabel[r] || r, count: redes[r] })));
+
+  el.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px">
+    ${abas.map(a => `
+      <button onclick="cofreFiltrarPorRede('${a.chave}')" class="cofre-tab-btn${_cofreFiltroAtivo === a.chave ? ' active' : ''}" data-chave="${a.chave}">
+        ${escapeHtml(a.label)} <span class="cofre-tab-count">${a.count}</span>
+      </button>`).join('')}
+  </div>`;
+}
+
+function cofreFiltrarPorRede(rede) {
+  _cofreFiltroAtivo = rede;
+  document.querySelectorAll('.cofre-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.chave === rede));
+  renderCofreLista();
+}
+
+function renderCofreLista() {
+  const el = document.getElementById('cofreListaContainer');
+  if (!el) return;
+  const netColor = { instagram:'#d44494', facebook:'#1877f2', twitter:'#fff', outra:'var(--aqua)' };
+  const mems = _cofreFiltroAtivo === 'todos' ? _cofreMemsCache : _cofreMemsCache.filter(m => m.rede === _cofreFiltroAtivo);
+
+  if (!mems.length) {
+    el.innerHTML = `<div class="cofre-empty" style="padding:32px"><div style="font-size:2rem">🔍</div><div style="margin-top:10px;font-size:.85rem;color:var(--muted)">Nada nessa rede ainda.</div></div>`;
+    return;
+  }
+
+  const porAno = {};
+  mems.forEach(m => {
+    const ano = m.data_original ? new Date(m.data_original).getFullYear() : 'Sem data';
+    if (!porAno[ano]) porAno[ano] = [];
+    porAno[ano].push(m);
+  });
+  const anosOrdenados = Object.keys(porAno).sort((a, b) => b - a);
+
+  let html = '';
   anosOrdenados.forEach(ano => {
     html += `<div class="cofre-year-header"><div class="cofre-year-line"></div><div class="cofre-year-pill">${ano}</div><div class="cofre-year-line"></div></div>`;
     porAno[ano].forEach(m => {
@@ -5410,38 +5545,192 @@ async function renderCofreTimeline(feedEl) {
       const preview = (m.conteudo || '').substring(0, 280);
       const jaPublicou = m.publicado_fizu;
       const ehPrint = m.fonte_tipo === 'print_colado';
+      const linkOriginal = m.metadata?.link_original || null;
       const selo = ehPrint
         ? `<span style="font-size:.62rem;font-weight:800;color:#f59e0b;background:rgba(245,158,11,.12);padding:2px 8px;border-radius:8px;border:1px solid rgba(245,158,11,.3);white-space:nowrap">📷 Print colado — não verificado</span>`
         : `<span style="font-size:.62rem;font-weight:800;color:#10b981;background:rgba(16,185,129,.12);padding:2px 8px;border-radius:8px;border:1px solid rgba(16,185,129,.3);white-space:nowrap">🗝️ Importação oficial</span>`;
-      const imagemHtml = m.midia_url
-        ? `<div class="cofre-mem-img"><img src="${m.midia_url}" loading="lazy" alt="Imagem anexada"></div>`
+      const thumbHtml = m.midia_url
+        ? `<div class="cofre-mem-thumb" onclick="abrirLightbox('${m.midia_url}', '${escapeHtml((m.conteudo||'').substring(0,80)).replace(/'/g,"\\'")}')"><img src="${m.midia_url}" loading="lazy" alt="Imagem anexada"></div>`
         : '';
       const waybackUrl = m.metadata?.wayback_url;
       const waybackHtml = waybackUrl
         ? `<a href="${waybackUrl}" target="_blank" rel="noopener" style="font-size:.72rem;color:var(--aqua);display:block;margin-top:8px">🕰️ Ver cópia arquivada no Wayback Machine</a>`
         : '';
-      html += `<div class="cofre-memory-card" style="--cm-color:${cor}">
+      const semTextoHtml = m.midia_url
+        ? `<div class="cofre-mem-text" style="color:var(--muted);font-style:italic">Memória sem texto</div><button class="cofre-mem-btn" style="margin-top:8px;font-size:.72rem;padding:4px 10px" onclick="cofreTranscreverExistente('${m.id}','${m.midia_url}',this)">🔎 Ler texto deste print</button>`
+        : `<div class="cofre-mem-text" style="color:var(--muted);font-style:italic">Memória sem texto</div>`;
+      html += `<div class="cofre-memory-card" style="--cm-color:${cor}" data-mem-id="${m.id}">
         <div class="cofre-mem-header" style="flex-wrap:wrap">
-          <span class="cofre-mem-net ${m.rede}">${netIcon[m.rede]||'📌'} ${m.rede}</span>
+          ${redeChipHtml(m.rede, linkOriginal)}
           ${dt ? `<span class="cofre-mem-date">${dt}</span>` : ''}
           ${m.tipo === 'retweet' ? '<span style="font-size:.65rem;color:var(--muted);background:var(--bg3);padding:2px 7px;border-radius:8px">RT</span>' : ''}
           ${selo}
         </div>
-        ${preview ? `<div class="cofre-mem-text">${escapeHtml(preview)}${m.conteudo.length > 280 ? '<span style="color:var(--muted)">...</span>' : ''}</div>` : '<div class="cofre-mem-text" style="color:var(--muted);font-style:italic">Memória sem texto</div>'}
-        ${imagemHtml}
-        ${waybackHtml}
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:1;min-width:0">
+            ${preview ? `<div class="cofre-mem-text">${escapeHtml(preview)}${m.conteudo.length > 280 ? '<span style="color:var(--muted)">...</span>' : ''}</div>` : semTextoHtml}
+            ${waybackHtml}
+          </div>
+          ${thumbHtml}
+        </div>
         <div class="cofre-mem-actions">
           ${!jaPublicou
             ? `<button class="cofre-mem-btn primary" onclick="cofrePublicarNoFizu('${m.id}', this)">🐟 Publicar no Fizu</button>`
             : `<span style="font-size:.75rem;color:var(--aqua);font-weight:700">✓ Publicado no Fizu</span>`}
-          <button class="cofre-mem-btn" onclick="cofreExcluirMemoria('${m.id}', this)" style="margin-left:auto">🗑️</button>
+          <button class="cofre-mem-btn" onclick="cofreArquivarMemoria('${m.id}', this)" style="margin-left:auto" title="Arquivar — some da lista, mas nada é apagado">🗄️ Arquivar</button>
         </div>
       </div>`;
     });
   });
 
+  el.innerHTML = html;
+}
+
+// ── Transcreve em lote todos os prints visíveis que ainda não têm texto ──
+async function cofreTranscreverTodos() {
+  const btn = document.getElementById('btnTranscreverTodos');
+  const alvos = _cofreMemsCache.filter(m => !m.conteudo && m.midia_url);
+  if (!alvos.length) return;
+  if (btn) btn.disabled = true;
+
+  let feitos = 0;
+  for (const m of alvos) {
+    if (btn) btn.textContent = `🔎 Lendo ${feitos + 1} de ${alvos.length}...`;
+    try {
+      const r = await fetch(`${SUPA_URL}/functions/v1/cofre-transcrever-print`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY },
+        body: JSON.stringify({ imagem_url: m.midia_url }),
+      });
+      const d = await r.json();
+      if (d?.ok && d?.texto) {
+        await sb.from('cofre_memorias').update({ conteudo: d.texto }).eq('id', m.id).eq('usuario_id', usuarioAtual.id);
+        const idx = _cofreMemsCache.findIndex(x => x.id === m.id);
+        if (idx >= 0) _cofreMemsCache[idx] = { ..._cofreMemsCache[idx], conteudo: d.texto };
+      }
+    } catch (e) { console.error('cofreTranscreverTodos:', m.id, e); }
+    feitos++;
+    renderCofreLista();
+  }
+
+  mostrarToast(`Texto lido em ${feitos} prints. 🔎`, 'success');
+  if (btn) btn.remove();
+}
+
+// ── Transcrever retroativamente um print que já estava no Cofre sem texto ──
+async function cofreTranscreverExistente(memoriaId, midiaUrl, btn) {
+  btn.disabled = true;
+  btn.textContent = '🔎 Lendo...';
+  try {
+    const r = await fetch(`${SUPA_URL}/functions/v1/cofre-transcrever-print`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY },
+      body: JSON.stringify({ imagem_url: midiaUrl }),
+    });
+    const d = await r.json();
+    if (!d?.ok) throw new Error('falha na transcrição');
+    if (!d.texto) {
+      mostrarToast('Não consegui identificar texto legível nesse print.', 'error');
+      btn.disabled = false;
+      btn.textContent = '🔎 Ler texto deste print';
+      return;
+    }
+    const { error } = await sb.from('cofre_memorias').update({ conteudo: d.texto }).eq('id', memoriaId).eq('usuario_id', usuarioAtual.id);
+    if (error) throw error;
+
+    // Atualiza o cache local e re-renderiza só a lista, sem recarregar tudo
+    const idx = _cofreMemsCache.findIndex(m => m.id === memoriaId);
+    if (idx >= 0) _cofreMemsCache[idx] = { ..._cofreMemsCache[idx], conteudo: d.texto };
+    renderCofreLista();
+    mostrarToast('Texto lido e guardado! 🔎', 'success');
+  } catch (e) {
+    console.error('cofreTranscreverExistente:', e);
+    mostrarToast('Não consegui ler esse print agora.', 'error');
+    btn.disabled = false;
+    btn.textContent = '🔎 Ler texto deste print';
+  }
+}
+
+// ── Ver / desarquivar memórias arquivadas — nada é apagado no Cofre, só oculto ──
+async function cofreVerArquivados() {
+  const feedEl = document.getElementById('feedPostsReais');
+  feedEl.innerHTML = `<div class="cofre-wrap"><div style="text-align:center;padding:32px;color:var(--muted)">Carregando arquivados...</div></div>`;
+
+  const { data: mems } = await sb.from('cofre_memorias').select('*')
+    .eq('usuario_id', usuarioAtual.id).eq('oculto', true)
+    .order('oculto_em', { ascending: false }).limit(200);
+
+  const netColor = { instagram:'#d44494', facebook:'#1877f2', twitter:'#fff', outra:'var(--aqua)' };
+
+  let html = `<div class="cofre-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="renderCofreTimeline(document.getElementById('feedPostsReais'))" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px">←</button>
+      <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--text)">🗄️ Arquivados</div>
+    </div>
+    <div class="cofre-anthos-msg" style="margin-bottom:16px">Arquivado não é apagado — só sai da sua timeline principal. Pode trazer de volta quando quiser.</div>`;
+
+  if (!mems?.length) {
+    html += `<div class="cofre-empty"><div style="font-size:2.5rem">🗄️</div><div style="margin-top:12px;font-weight:700">Nada arquivado</div></div></div>`;
+    feedEl.innerHTML = html;
+    return;
+  }
+
+  mems.forEach(m => {
+    const dt = m.data_original ? new Date(m.data_original).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' }) : '';
+    const cor = netColor[m.rede] || 'var(--aqua)';
+    const preview = (m.conteudo || '').substring(0, 200);
+    const linkOriginal = m.metadata?.link_original || null;
+    const thumbHtml = m.midia_url
+      ? `<div class="cofre-mem-thumb" onclick="abrirLightbox('${m.midia_url}', '')"><img src="${m.midia_url}" loading="lazy" alt="Imagem anexada"></div>`
+      : '';
+    html += `<div class="cofre-memory-card" style="--cm-color:${cor};opacity:.85">
+      <div class="cofre-mem-header" style="flex-wrap:wrap">
+        ${redeChipHtml(m.rede, linkOriginal)}
+        ${dt ? `<span class="cofre-mem-date">${dt}</span>` : ''}
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          ${preview ? `<div class="cofre-mem-text">${escapeHtml(preview)}</div>` : '<div class="cofre-mem-text" style="color:var(--muted);font-style:italic">Memória sem texto</div>'}
+        </div>
+        ${thumbHtml}
+      </div>
+      <div class="cofre-mem-actions">
+        <button class="cofre-mem-btn primary" onclick="cofreDesarquivarMemoria('${m.id}', this)">↩️ Desarquivar</button>
+      </div>
+    </div>`;
+  });
+
   html += '</div>';
   feedEl.innerHTML = html;
+}
+
+async function cofreArquivarMemoria(memoriaId, btn) {
+  const { error } = await sb.from('cofre_memorias')
+    .update({ oculto: true, oculto_em: new Date().toISOString() })
+    .eq('id', memoriaId).eq('usuario_id', usuarioAtual.id);
+  if (!error) {
+    const card = btn.closest('.cofre-memory-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(-10px)';
+    setTimeout(() => card.remove(), 300);
+    mostrarToast('Arquivado — nada foi apagado. Veja em "Arquivados" quando quiser.', 'success');
+  } else {
+    mostrarToast('Não consegui arquivar agora.', 'error');
+  }
+}
+
+async function cofreDesarquivarMemoria(memoriaId, btn) {
+  const { error } = await sb.from('cofre_memorias')
+    .update({ oculto: false, oculto_em: null })
+    .eq('id', memoriaId).eq('usuario_id', usuarioAtual.id);
+  if (!error) {
+    const card = btn.closest('.cofre-memory-card');
+    card.style.opacity = '0';
+    setTimeout(() => card.remove(), 300);
+    mostrarToast('Memória de volta na sua timeline. 🗝️', 'success');
+  } else {
+    mostrarToast('Não consegui desarquivar agora.', 'error');
+  }
 }
 
 // ── Publicar memória do cofre como post no Fizu ──
@@ -5474,18 +5763,6 @@ async function cofrePublicarNoFizu(memoriaId, btn) {
     btn.disabled = false;
     btn.textContent = '🐟 Publicar no Fizu';
     mostrarToast('Erro ao publicar. Tente novamente.', 'error');
-  }
-}
-
-// ── Excluir memória do cofre ──
-async function cofreExcluirMemoria(memoriaId, btn) {
-  if (!confirm('Excluir esta memória do cofre? Esta ação não pode ser desfeita.')) return;
-  const { error } = await sb.from('cofre_memorias').delete().eq('id', memoriaId).eq('usuario_id', usuarioAtual.id);
-  if (!error) {
-    btn.closest('.cofre-memory-card').style.opacity = '0';
-    btn.closest('.cofre-memory-card').style.transform = 'translateX(-10px)';
-    setTimeout(() => btn.closest('.cofre-memory-card').remove(), 300);
-    mostrarToast('Memória removida.', 'success');
   }
 }
 
