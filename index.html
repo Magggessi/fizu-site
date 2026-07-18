@@ -473,6 +473,7 @@ body.modo-conversa .centro{justify-content:flex-start;padding-top:78px}
 .ac-opiniao{margin-top:9px;font-size:.85rem;line-height:1.55;color:var(--muted);font-style:italic;padding-left:11px;border-left:2px solid var(--aqua)}
 .ac-imagem-gerada-wrap{margin-top:14px;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:rgba(255,255,255,.02)}
 .ac-imagem-gerada{width:100%;display:block;max-height:440px;object-fit:cover}
+.ac-img-erro-box{padding:24px;text-align:center}
 .ac-vermais-btn{margin-top:10px;background:none;border:none;color:var(--aqua);font-size:.78rem;font-weight:700;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif}
 .ac-vermais-btn:hover{text-decoration:underline}
 .ac-detalhada{margin-top:10px;font-size:.87rem;line-height:1.65;color:var(--text);border-top:1px solid var(--border);padding-top:12px}
@@ -1354,6 +1355,34 @@ function explodirCoinsPublicar(btnEl){
   }
 }
 
+// ── Imagem gerada que falha ao carregar: o Pollinations (fallback gratuito
+// de imagem) às vezes ainda está gerando na primeira tentativa — tenta de
+// novo automaticamente 2x antes de mostrar um aviso real com botão manual,
+// em vez de simplesmente sumir sem explicação.
+function imagemFalhouCarregar(img){
+  const tentativas = (parseInt(img.dataset.tentativas || '0')) + 1;
+  img.dataset.tentativas = tentativas;
+  const urlBase = img.dataset.urlBase || img.src;
+  img.dataset.urlBase = urlBase;
+  if(tentativas <= 2){
+    setTimeout(() => { img.src = urlBase + (urlBase.includes('?') ? '&' : '?') + '_r=' + Date.now(); }, 2500);
+    return;
+  }
+  const wrap = img.closest('.ac-imagem-gerada-wrap');
+  if(wrap){
+    wrap.innerHTML = `<div class="ac-img-erro-box">
+      <div style="font-size:1.6rem">🖼️</div>
+      <div style="font-size:.8rem;color:var(--muted);margin:6px 0 10px">A imagem não carregou agora — pode ter sido só um imprevisto passageiro.</div>
+      <button onclick="tentarImagemDeNovo(this, '${urlBase.replace(/'/g, "\\'")}')" style="background:var(--aqua);color:#fff;border:none;border-radius:10px;padding:8px 18px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit">Tentar de novo</button>
+    </div>`;
+  }
+}
+function tentarImagemDeNovo(btn, urlBase){
+  const wrap = btn.closest('.ac-imagem-gerada-wrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<img class="ac-imagem-gerada" src="${urlBase}${urlBase.includes('?')?'&':'?'}_r=${Date.now()}" loading="lazy" alt="Imagem criada pelo agente" onerror="imagemFalhouCarregar(this)">`;
+}
+
 function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
   pararLoadingOceano(el);
   const ag = AGENTES_IDX[resultado.agente] || { nome: resultado.agente || 'Agente', emoji:'🤖', cor:'#0055cc', foto:null };
@@ -1368,11 +1397,11 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
     : '';
 
   const imagemGeradaHtml = resultado.imagem_gerada
-    ? `<div class="ac-imagem-gerada-wrap"><img class="ac-imagem-gerada" src="${resultado.imagem_gerada}" loading="lazy" alt="Imagem criada pelo agente" onerror="this.parentElement.style.display='none'"></div>`
+    ? `<div class="ac-imagem-gerada-wrap"><img class="ac-imagem-gerada" src="${resultado.imagem_gerada}" loading="lazy" alt="Imagem criada pelo agente" onerror="imagemFalhouCarregar(this)"></div>`
     : '';
 
   const videoGeradoHtml = resultado.video_gerado
-    ? `<div class="ac-imagem-gerada-wrap"><video class="ac-imagem-gerada" src="${resultado.video_gerado}" controls playsinline preload="metadata" onerror="this.parentElement.style.display='none'"></video></div>`
+    ? `<div class="ac-imagem-gerada-wrap"><video class="ac-imagem-gerada" src="${resultado.video_gerado}" controls playsinline preload="metadata" onerror="this.closest('.ac-imagem-gerada-wrap').innerHTML='<div class=\\'ac-img-erro-box\\'><div style=\\'font-size:1.6rem\\'>🎬</div><div style=\\'font-size:.8rem;color:var(--muted);margin-top:6px\\'>O vídeo não carregou agora — tenta de novo em instantes.</div></div>'"></video></div>`
     : '';
 
   const cardsHtml = (resultado.cards||[]).slice(0,4).map(c=>{
