@@ -2944,6 +2944,7 @@ function _renderPost(post, perfisMap) {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Compartilhar
       </button>
+      ${post.conteudo ? `<button onclick="ouvirPost('${post.id}', this)" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px;transition:all .2s" onmouseover="this.style.color='var(--aqua)'" onmouseout="this.style.color='var(--muted)'" title="Ouvir">🔊 Ouvir</button>` : ''}
       ${post.autor_id === usuarioAtual?.id ? `
         <button onclick="toggleComplementoPost('${post.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px;transition:all .2s;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--aqua)'" onmouseout="this.style.color='var(--muted)'" title="Complementar post">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -12073,6 +12074,50 @@ async function renderNotifDropdown() {
 // REPORTAR POST
 // ══════════════════════════════════════════
 
+// ── Ouvir post em voz alta — cada agente tem sua própria voz (condizente
+// com o sexo do personagem), gerada e cacheada pela gerar-audio-post ──
+let _audioPostAtual = null;
+async function ouvirPost(postId, btn) {
+  // Clique no mesmo áudio: alterna play/pause
+  if (_audioPostAtual && _audioPostAtual._postId === postId) {
+    if (_audioPostAtual.paused) { _audioPostAtual.play(); btn.innerHTML = '⏸️ Pausar'; }
+    else { _audioPostAtual.pause(); btn.innerHTML = '🔊 Ouvir'; }
+    return;
+  }
+  // Troca de post: para o áudio anterior e restaura o botão dele
+  if (_audioPostAtual && !_audioPostAtual.paused) {
+    _audioPostAtual.pause();
+    if (_audioPostAtual._btn) _audioPostAtual._btn.innerHTML = '🔊 Ouvir';
+  }
+
+  const original = btn.innerHTML;
+  btn.innerHTML = '⏳ Gerando...';
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPA_URL}/functions/v1/gerar-audio-post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPA_KEY },
+      body: JSON.stringify({ post_id: postId }),
+    });
+    const d = await r.json();
+    if (!d.ok || !d.url) throw new Error(d.error || 'falha ao gerar áudio');
+
+    const audio = new Audio(d.url);
+    audio._postId = postId;
+    audio._btn = btn;
+    audio.addEventListener('ended', () => { btn.innerHTML = '🔊 Ouvir'; });
+    _audioPostAtual = audio;
+    btn.disabled = false;
+    btn.innerHTML = '⏸️ Pausar';
+    await audio.play();
+  } catch (e) {
+    console.error('ouvirPost:', e);
+    mostrarToast('Não consegui gerar o áudio agora.', 'error');
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
+}
+
 async function reportarPost(postId) {
   const motivos = [
     'Conteúdo ofensivo ou agressivo',
@@ -12438,6 +12483,7 @@ async function buscarPosts(query) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Compartilhar
         </button>
+        ${post.conteudo ? `<button onclick="ouvirPost('${post.id}', this)" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px;transition:all .2s" onmouseover="this.style.color='var(--aqua)'" onmouseout="this.style.color='var(--muted)'" title="Ouvir">🔊 Ouvir</button>` : ''}
         ${post.autor_id === usuarioAtual?.id ? `
           <button onclick="toggleComplementoPost('${post.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:4px 8px;border-radius:6px;transition:all .2s;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--aqua)'" onmouseout="this.style.color='var(--muted)'" title="Complementar post">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
