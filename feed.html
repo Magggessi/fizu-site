@@ -4255,9 +4255,12 @@ async function toggleFizurado(postId, btn) {
         mensagem: 'Fizurou seu post ⭐'
       });
       // Autor ganha coins por ter o post Fizurado
+      // Fix: o parâmetro certo da função é p_descricao, não p_desc — o nome
+      // errado fazia essa chamada falhar silenciosamente desde sempre
+      // (zero transações "fizurado" no banco confirmavam o bug).
       await sb.rpc('dar_coins', {
         p_usuario_id: post.autor_id, p_valor: 5,
-        p_tipo: 'fizurado', p_desc: 'Seu post foi Fizurado',
+        p_tipo: 'fizurado', p_descricao: 'Seu post foi Fizurado',
         p_ref_id: postId
       });
     }
