@@ -2043,12 +2043,108 @@ async function onAnexoArquivoSelecionado(ev, tipo){
 // vira conteúdo de verdade (texto, imagem ou PDF) enviado junto da pergunta
 // pro agente, que lê o arquivo nativamente (sem OCR/parsing só nosso).
 const ANEXO_BUSCA_TAMANHO_MAX_MB = 8;
-const ANEXO_BUSCA_EXT_TEXTO = /\.(txt|md|markdown|csv|json|js|jsx|ts|tsx|py|log|html|htm|css|xml|yaml|yml|sql)$/i;
-const ANEXO_BUSCA_MIME_TEXTO = ['text/plain','text/markdown','text/csv','application/json','text/x-python','application/javascript','text/javascript','text/html','text/css','application/xml','text/xml'];
+// Lista ampla de extensões de texto/código/config conhecidas — mas não é mais
+// a única porta de entrada: qualquer extensão que caia fora de todas as
+// listas abaixo agora tenta ler como texto puro (ver fallback no final de
+// processarAnexoParaBusca), então isso aqui é "reconhecimento rápido", não limite.
+const ANEXO_BUSCA_EXT_TEXTO = /\.(txt|md|markdown|csv|tsv|json|json5|jsonl|ndjson|js|jsx|ts|tsx|mjs|cjs|py|rb|php|java|kt|kts|go|rs|c|h|cpp|cc|hpp|cs|swift|scala|lua|pl|sh|bash|zsh|ps1|bat|cmd|log|html|htm|xhtml|css|scss|sass|less|xml|xaml|svg|yaml|yml|toml|ini|cfg|conf|env|properties|sql|graphql|gql|proto|dockerfile|makefile|gitignore|editorconfig|vue|astro|svelte|r|jl|dart|ex|exs|erl|hs|clj|nim|zig|tex|rst|adoc|vtt|srt|ics|eml)$/i;
+const ANEXO_BUSCA_MIME_TEXTO = ['text/plain','text/markdown','text/csv','text/tab-separated-values','application/json','application/jsonl','application/x-ndjson','text/x-python','application/javascript','text/javascript','text/html','text/css','application/xml','text/xml','application/x-sh','application/x-yaml','text/yaml','application/toml','text/x-log','message/rfc822','text/calendar'];
 const ANEXO_BUSCA_EXT_DOCX = /\.docx$/i;
 const ANEXO_BUSCA_MIME_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-const ANEXO_BUSCA_EXT_PLANILHA = /\.(xlsx|xls)$/i;
-const ANEXO_BUSCA_MIME_PLANILHA = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
+const ANEXO_BUSCA_EXT_PLANILHA = /\.(xlsx|xlsm|xls|xlsb|ods)$/i;
+const ANEXO_BUSCA_MIME_PLANILHA = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel','application/vnd.ms-excel.sheet.macroEnabled.12','application/vnd.oasis.opendocument.spreadsheet'];
+// .doc (Word 97-2003, binário) e .rtf não têm parser estruturado aqui — mas o
+// texto costuma sobreviver parcialmente numa leitura crua, então tentamos e
+// avisamos que pode vir com ruído, em vez de simplesmente recusar.
+const ANEXO_BUSCA_EXT_DOC_LEGADO = /\.(doc|rtf)$/i;
+// Arquivos compactados — extraímos o conteúdo de texto de dentro e montamos
+// um resumo, em vez de recusar o arquivo inteiro por ser um "binário".
+const ANEXO_BUSCA_EXT_ZIP = /\.zip$/i;
+const ANEXO_BUSCA_MIME_ZIP = ['application/zip','application/x-zip-compressed','application/x-zip'];
+const ANEXO_BUSCA_EXT_RAR = /\.rar$/i;
+const ANEXO_BUSCA_MIME_RAR = ['application/x-rar-compressed','application/vnd.rar','application/x-rar'];
+const ANEXO_BUSCA_MAX_ARQUIVOS_COMPACTADO = 30; // evita travar em zips/rars gigantes com milhares de arquivos
+
+async function carregarScriptUmaVez(src, checarGlobal){
+  if (typeof window[checarGlobal] !== 'undefined') return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = res; s.onerror = () => rej(new Error(`falha ao carregar ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
+// Decide se um arquivo dentro do zip/rar vale a pena extrair como texto —
+// mesma lógica de reconhecimento usada pro anexo solto, sem os tipos que
+// exigem parser binário próprio (pdf/imagem ficam de fora do resumo,
+// só listados pelo nome).
+function ehEntradaTextoCompactado(nome){
+  return ANEXO_BUSCA_EXT_TEXTO.test(nome) || ANEXO_BUSCA_EXT_DOCX.test(nome) || ANEXO_BUSCA_EXT_PLANILHA.test(nome) || ANEXO_BUSCA_EXT_DOC_LEGADO.test(nome);
+}
+
+async function extrairTextoZip(file){
+  await carregarScriptUmaVez('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js', 'JSZip');
+  const zip = await JSZip.loadAsync(file);
+  const entradas = Object.values(zip.files).filter(f => !f.dir);
+  const partes = [];
+  let lidos = 0;
+  for (const entrada of entradas) {
+    if (lidos >= ANEXO_BUSCA_MAX_ARQUIVOS_COMPACTADO) {
+      partes.push(`\n[...${entradas.length - lidos} arquivos restantes não lidos, zip grande demais...]`);
+      break;
+    }
+    if (!ehEntradaTextoCompactado(entrada.name)) continue;
+    lidos++;
+    try {
+      const conteudoBruto = await entrada.async('string');
+      const conteudo = conteudoBruto.length > 3000 ? conteudoBruto.slice(0, 3000) + ' [...truncado]' : conteudoBruto;
+      partes.push(`--- ${entrada.name} ---\n${conteudo}`);
+    } catch {
+      partes.push(`--- ${entrada.name} --- [não consegui ler esse arquivo dentro do zip]`);
+    }
+  }
+  if (!partes.length) {
+    const nomes = entradas.map(e => e.name).slice(0, 50).join(', ');
+    return `Zip com ${entradas.length} arquivo(s), nenhum de texto reconhecível pra extrair conteúdo. Nomes: ${nomes}`;
+  }
+  return `Zip "${file.name}" com ${entradas.length} arquivo(s) — conteúdo dos arquivos de texto extraídos abaixo:\n\n${partes.join('\n\n')}`;
+}
+
+async function extrairTextoRar(file){
+  // node-unrar-js precisa do binário .wasm carregado à parte (não é UMD puro
+  // com auto-fetch) — buscamos os dois em paralelo.
+  await carregarScriptUmaVez('https://cdn.jsdelivr.net/npm/node-unrar-js@2.0.2/dist/js/unrar.js', 'UnrarJS');
+  const UnrarNS = window.UnrarJS || window.unrar;
+  if (!UnrarNS?.createExtractorFromData) throw new Error('lib de rar não carregou');
+  const [dadosRar, wasmBinary] = await Promise.all([
+    lerArquivoComoArrayBuffer(file),
+    fetch('https://cdn.jsdelivr.net/npm/node-unrar-js@2.0.2/dist/js/unrar.wasm').then(r => r.arrayBuffer()),
+  ]);
+  const extractor = await UnrarNS.createExtractorFromData({ data: dadosRar, wasmBinary });
+  const lista = extractor.getFileList();
+  const headers = [...(lista.fileHeaders || [])].filter(h => !h.flags?.directory);
+  const nomesTexto = headers.map(h => h.name).filter(ehEntradaTextoCompactado).slice(0, ANEXO_BUSCA_MAX_ARQUIVOS_COMPACTADO);
+
+  const partes = [];
+  if (nomesTexto.length) {
+    const extraido = extractor.extract({ files: nomesTexto });
+    for (const f of extraido.files) {
+      try {
+        const conteudoBruto = new TextDecoder('utf-8').decode(f.extraction);
+        const conteudo = conteudoBruto.length > 3000 ? conteudoBruto.slice(0, 3000) + ' [...truncado]' : conteudoBruto;
+        partes.push(`--- ${f.fileHeader.name} ---\n${conteudo}`);
+      } catch {
+        partes.push(`--- ${f.fileHeader.name} --- [não consegui ler esse arquivo dentro do rar]`);
+      }
+    }
+  }
+  if (!partes.length) {
+    const nomes = headers.map(h => h.name).slice(0, 50).join(', ');
+    return `Rar com ${headers.length} arquivo(s), nenhum de texto reconhecível pra extrair conteúdo. Nomes: ${nomes}`;
+  }
+  return `Rar "${file.name}" com ${headers.length} arquivo(s) — conteúdo dos arquivos de texto extraídos abaixo:\n\n${partes.join('\n\n')}`;
+}
 
 function lerArquivoComoTexto(file){
   return new Promise((resolve, reject) => {
@@ -2110,14 +2206,46 @@ async function processarAnexoParaBusca(file){
       if (!texto.trim()) throw new Error('planilha vazia ou ilegível');
       if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
       anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'xlsx', conteudo: texto };
+    } else if (ANEXO_BUSCA_EXT_DOC_LEGADO.test(file.name)) {
+      // .doc binário e .rtf não têm parser estruturado — lemos cru como texto
+      // e filtramos bytes de controle; o conteúdo pode vir com ruído, mas é
+      // melhor que recusar de cara.
+      let bruto = await lerArquivoComoTexto(file);
+      let texto = bruto.replace(/[^\x09\x0A\x0D\x20-\x7EÀ-ÿ]/g, ' ').replace(/\s{3,}/g, ' \n').trim();
+      if (!texto || texto.length < 20) throw new Error('doc/rtf sem texto legível');
+      if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+      anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'doc-legado', conteudo: texto };
+      showToast('Arquivo .doc/.rtf antigo — texto extraído pode vir com algum ruído.');
+    } else if (ANEXO_BUSCA_MIME_ZIP.includes(file.type) || ANEXO_BUSCA_EXT_ZIP.test(file.name)) {
+      let texto = await extrairTextoZip(file);
+      if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+      anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'application/zip', conteudo: texto };
+    } else if (ANEXO_BUSCA_MIME_RAR.includes(file.type) || ANEXO_BUSCA_EXT_RAR.test(file.name)) {
+      let texto = await extrairTextoRar(file);
+      if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+      anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'application/x-rar', conteudo: texto };
     } else if (ANEXO_BUSCA_MIME_TEXTO.includes(file.type) || ANEXO_BUSCA_EXT_TEXTO.test(file.name)) {
       let texto = await lerArquivoComoTexto(file);
       if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
       anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'text/plain', conteudo: texto };
     } else {
-      removerAnexoBusca();
-      showToast('Ainda não consigo ler esse tipo de arquivo — tenta .docx, .xlsx, .csv, .txt, .md, .json, .pdf ou uma imagem.');
-      return;
+      // Fallback final: extensão/mime desconhecidos ainda tentam ler como
+      // texto puro em vez de recusar — cobre a cauda longa (.env, .ics,
+      // configs sem extensão-padrão, exports de outras ferramentas etc.).
+      // Só recusa de fato se vier claramente binário (bytes de substituição
+      // Unicode em excesso, sinal de arquivo não-textual tipo imagem/zip/exe).
+      try {
+        const bruto = await lerArquivoComoTexto(file);
+        const proporcaoRuido = (bruto.match(/\uFFFD/g)?.length || 0) / Math.max(bruto.length, 1);
+        if (!bruto.trim() || proporcaoRuido > 0.05) throw new Error('binário não suportado');
+        let texto = bruto;
+        if (texto.length > 15000) texto = texto.slice(0, 15000) + '\n\n[...conteúdo truncado, arquivo maior que isso...]';
+        anexoBusca = { tipo: 'texto', nome: file.name, mime: file.type || 'text/plain', conteudo: texto };
+      } catch {
+        removerAnexoBusca();
+        showToast('Esse arquivo parece binário (não-texto) e eu ainda não sei ler esse formato — imagem, PDF, Word, Excel ou qualquer arquivo de texto/código funcionam.');
+        return;
+      }
     }
     mostrarAnexoBuscaChip(`${anexoBusca.tipo === 'imagem' ? '📷' : anexoBusca.tipo === 'pdf' ? '📕' : '📄'} ${file.name}`);
   } catch (e) {
