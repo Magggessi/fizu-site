@@ -805,6 +805,62 @@ function getVisitanteId(){
   }catch(e){ return null; }
 }
 
+// Ponte de ranking dos jogos: o jogo roda num iframe sandboxado (sem
+// allow-same-origin, sem acesso de rede) e só consegue falar com a página
+// via postMessage. Aqui a página recebe {tipo:'fizu-jogo-pronto'} (jogo
+// carregou, quer ver o ranking) e {tipo:'fizu-jogo-fim', pontos} (fim de
+// jogo, quer salvar a pontuação) — em ambos os casos busca/atualiza o
+// ranking via jogo-ranking e manda de volta pro iframe pra ele exibir ali
+// mesmo na tela do jogo.
+async function buscarEEnviarRanking(iframeEl, jogoChave){
+  try{
+    const r = await fetch(`${SUPA_URL}/functions/v1/jogo-ranking`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`},
+      body: JSON.stringify({ acao:'ranking', jogo_chave: jogoChave, limite:5 })
+    });
+    const d = await r.json();
+    if(d?.ok && iframeEl?.contentWindow){
+      iframeEl.contentWindow.postMessage({ tipo:'fizu-ranking', ranking: d.ranking || [] }, '*');
+    }
+  }catch(e){ console.error('jogo-ranking (buscar):', e); }
+}
+
+window.addEventListener('message', async (evento)=>{
+  const data = evento.data;
+  if(!data || typeof data !== 'object') return;
+  if(data.tipo !== 'fizu-jogo-pronto' && data.tipo !== 'fizu-jogo-fim') return;
+
+  const turnoId = Object.keys(_turnosAgenteMap).find(tid=>{
+    const frame = document.getElementById('jogo-frame-'+tid);
+    return frame && frame.contentWindow === evento.source;
+  });
+  if(!turnoId) return;
+  const turno = _turnosAgenteMap[turnoId];
+  const jogoChave = turno?.resultado?.jogo_chave;
+  if(!jogoChave) return;
+  const frameEl = document.getElementById('jogo-frame-'+turnoId);
+
+  if(data.tipo === 'fizu-jogo-fim' && typeof data.pontos === 'number' && Number.isFinite(data.pontos)){
+    try{
+      await fetch(`${SUPA_URL}/functions/v1/jogo-ranking`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json', apikey:SUPA_KEY, Authorization:`Bearer ${SUPA_KEY}`},
+        body: JSON.stringify({
+          acao:'salvar',
+          jogo_chave: jogoChave,
+          jogo_nome: turno?.resultado?.jogo_nome || null,
+          pontos: Math.max(0, Math.floor(data.pontos)),
+          usuario_id: usuarioAtual?.id || null,
+          visitante_id: usuarioAtual ? null : getVisitanteId(),
+        })
+      });
+    }catch(e){ console.error('jogo-ranking (salvar):', e); }
+  }
+
+  buscarEEnviarRanking(frameEl, jogoChave);
+});
+
 (async function initSessaoIdx(){
   try{
     const { data:{ session } } = await sb.auth.getSession();
@@ -1409,7 +1465,7 @@ function atualizarCartaoAgente(el, resultado, query, entidadeHtmlExtra){
   // Sandbox SEM allow-same-origin: o jogo roda em origem nula, sem acesso a
   // cookies/localStorage/DOM do Fizu, não importa o que o HTML gerado contenha.
   const jogoGeradoHtml = resultado.jogo_gerado
-    ? `<div class="ac-jogo-gerado-wrap"><iframe class="ac-jogo-gerado-frame" src="${resultado.jogo_gerado}" sandbox="allow-scripts" loading="lazy" title="Jogo criado pelo agente"></iframe></div>`
+    ? `<div class="ac-jogo-gerado-wrap"><iframe id="jogo-frame-${turnoId}" class="ac-jogo-gerado-frame" src="${resultado.jogo_gerado}" sandbox="allow-scripts" loading="lazy" title="Jogo criado pelo agente"></iframe></div>`
     : '';
 
   const cardsHtml = (resultado.cards||[]).slice(0,4).map(c=>{
