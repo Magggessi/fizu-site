@@ -160,7 +160,7 @@ async function recuperar() {
   btn.textContent = 'Enviando...';
 
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://fizu.com.br/nova-senha.html'
+    redirectTo: window.location.origin + '/nova-senha.html'
   });
 
   btn.disabled = false;
