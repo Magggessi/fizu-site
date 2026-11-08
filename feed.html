@@ -8802,7 +8802,7 @@ async function vincularProvedor(provedor) {
   try {
     const { error } = await sb.auth.linkIdentity({
       provider: provedor,
-      options: { redirectTo: 'https://fizu.com.br/feed' }
+      options: { redirectTo: window.location.origin + '/feed.html' }
     });
     if (error) {
       // Se já estiver vinculado ou outro erro
