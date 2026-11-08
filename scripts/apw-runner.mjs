@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { montarPosts } from './apw-posts.mjs';
 
 const MODS = process.env.APW_MODULES || process.cwd();
 const req = createRequire(path.join(MODS, 'x.js'));
@@ -17,6 +18,7 @@ const DRY = process.env.APW_DRY === '1';
 const CHROME = process.env.CHROME_PATH || '/usr/bin/google-chrome';
 const MS_PER_TICK = 250;
 const SEED = 20261108;
+const MAX_POSTS_POR_RODADA = 2; // o servidor ainda limita por hora
 const MAX_TICKS = 200000; // ~14 h de tempo real de uma vez, em lotes
 const html = fs.readFileSync(new URL('../apolthony/index.html', import.meta.url), 'utf8');
 
@@ -52,13 +54,23 @@ async function main() {
   await page.waitForFunction(() => window.__APW_API, null, { timeout: 180000 });
 
   const t0 = await page.evaluate(() => window.__APW_API.t);
+  // Acontecimentos novos (ainda não vistos): o feed interno guarda só os últimos 400, então lemos em lotes pequenos.
+  const vistos = new Set((snap?.feed || []).map(([, h, t]) => `${t}|${h}`));
+  const eventos = [];
   for (let feito = 0; feito < ticks; ) {
-    const n = Math.min(2000, ticks - feito);
-    await page.evaluate(n => { for (let i = 0; i < n; i++) window.__APW_API.tick(); }, n);
+    const n = Math.min(250, ticks - feito);
+    const lote = await page.evaluate(n => { for (let i = 0; i < n; i++) window.__APW_API.tick(); return window.__APW_API.feed.slice(0, 120).map(a => [a.type, a.html, a.t]); }, n);
+    for (const e of lote) { const k = `${e[2]}|${e[1]}`; if (!vistos.has(k)) { vistos.add(k); eventos.push(e); } }
     feito += n;
   }
   const saida = JSON.parse(await page.evaluate(() => window.__APW_API.save()));
   await browser.close();
+
+  // Habitantes postam as próprias novidades no feed do Fizu (o servidor aplica o limite por hora).
+  const hab = new Map((saida.ag || []).map(a => [a.id, { sex: a.sex }]));
+  const posts = snap ? montarPosts(eventos, hab, { max: MAX_POSTS_POR_RODADA }) : [];
+  console.log(`acontecimentos novos: ${eventos.length} | posts para o feed: ${posts.length}`);
+  for (const p of posts) console.log(`  [${p.nivel}] ${p.agente_nome}: ${p.conteudo.split('\n')[0]}`);
 
   saida.saved = snap ? snap.saved + ticks * MS_PER_TICK : agora; // relógio contínuo, sem deriva
   const corpo = JSON.stringify(saida);
@@ -67,7 +79,7 @@ async function main() {
   if (DRY) { console.log('APW_DRY=1: não enviado'); return; }
   if (!TOKEN) throw new Error('APW_RUNNER_TOKEN ausente');
   const r = await fetch(`${SUPABASE_URL}/functions/v1/apw-mundo-salvar`, { method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-runner-token': TOKEN }, body: JSON.stringify({ snapshot: corpo, t: saida.t, saved: saida.saved }) });
+    headers: { 'content-type': 'application/json', 'x-runner-token': TOKEN }, body: JSON.stringify({ snapshot: corpo, t: saida.t, saved: saida.saved, posts }) });
   console.log('upload:', r.status, await r.text());
   if (!r.ok) process.exit(1);
 }
