@@ -52,7 +52,7 @@ const REGRAS = [
 const NIVEL_MUNDO = [
   [/Aurora descobriu a Terra/, 3], [/Avanço tecnológico/, 3], [/CRISE ECON/, 3], [/Escândalo/, 3],
   [/Chuva de meteoros|Tremor de terra|Incêndio|Tempestade de poeira|Apagão/, 3],
-  [/FESTIVAL|RENDA BÁSICA/, 2], [/crise econômica terminou/, 2], [/prendeu|preso|prisão|furt|invadir|invadindo|agredi|investigação|propina/, 2],
+  [/Nova colônia fundada/, 3], [/FESTIVAL|RENDA BÁSICA/, 2], [/crise econômica terminou/, 2], [/prendeu|preso|prisão|furt|invadir|invadindo|agredi|investigação|propina/, 2],
   [/Policiamento|caixa da prefeitura|demitido/, 1], [/chover|tempestade se forma|Onda de calor|Frente fria/, 0],
 ];
 
