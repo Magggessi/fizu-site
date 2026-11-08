@@ -1,0 +1,36 @@
+name: Apolthony World · relógio mestre
+
+# Avança o mundo único a cada 5 minutos (o GitHub pode atrasar um pouco; o script recupera o tempo perdido).
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: apolthony-relogio
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  avancar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar dependências do relógio
+        run: |
+          mkdir -p "$RUNNER_TEMP/apw"
+          cd "$RUNNER_TEMP/apw"
+          npm init -y >/dev/null
+          npm i playwright-core three@0.160.0
+      - name: Avançar o mundo e salvar
+        env:
+          APW_MODULES: ${{ runner.temp }}/apw
+          APW_RUNNER_TOKEN: ${{ secrets.APW_RUNNER_TOKEN }}
+          CHROME_PATH: /usr/bin/google-chrome
+        run: node scripts/apw-runner.mjs
