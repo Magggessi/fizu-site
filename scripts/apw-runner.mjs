@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { montarPosts } from './apw-posts.mjs';
+import { cronicar, montarResumo } from './apw-posts.mjs';
 
 const MODS = process.env.APW_MODULES || process.cwd();
 const req = createRequire(path.join(MODS, 'x.js'));
@@ -18,7 +18,7 @@ const DRY = process.env.APW_DRY === '1';
 const CHROME = process.env.CHROME_PATH || '/usr/bin/google-chrome';
 const MS_PER_TICK = 250;
 const SEED = 20261108;
-const MAX_POSTS_POR_RODADA = 2; // o servidor ainda limita por hora
+const INTERVALO_RESUMO_MS = 3.5 * 86400e3; // 2 resumos por semana
 const MAX_TICKS = 200000; // ~14 h de tempo real de uma vez, em lotes
 const html = fs.readFileSync(new URL('../apolthony/index.html', import.meta.url), 'utf8');
 
@@ -66,11 +66,17 @@ async function main() {
   const saida = JSON.parse(await page.evaluate(() => window.__APW_API.save()));
   await browser.close();
 
-  // Habitantes postam as próprias novidades no feed do Fizu (o servidor aplica o limite por hora).
+  // Crônica: acumula o que vale virar história; a cada ~3,5 dias publica UM resumo no feed do Fizu.
   const hab = new Map((saida.ag || []).map(a => [a.id, { sex: a.sex }]));
-  const posts = snap ? montarPosts(eventos, hab, { max: MAX_POSTS_POR_RODADA }) : [];
-  console.log(`acontecimentos novos: ${eventos.length} | posts para o feed: ${posts.length}`);
-  for (const p of posts) console.log(`  [${p.nivel}] ${p.agente_nome}: ${p.conteudo.split('\n')[0]}`);
+  saida.cronica = cronicar(eventos, hab, snap?.cronica || []);
+  saida.resumo_em = snap?.resumo_em || agora;
+  let posts = [];
+  if (snap && agora - saida.resumo_em >= INTERVALO_RESUMO_MS) {
+    const r = montarResumo(saida.cronica, saida);
+    if (r) { posts = [r]; saida.cronica = []; saida.resumo_em = agora; }
+  }
+  console.log(`acontecimentos novos: ${eventos.length} | crônica: ${saida.cronica.length} | resumos: ${posts.length}`);
+  for (const p of posts) console.log(p.conteudo);
 
   saida.saved = snap ? snap.saved + ticks * MS_PER_TICK : agora; // relógio contínuo, sem deriva
   const corpo = JSON.stringify(saida);

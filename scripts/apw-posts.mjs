@@ -70,19 +70,19 @@ export function interpretar(evento, hab) {
     const m = plano.match(re);
     if (!m) continue;
     let texto = build(m);
-    if (autor === null) return { nivel, t, mundo: true, texto: preencher(texto), chave: `${t}|${plano}` };
+    if (autor === null) return { nivel, t, mundo: true, texto: preencher(texto), chave: `${t}|${plano}`, plano: preencher(plano), tipo };
     const quem = nomes[autor];
     if (!quem) continue;
     const info = hab.get(quem.id) || {};
     texto = genero(preencher(texto), info.sex);
-    return { nivel, t, mundo: false, autorId: quem.id, autorNome: quem.nome, texto, chave: `${t}|${plano}` };
+    return { nivel, t, mundo: false, autorId: quem.id, autorNome: quem.nome, texto, chave: `${t}|${plano}`, plano: preencher(plano), tipo };
   }
   // Narração do mundo para o resto
   let nivel = 1;
   for (const [re, n] of NIVEL_MUNDO) if (re.test(plano)) { nivel = n; break; }
   if (tipo === 'crime') nivel = Math.max(nivel, 2);
   const texto = genero(preencher(plano), (hab.get(nomes[0] && nomes[0].id) || {}).sex || 'M');
-  return { nivel, t, mundo: true, texto: /^\p{Extended_Pictographic}/u.test(texto) ? texto : `📰 ${texto}`, chave: `${t}|${plano}` };
+  return { nivel, t, mundo: true, texto: /^\p{Extended_Pictographic}/u.test(texto) ? texto : `📰 ${texto}`, chave: `${t}|${plano}`, plano: preencher(plano), tipo };
 }
 
 // Escolhe poucas novidades por rodada: primeiro os marcos, sem repetir o mesmo habitante.
@@ -117,4 +117,48 @@ export function montarPosts(eventos, hab, opts) {
     conteudo: `${c.texto}\n\n— Dia ${dia(c.t)} em Aurora (Marte)`,
     fontes: [`Apolthony World ao vivo: ${SITE}`],
   }));
+}
+
+
+// ---------- Crônica: resumo periódico (2x por semana) ----------
+const POLEMICA = /Escândalo|CRISE ECON|prendeu|preso|prisão|furt|invadir|invadindo|agredi|propina|investigação|viraram inimigos|discutiram feio|demitido|atropelad|Apagão|Incêndio/;
+const HISTORICO = /morreu|nasce|tiveram (um|uma)|adotaram|casaram|eleit|escolhid|descobriu a Terra|aposentou|completou 18/;
+const AVANCO = /inaugurou|Avanço tecnológico|casa própria|realizou o sonho|nasce |colônia|expedição|nova (cidade|base|colônia)|descobriu a Terra|RENDA BÁSICA|FESTIVAL/;
+
+// Guarda no snapshot só o que vale virar história (sem rotina).
+export function cronicar(eventos, hab, atual = []) {
+  const vistos = new Set(atual.map((c) => c.k));
+  const out = [...atual];
+  for (const e of eventos) {
+    const c = interpretar(e, hab);
+    if (!c || c.nivel < 2) continue;
+    const k = c.chave.slice(0, 160);
+    if (vistos.has(k)) continue;
+    vistos.add(k);
+    let cat = POLEMICA.test(c.plano) ? 'p' : AVANCO.test(c.plano) ? 'a' : HISTORICO.test(c.plano) ? 'h' : null;
+    if (/Terra|Avanço tecnológico|inaugurou|colônia/.test(c.plano) && !POLEMICA.test(c.plano)) cat = 'a';
+    if (!cat) continue;
+    out.push({ k, t: c.t, n: c.nivel, cat, x: c.plano.replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, '').slice(0, 170) });
+  }
+  return out.slice(-60);
+}
+
+const curto = (x, n = 150) => (x.length > n ? x.slice(0, n - 1).trimEnd() + '…' : x);
+
+// Monta UM post-resumo. Retorna null se não houver o que contar.
+export function montarResumo(cronica, saida) {
+  if (!cronica || cronica.length < 2) return null;
+  const melhor = (cat) => [...cronica].filter((c) => c.cat === cat).sort((a, b) => b.n - a.n || b.t - a.t)[0];
+  const p = melhor('p'), h = melhor('h'), a = melhor('a');
+  if (!p && !h && !a) return null;
+  const t0 = Math.min(...cronica.map((c) => c.t)), t1 = Math.max(...cronica.map((c) => c.t));
+  const linhas = [`🪐 Resumo de Aurora — dias ${dia(t0)} a ${dia(t1)}`];
+  const vivos = (saida.ag || []).length;
+  const cid = saida.city || {};
+  linhas.push(`👥 ${vivos} habitantes${cid.works ? ` · ${cid.works} obras` : ''}${cid.treasury != null ? ` · caixa R$ ${Math.round(cid.treasury).toLocaleString('pt-BR')}` : ''}`);
+  if (a) linhas.push(`🚀 Avanço: ${curto(a.x)}`);
+  if (h) linhas.push(`📜 Fato histórico: ${curto(h.x)}`);
+  if (p) linhas.push(`🔥 Polêmica: ${curto(p.x)}`);
+  const conteudo = linhas.join('\n') + '\n\nAcompanhe ao vivo no Apolthony World.';
+  return { t: t1, nivel: 3, agente_nome: NOME_MUNDO, agente_emoji: EMOJI_MUNDO, conteudo: conteudo.slice(0, 590), fontes: [`Apolthony World ao vivo: ${SITE}`] };
 }
