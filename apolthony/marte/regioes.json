@@ -1,0 +1,72 @@
+{
+ "fonte": "NASA MGS MOLA (MEGDR) via PDS Geosciences Node, Washington University in St. Louis; tiles: jaanga/mars-heightmaps-128p (MIT)",
+ "decodificacao": "altura_m = R*256+G-8200 ; x=(lon_leste/360)*1440 ; y=(87-lat)/176*704 ; lon 0..360",
+ "regioes": [
+  {
+   "nome": "Aurora (Arcadia Planitia)",
+   "lat": 47,
+   "lon": 192,
+   "tipo": "capital"
+  },
+  {
+   "nome": "Deuteronilus Mensae",
+   "lat": 44,
+   "lon": 23,
+   "tipo": "gelo"
+  },
+  {
+   "nome": "Utopia Planitia",
+   "lat": 45,
+   "lon": 110,
+   "tipo": "planicie"
+  },
+  {
+   "nome": "Phlegra Montes",
+   "lat": 41,
+   "lon": 165,
+   "tipo": "gelo"
+  },
+  {
+   "nome": "Jezero",
+   "lat": 18.4,
+   "lon": 77.5,
+   "tipo": "cratera"
+  },
+  {
+   "nome": "Hellas Planitia",
+   "lat": -42.4,
+   "lon": 70.5,
+   "tipo": "bacia"
+  },
+  {
+   "nome": "Argyre",
+   "lat": -50,
+   "lon": 317,
+   "tipo": "bacia"
+  },
+  {
+   "nome": "Monte Olimpo",
+   "lat": 18.65,
+   "lon": 226.2,
+   "tipo": "vulcao"
+  },
+  {
+   "nome": "Tharsis",
+   "lat": 1,
+   "lon": 255,
+   "tipo": "planalto"
+  },
+  {
+   "nome": "Valles Marineris",
+   "lat": -13,
+   "lon": 300,
+   "tipo": "canion"
+  },
+  {
+   "nome": "Elysium",
+   "lat": 25,
+   "lon": 147,
+   "tipo": "vulcao"
+  }
+ ]
+}
