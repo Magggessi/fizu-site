@@ -6,7 +6,7 @@ const NM = /<b class="nm" data-id="(\d+)">([^<]+)<\/b>/g;
 const SITE = 'https://fizubr.netlify.app/apolthony/';
 
 export const EMOJI_HABITANTE = '🧑‍🚀';
-export const EMOJI_MUNDO = '🪐';
+export const EMOJI_MUNDO = '🔴';
 export const NOME_MUNDO = 'Apolthony World';
 
 const limpar = (h) => h.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
@@ -152,7 +152,7 @@ export function montarResumo(cronica, saida) {
   const p = melhor('p'), h = melhor('h'), a = melhor('a');
   if (!p && !h && !a) return null;
   const t0 = Math.min(...cronica.map((c) => c.t)), t1 = Math.max(...cronica.map((c) => c.t));
-  const linhas = [`🪐 Resumo de Aurora — dias ${dia(t0)} a ${dia(t1)}`];
+  const linhas = [`🔴 Resumo de Aurora — dias ${dia(t0)} a ${dia(t1)}`];
   const vivos = (saida.ag || []).length;
   const cid = saida.city || {};
   linhas.push(`👥 ${vivos} habitantes${cid.works ? ` · ${cid.works} obras` : ''}${cid.treasury != null ? ` · caixa R$ ${Math.round(cid.treasury).toLocaleString('pt-BR')}` : ''}`);
